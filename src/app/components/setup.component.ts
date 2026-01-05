@@ -1,14 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { PomodoroService } from '../services/pomodoro.service';
 
 @Component({
   selector: 'app-setup',
   imports: [],
   template: `
-    <div class="container" [class.fullscreen]="isFullscreen()">
-      <div class="stars"></div>
-      <div class="stars2"></div>
-      <div class="stars3"></div>
-      <div class="gradient-overlay"></div>
+    <div class="container" [style.background-image]="'url(' + currentBackground() + ')'">
+      <div class="overlay"></div>
 
       <div class="content">
         <div class="time-section">
@@ -19,10 +17,12 @@ import { Component, signal } from '@angular/core';
         <div class="greeting">{{ greeting() }}</div>
       </div>
 
-      <button class="btn-fullscreen" (click)="toggleFullscreen()">
-        <span class="btn-icon">{{ isFullscreen() ? '✕' : '⛶' }}</span>
-        <span class="btn-text">{{ isFullscreen() ? 'Salir' : 'Pantalla completa' }}</span>
-      </button>
+      @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
+      <div class="pomodoro-widget">
+        <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
+        <div class="pomodoro-time">{{ formatTime() }}</div>
+      </div>
+      }
     </div>
   `,
   styles: [
@@ -33,87 +33,25 @@ import { Component, signal } from '@angular/core';
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
         position: relative;
         padding: 40px 24px;
         overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        transition: background-image 1s ease-in-out;
       }
 
-      .container.fullscreen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        min-height: 100vh;
-        z-index: 9999;
-      }
-
-      .stars,
-      .stars2,
-      .stars3 {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-      }
-
-      .stars {
-        background: transparent
-          url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')
-          repeat;
-        background-size: 200px 200px;
-        animation: animateStars 150s linear infinite;
-        opacity: 0.4;
-      }
-
-      .stars2 {
-        background: transparent
-          url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')
-          repeat;
-        background-size: 300px 300px;
-        animation: animateStars 200s linear infinite;
-        opacity: 0.3;
-      }
-
-      .stars3 {
-        background: transparent
-          url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMyIgaGVpZ2h0PSIzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIzIiBoZWlnaHQ9IjMiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')
-          repeat;
-        background-size: 400px 400px;
-        animation: animateStars 250s linear infinite;
-        opacity: 0.2;
-      }
-
-      @keyframes animateStars {
-        from {
-          transform: translateY(0);
-        }
-        to {
-          transform: translateY(-2000px);
-        }
-      }
-
-      .gradient-overlay {
+      .overlay {
         position: absolute;
         inset: 0;
-        background: radial-gradient(circle at 20% 30%, rgba(88, 101, 242, 0.15) 0%, transparent 50%),
-          radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
-          radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.3) 0%,
+          rgba(0, 0, 0, 0.5) 50%,
+          rgba(0, 0, 0, 0.7) 100%
+        );
         pointer-events: none;
-        animation: pulse 15s ease-in-out infinite;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 0.7;
-        }
-        50% {
-          opacity: 1;
-        }
       }
 
       .content {
@@ -131,21 +69,21 @@ import { Component, signal } from '@angular/core';
       .time-glow {
         position: absolute;
         inset: -40px;
-        background: radial-gradient(ellipse, rgba(139, 92, 246, 0.5) 0%, transparent 70%);
+        background: radial-gradient(ellipse, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
         filter: blur(60px);
         z-index: 1;
-        animation: glow 6s ease-in-out infinite;
+        animation: glow 8s ease-in-out infinite;
       }
 
       @keyframes glow {
         0%,
         100% {
-          opacity: 0.3;
+          opacity: 0.4;
           transform: scale(1);
         }
         50% {
-          opacity: 0.6;
-          transform: scale(1.1);
+          opacity: 0.7;
+          transform: scale(1.15);
         }
       }
 
@@ -155,7 +93,8 @@ import { Component, signal } from '@angular/core';
         color: white;
         letter-spacing: -8px;
         font-variant-numeric: tabular-nums;
-        text-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 80px rgba(255, 255, 255, 0.2);
+        text-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 80px rgba(255, 255, 255, 0.3),
+          0 4px 20px rgba(0, 0, 0, 0.9);
         line-height: 1;
         position: relative;
         z-index: 2;
@@ -164,54 +103,57 @@ import { Component, signal } from '@angular/core';
       .date-display {
         font-size: 32px;
         font-weight: 700;
-        color: rgba(255, 255, 255, 0.98);
+        color: white;
         margin-bottom: 24px;
         letter-spacing: 0.5px;
         text-transform: capitalize;
-        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.9);
       }
 
       .greeting {
         font-size: 20px;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.9);
+        color: rgba(255, 255, 255, 0.95);
         letter-spacing: 0.3px;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 4px rgba(0, 0, 0, 0.9);
       }
 
-      .btn-fullscreen {
-        position: absolute;
+      .pomodoro-widget {
+        position: fixed;
         bottom: 40px;
         right: 40px;
-        padding: 18px 32px;
         background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(20px);
+        padding: 20px 32px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        z-index: 10;
+        transition: all 0.3s ease;
+      }
+
+      .pomodoro-widget:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      .pomodoro-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .pomodoro-time {
+        font-size: 36px;
+        font-weight: 900;
         color: white;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 16px;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .btn-fullscreen:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-        border-color: rgba(255, 255, 255, 0.5);
-      }
-
-      .btn-icon {
-        font-size: 20px;
-      }
-
-      .btn-text {
-        letter-spacing: 0.5px;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -1px;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
       }
 
       @media (max-width: 768px) {
@@ -229,15 +171,18 @@ import { Component, signal } from '@angular/core';
           font-size: 18px;
         }
 
-        .btn-fullscreen {
-          bottom: 32px;
-          right: 32px;
-          padding: 16px 28px;
-          font-size: 14px;
+        .pomodoro-widget {
+          bottom: 24px;
+          right: 24px;
+          padding: 16px 24px;
         }
 
-        .btn-icon {
-          font-size: 18px;
+        .pomodoro-label {
+          font-size: 12px;
+        }
+
+        .pomodoro-time {
+          font-size: 28px;
         }
       }
 
@@ -256,30 +201,40 @@ import { Component, signal } from '@angular/core';
           font-size: 16px;
         }
 
-        .btn-fullscreen {
-          bottom: 24px;
-          right: 24px;
-          padding: 14px 24px;
-          font-size: 13px;
-          gap: 8px;
+        .pomodoro-widget {
+          bottom: 16px;
+          right: 16px;
+          padding: 12px 20px;
         }
 
-        .btn-text {
-          display: none;
+        .pomodoro-label {
+          font-size: 11px;
+          margin-bottom: 4px;
         }
 
-        .btn-icon {
-          font-size: 20px;
+        .pomodoro-time {
+          font-size: 24px;
         }
       }
     `,
   ],
 })
 export class SetupComponent {
+  pomodoroService = inject(PomodoroService);
   currentTime = signal('');
   currentDate = signal('');
   greeting = signal('');
-  isFullscreen = signal(false);
+
+  private backgrounds = [
+    '/assets/backgrounds/foto1.jpg',
+    '/assets/backgrounds/foto2.jfif',
+    '/assets/backgrounds/foto3.jpg',
+    '/assets/backgrounds/foto4.jpg',
+    '/assets/backgrounds/foto5.jpg',
+    '/assets/backgrounds/foto6.jpg',
+  ];
+
+  currentBackground = signal(this.backgrounds[0]);
 
   private morningGreetings = [
     '¡Buenos días! Que tengas un excelente comienzo ☀️',
@@ -307,7 +262,9 @@ export class SetupComponent {
 
   constructor() {
     this.updateTime();
+    this.updateBackground();
     setInterval(() => this.updateTime(), 1000);
+    setInterval(() => this.updateBackground(), 30000);
   }
 
   updateTime(): void {
@@ -345,13 +302,25 @@ export class SetupComponent {
     this.greeting.set(greetings[dayIndex]);
   }
 
-  toggleFullscreen(): void {
-    if (!this.isFullscreen()) {
-      document.documentElement.requestFullscreen();
-      this.isFullscreen.set(true);
-    } else {
-      document.exitFullscreen();
-      this.isFullscreen.set(false);
+  updateBackground(): void {
+    const randomIndex = Math.floor(Math.random() * this.backgrounds.length);
+    this.currentBackground.set(this.backgrounds[randomIndex]);
+  }
+
+  getPhaseLabel(): string {
+    const state = this.pomodoroService.state();
+    if (state === 'RUNNING_FOCUS') {
+      return 'Enfoque';
+    } else if (state === 'RUNNING_SHORT_BREAK' || state === 'RUNNING_LONG_BREAK') {
+      return 'Descanso';
     }
+    return '';
+  }
+
+  formatTime(): string {
+    const seconds = this.pomodoroService.secondsLeft();
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 }
