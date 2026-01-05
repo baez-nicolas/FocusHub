@@ -7,7 +7,8 @@ import { StatsService } from '../services/stats.service';
   template: `
     <div class="container">
       <div class="header">
-        <h1>Estadísticas</h1>
+        <div class="title">📊 Estadísticas</div>
+        <div class="subtitle">Tu progreso y rendimiento</div>
       </div>
 
       <div class="cards">
@@ -37,12 +38,14 @@ import { StatsService } from '../services/stats.service';
       </div>
 
       <div class="chart-section">
-        <h2>Actividad de la última semana</h2>
+        <div class="chart-header">Actividad de los últimos 7 días</div>
         <div class="chart">
           @for (day of service.getLastSevenDays(); track day.date) {
           <div class="bar-wrap">
             <div class="bar" [style.height.%]="getBarHeight(day.minutes)">
+              @if (day.minutes > 0) {
               <span class="bar-value">{{ day.minutes }}</span>
+              }
             </div>
             <div class="bar-date">{{ formatDate(day.date) }}</div>
           </div>
@@ -54,36 +57,43 @@ import { StatsService } from '../services/stats.service';
   styles: [
     `
       .container {
-        padding: 36px 24px;
-        max-width: 1200px;
+        max-width: 1000px;
         margin: 0 auto;
+        padding: 40px 24px;
       }
 
       .header {
-        margin-bottom: 32px;
+        text-align: center;
+        margin-bottom: 40px;
       }
 
-      h1 {
+      .title {
         font-size: 32px;
         font-weight: 700;
         color: #111827;
-        margin: 0;
+        margin-bottom: 8px;
         letter-spacing: -0.5px;
+      }
+
+      .subtitle {
+        font-size: 15px;
+        color: #6b7280;
+        font-weight: 500;
       }
 
       .cards {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 24px;
-        margin-bottom: 48px;
+        gap: 20px;
+        margin-bottom: 40px;
       }
 
       .card {
         background: white;
         border-radius: 16px;
-        padding: 32px 24px;
+        padding: 28px 20px;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         border: 1px solid #f3f4f6;
         transition: all 0.3s;
       }
@@ -91,26 +101,24 @@ import { StatsService } from '../services/stats.service';
       .card:hover {
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        border-color: #e5e7eb;
       }
 
       .card-icon {
-        font-size: 40px;
-        margin-bottom: 16px;
-        filter: grayscale(0.2);
+        font-size: 36px;
+        margin-bottom: 12px;
       }
 
       .card-value {
-        font-size: 48px;
+        font-size: 40px;
         font-weight: 800;
         color: #111827;
-        margin-bottom: 8px;
-        letter-spacing: -1px;
+        margin-bottom: 6px;
         line-height: 1;
+        letter-spacing: -1px;
       }
 
       .card-label {
-        font-size: 14px;
+        font-size: 13px;
         color: #6b7280;
         font-weight: 600;
         text-transform: lowercase;
@@ -118,17 +126,18 @@ import { StatsService } from '../services/stats.service';
 
       .chart-section {
         background: white;
-        border-radius: 16px;
-        padding: 36px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         border: 1px solid #f3f4f6;
       }
 
-      h2 {
-        font-size: 20px;
+      .chart-header {
+        font-size: 18px;
         font-weight: 700;
         color: #111827;
-        margin: 0 0 36px 0;
+        margin-bottom: 32px;
+        text-align: center;
         letter-spacing: -0.3px;
       }
 
@@ -136,8 +145,8 @@ import { StatsService } from '../services/stats.service';
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
-        height: 280px;
-        gap: 16px;
+        height: 240px;
+        gap: 12px;
         padding: 0 4px;
       }
 
@@ -147,35 +156,34 @@ import { StatsService } from '../services/stats.service';
         flex-direction: column;
         align-items: center;
         height: 100%;
-        max-width: 80px;
+        max-width: 90px;
       }
 
       .bar {
         width: 100%;
         background: linear-gradient(to top, #8b5cf6, #c4b5fd);
-        border-radius: 8px 8px 0 0;
-        min-height: 12px;
+        border-radius: 10px 10px 0 0;
+        min-height: 10px;
         display: flex;
         align-items: flex-start;
         justify-content: center;
-        padding-top: 10px;
+        padding-top: 8px;
         transition: all 0.3s;
-        position: relative;
         margin-bottom: auto;
-        box-shadow: 0 -2px 8px rgba(139, 92, 246, 0.15);
+        box-shadow: 0 -2px 12px rgba(139, 92, 246, 0.2);
       }
 
       .bar:hover {
         background: linear-gradient(to top, #7c3aed, #ddd6fe);
-        transform: scaleY(1.02);
-        box-shadow: 0 -4px 12px rgba(139, 92, 246, 0.25);
+        transform: scaleY(1.03);
+        box-shadow: 0 -4px 16px rgba(139, 92, 246, 0.3);
       }
 
       .bar-value {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         color: white;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       }
 
       .bar-date {
@@ -185,14 +193,10 @@ import { StatsService } from '../services/stats.service';
         font-weight: 600;
       }
 
-      @media (max-width: 1024px) {
+      @media (max-width: 900px) {
         .cards {
           grid-template-columns: repeat(2, 1fr);
-          gap: 20px;
-        }
-
-        .chart {
-          height: 240px;
+          gap: 16px;
         }
       }
 
@@ -201,48 +205,51 @@ import { StatsService } from '../services/stats.service';
           padding: 28px 20px;
         }
 
-        h1 {
+        .title {
           font-size: 28px;
         }
 
+        .subtitle {
+          font-size: 14px;
+        }
+
         .cards {
-          gap: 16px;
-          margin-bottom: 36px;
+          gap: 14px;
+          margin-bottom: 32px;
         }
 
         .card {
-          padding: 24px 20px;
+          padding: 24px 16px;
         }
 
         .card-icon {
-          font-size: 36px;
-          margin-bottom: 12px;
+          font-size: 32px;
         }
 
         .card-value {
-          font-size: 40px;
+          font-size: 36px;
         }
 
         .card-label {
-          font-size: 13px;
+          font-size: 12px;
         }
 
         .chart-section {
           padding: 28px 24px;
         }
 
-        h2 {
-          font-size: 18px;
-          margin-bottom: 28px;
+        .chart-header {
+          font-size: 17px;
+          margin-bottom: 24px;
         }
 
         .chart {
           height: 200px;
-          gap: 12px;
+          gap: 10px;
         }
 
         .bar-value {
-          font-size: 12px;
+          font-size: 11px;
         }
 
         .bar-date {
@@ -256,7 +263,7 @@ import { StatsService } from '../services/stats.service';
           padding: 24px 16px;
         }
 
-        h1 {
+        .title {
           font-size: 26px;
         }
 
@@ -282,7 +289,7 @@ import { StatsService } from '../services/stats.service';
           padding: 24px 20px;
         }
 
-        h2 {
+        .chart-header {
           font-size: 17px;
           margin-bottom: 24px;
         }

@@ -1,54 +1,54 @@
-import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { WeatherService } from '../services/weather.service';
 
 @Component({
   selector: 'app-setup',
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
-    <div class="setup" [class.fullscreen]="isFullscreen()">
+    <div class="container" [class.fullscreen]="isFullscreen()">
       <div class="content">
-        <div class="datetime">
-          <div class="time">{{ currentTime() }}</div>
-          <div class="date">{{ currentDate() }}</div>
-        </div>
+        <div class="time-display">{{ currentTime() }}</div>
+        <div class="date-display">{{ currentDate() }}</div>
 
         @if (weather.weather(); as w) {
-        <div class="weather">
-          <span class="temp">{{ w.temp }}°C</span>
-          <span class="city">{{ w.city }}</span>
+        <div class="weather-card">
+          <div class="weather-icon">🌤️</div>
+          <div class="temp">{{ w.temp }}°</div>
+          <div class="city">{{ w.city }}</div>
         </div>
         } @else {
-        <div class="weather-input">
+        <div class="weather-input-card">
           <input
             type="text"
-            placeholder="Ciudad"
+            placeholder="Ingresa tu ciudad"
             [(ngModel)]="cityInput"
             (keyup.enter)="setCity()"
           />
+          <button (click)="setCity()">✓</button>
         </div>
         }
       </div>
 
       <button class="btn-fullscreen" (click)="toggleFullscreen()">
-        {{ isFullscreen() ? '✕' : 'Pantalla completa' }}
+        {{ isFullscreen() ? '✕ Salir' : '⛶ Pantalla completa' }}
       </button>
     </div>
   `,
   styles: [
     `
-      .setup {
-        min-height: calc(100vh - 100px);
+      .container {
+        min-height: calc(100vh - 80px);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #fff;
         position: relative;
+        padding: 40px 24px;
       }
-      .setup.fullscreen {
+
+      .container.fullscreen {
         position: fixed;
         top: 0;
         left: 0;
@@ -57,58 +57,187 @@ import { WeatherService } from '../services/weather.service';
         min-height: 100vh;
         z-index: 9999;
       }
+
       .content {
         text-align: center;
       }
-      .time {
-        font-size: 96px;
-        font-weight: 300;
-        margin-bottom: 10px;
+
+      .time-display {
+        font-size: 120px;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -4px;
+        margin-bottom: 16px;
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        line-height: 1;
       }
-      .date {
-        font-size: 32px;
-        font-weight: 300;
-        opacity: 0.9;
-      }
-      .weather {
-        margin-top: 40px;
+
+      .date-display {
         font-size: 24px;
-        opacity: 0.9;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 48px;
+        letter-spacing: 0.3px;
+        text-transform: capitalize;
       }
+
+      .weather-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 32px 48px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .weather-icon {
+        font-size: 56px;
+        margin-bottom: 16px;
+      }
+
       .temp {
-        font-size: 48px;
-        font-weight: 300;
-        display: block;
-        margin-bottom: 10px;
+        font-size: 56px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 8px;
+        letter-spacing: -2px;
       }
+
       .city {
         font-size: 20px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
       }
-      .weather-input {
-        margin-top: 40px;
+
+      .weather-input-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        display: flex;
+        gap: 12px;
       }
-      .weather-input input {
-        padding: 15px 25px;
-        font-size: 18px;
+
+      .weather-input-card input {
+        padding: 14px 20px;
+        font-size: 16px;
         border: 2px solid rgba(255, 255, 255, 0.3);
         background: rgba(255, 255, 255, 0.1);
-        color: #fff;
-        border-radius: 30px;
-        text-align: center;
+        color: white;
+        border-radius: 12px;
+        min-width: 240px;
+        font-weight: 500;
+        transition: all 0.2s;
       }
-      .weather-input input::placeholder {
+
+      .weather-input-card input:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .weather-input-card input::placeholder {
         color: rgba(255, 255, 255, 0.6);
       }
+
+      .weather-input-card button {
+        padding: 14px 20px;
+        background: white;
+        color: #667eea;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .weather-input-card button:hover {
+        transform: scale(1.05);
+      }
+
       .btn-fullscreen {
         position: absolute;
-        bottom: 30px;
-        right: 30px;
-        padding: 12px 24px;
-        background: rgba(255, 255, 255, 0.2);
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 8px;
+        bottom: 32px;
+        right: 32px;
+        padding: 14px 24px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
         cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-fullscreen:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      @media (max-width: 768px) {
+        .time-display {
+          font-size: 80px;
+          letter-spacing: -2px;
+        }
+
+        .date-display {
+          font-size: 18px;
+          margin-bottom: 32px;
+        }
+
+        .weather-card {
+          padding: 24px 32px;
+        }
+
+        .weather-icon {
+          font-size: 48px;
+        }
+
+        .temp {
+          font-size: 48px;
+        }
+
+        .city {
+          font-size: 18px;
+        }
+
+        .weather-input-card input {
+          min-width: 200px;
+          font-size: 15px;
+        }
+
+        .btn-fullscreen {
+          bottom: 24px;
+          right: 24px;
+          padding: 12px 20px;
+          font-size: 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .time-display {
+          font-size: 64px;
+        }
+
+        .date-display {
+          font-size: 16px;
+        }
+
+        .weather-input-card {
+          flex-direction: column;
+        }
+
+        .weather-input-card input {
+          min-width: 100%;
+        }
       }
     `,
   ],
