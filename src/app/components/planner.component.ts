@@ -1,173 +1,107 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Block, PlannerService } from '../services/planner.service';
 
 @Component({
   selector: 'app-planner',
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
-    <div class="container-fluid">
-      <div class="row mb-4 align-items-center">
-        <div class="col-md-6">
-          <h2 class="fw-bold mb-1">
-            <i class="bi bi-calendar-check text-primary me-2"></i>Planner
-          </h2>
-          <p class="text-muted mb-0">Organiza tu día con time blocking</p>
+    <div class="container">
+      <div class="header">
+        <div class="title-row">
+          <div class="title">📅 Planner</div>
+          <input type="date" [(ngModel)]="selectedDate" class="date-picker" />
         </div>
-        <div class="col-md-6 text-md-end mt-3 mt-md-0">
-          <input
-            type="date"
-            class="form-control form-control-lg d-inline-block w-auto"
-            [(ngModel)]="selectedDate"
-          />
-          <button class="btn btn-primary btn-lg ms-2" (click)="openForm()">
-            <i class="bi bi-plus-lg me-2"></i>Nuevo Bloque
-          </button>
-        </div>
+        <button class="btn-add" (click)="openForm()">+ Nuevo Bloque</button>
       </div>
 
       @if (showForm()) {
-      <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-primary text-white">
-          <h6 class="mb-0">
-            <i class="bi bi-pencil-square me-2"></i>{{ editingId() ? 'Editar' : 'Nuevo' }} Bloque
-          </h6>
+      <div class="form-card">
+        <div class="form-header">{{ editingId() ? 'Editar' : 'Nuevo' }} Bloque</div>
+
+        <input
+          type="text"
+          placeholder="Título del bloque"
+          [(ngModel)]="form.title"
+          class="input-title"
+        />
+
+        <div class="time-row">
+          <div class="time-input">
+            <label>Inicio</label>
+            <input type="time" [(ngModel)]="form.startTime" />
+          </div>
+          <div class="time-input">
+            <label>Fin</label>
+            <input type="time" [(ngModel)]="form.endTime" />
+          </div>
         </div>
-        <div class="card-body p-4">
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label fw-bold">Título</label>
-              <input
-                type="text"
-                class="form-control form-control-lg"
-                placeholder="Ej: Programar proyecto"
-                [(ngModel)]="form.title"
-              />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-bold">Hora de inicio</label>
-              <input
-                type="time"
-                class="form-control form-control-lg"
-                [(ngModel)]="form.startTime"
-              />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-bold">Hora de fin</label>
-              <input type="time" class="form-control form-control-lg" [(ngModel)]="form.endTime" />
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-bold">Categoría</label>
-              <select class="form-select form-select-lg" [(ngModel)]="form.category">
-                <option value="Focus">🎯 Focus</option>
-                <option value="Break">☕ Break</option>
-                <option value="Gym">💪 Gym</option>
-                <option value="Personal">👤 Personal</option>
-              </select>
-            </div>
-          </div>
-          <div class="d-flex gap-2 mt-4">
-            <button class="btn btn-primary btn-lg" (click)="saveBlock()">
-              <i class="bi bi-check-lg me-2"></i>Guardar
-            </button>
-            <button class="btn btn-outline-secondary btn-lg" (click)="cancelForm()">
-              <i class="bi bi-x-lg me-2"></i>Cancelar
-            </button>
-          </div>
+
+        <select [(ngModel)]="form.category" class="category-select">
+          <option value="Focus">🎯 Focus</option>
+          <option value="Break">☕ Break</option>
+          <option value="Gym">💪 Gym</option>
+          <option value="Personal">👤 Personal</option>
+        </select>
+
+        <div class="form-actions">
+          <button class="btn-save" (click)="saveBlock()">✓ Guardar</button>
+          <button class="btn-cancel" (click)="cancelForm()">✕ Cancelar</button>
         </div>
       </div>
       }
 
-      <div class="row g-3">
+      <div class="blocks-list">
         @for (block of todayBlocks(); track block.id) {
-        <div class="col-12">
-          <div
-            class="card shadow-sm border-0 block-card"
-            [class.block-done]="block.status === 'DONE'"
-            [class.block-skipped]="block.status === 'SKIPPED'"
-          >
-            <div class="card-body p-3">
-              <div class="row align-items-center">
-                <div class="col-auto">
-                  <div class="time-badge">
-                    <i class="bi bi-clock me-1"></i>
-                    {{ block.startTime }}
-                  </div>
-                  <div class="text-muted small text-center mt-1">—</div>
-                  <div class="time-badge">
-                    {{ block.endTime }}
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="d-flex align-items-start justify-content-between">
-                    <div>
-                      <h5 class="mb-1 fw-bold">{{ block.title }}</h5>
-                      <span class="badge" [class]="getCategoryClass(block.category)">
-                        {{ getCategoryIcon(block.category) }} {{ block.category }}
-                      </span>
-                    </div>
-                    @if (block.status === 'DONE') {
-                    <span class="badge bg-success fs-6">
-                      <i class="bi bi-check-circle-fill"></i> Completado
-                    </span>
-                    } @else if (block.status === 'SKIPPED') {
-                    <span class="badge bg-warning fs-6">
-                      <i class="bi bi-x-circle-fill"></i> Omitido
-                    </span>
-                    }
-                  </div>
-                </div>
-                <div class="col-auto">
-                  <div class="btn-group">
-                    @if (block.status === 'PLANNED') {
-                    <button
-                      class="btn btn-sm btn-outline-success"
-                      (click)="service.markDone(block.id)"
-                      title="Marcar como hecho"
-                    >
-                      <i class="bi bi-check-lg"></i>
-                    </button>
-                    <button
-                      class="btn btn-sm btn-outline-warning"
-                      (click)="service.markSkipped(block.id)"
-                      title="Omitir"
-                    >
-                      <i class="bi bi-x-lg"></i>
-                    </button>
-                    }
-                    <button
-                      class="btn btn-sm btn-outline-primary"
-                      (click)="editBlock(block)"
-                      title="Editar"
-                    >
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button
-                      class="btn btn-sm btn-outline-danger"
-                      (click)="service.deleteBlock(block.id)"
-                      title="Eliminar"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
+        <div
+          class="block-card"
+          [class.done]="block.status === 'DONE'"
+          [class.skipped]="block.status === 'SKIPPED'"
+        >
+          <div class="block-time">
+            <div class="time">{{ block.startTime }}</div>
+            <div class="separator">—</div>
+            <div class="time">{{ block.endTime }}</div>
+          </div>
+
+          <div class="block-content">
+            <div class="block-title">{{ block.title }}</div>
+            <div class="block-category">
+              {{ getCategoryIcon(block.category) }} {{ block.category }}
             </div>
           </div>
+
+          <div class="block-actions">
+            @if (block.status === 'PLANNED') {
+            <button class="btn-icon success" (click)="service.markDone(block.id)" title="Completar">
+              ✓
+            </button>
+            <button class="btn-icon warning" (click)="service.markSkipped(block.id)" title="Omitir">
+              ✕
+            </button>
+            }
+            <button class="btn-icon edit" (click)="editBlock(block)" title="Editar">✎</button>
+            <button
+              class="btn-icon delete"
+              (click)="service.deleteBlock(block.id)"
+              title="Eliminar"
+            >
+              🗑
+            </button>
+          </div>
+
+          @if (block.status === 'DONE') {
+          <div class="status-badge done">✓ Completado</div>
+          } @else if (block.status === 'SKIPPED') {
+          <div class="status-badge skipped">⊘ Omitido</div>
+          }
         </div>
         } @empty {
-        <div class="col-12">
-          <div class="card shadow-sm border-0">
-            <div class="card-body text-center py-5">
-              <i class="bi bi-calendar-x display-1 text-muted opacity-25"></i>
-              <h5 class="text-muted mt-3">Sin bloques para este día</h5>
-              <p class="text-muted">Crea tu primer bloque para organizar tu jornada</p>
-              <button class="btn btn-primary" (click)="openForm()">
-                <i class="bi bi-plus-lg me-2"></i>Crear Bloque
-              </button>
-            </div>
-          </div>
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-title">Sin bloques para este día</div>
+          <div class="empty-text">Crea tu primer bloque para organizar tu jornada</div>
+          <button class="btn-empty" (click)="openForm()">+ Crear Bloque</button>
         </div>
         }
       </div>
@@ -175,33 +109,410 @@ import { Block, PlannerService } from '../services/planner.service';
   `,
   styles: [
     `
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 24px;
+      }
+
+      .header {
+        margin-bottom: 32px;
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: -0.5px;
+      }
+
+      .date-picker {
+        padding: 10px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .date-picker:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn-add {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 28px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f3f4f6;
+      }
+
+      .form-header {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .input-title {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 16px;
+        transition: all 0.2s;
+      }
+
+      .input-title:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .time-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .time-input label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+
+      .time-input input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+        transition: all 0.2s;
+      }
+
+      .time-input input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .category-select {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .category-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .btn-save,
+      .btn-cancel {
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-cancel {
+        background: #f3f4f6;
+        color: #6b7280;
+      }
+
+      .btn-cancel:hover {
+        background: #e5e7eb;
+      }
+
+      .blocks-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
       .block-card {
-        transition: all 0.2s ease;
-        border-left: 4px solid #6c757d;
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f3f4f6;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        transition: all 0.3s;
+        position: relative;
       }
 
       .block-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
       }
 
-      .block-done {
-        border-left-color: #198754;
-        background: #f8fdf9;
+      .block-card.done {
+        background: #f0fdf4;
+        border-color: #86efac;
       }
 
-      .block-skipped {
-        border-left-color: #ffc107;
-        background: #fffbf0;
+      .block-card.skipped {
+        background: #fffbeb;
+        border-color: #fde047;
       }
 
-      .time-badge {
-        background: #f8f9fa;
+      .block-time {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .block-time .time {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        background: #f9fafb;
         padding: 6px 12px;
         border-radius: 8px;
+      }
+
+      .block-time .separator {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+
+      .block-content {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .block-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .block-category {
+        font-size: 13px;
         font-weight: 600;
+        color: #6b7280;
+      }
+
+      .block-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn-icon {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-icon.success {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .btn-icon.success:hover {
+        background: #a7f3d0;
+      }
+
+      .btn-icon.warning {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .btn-icon.warning:hover {
+        background: #fde68a;
+      }
+
+      .btn-icon.edit {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
+      .btn-icon.edit:hover {
+        background: #bfdbfe;
+      }
+
+      .btn-icon.delete {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .btn-icon.delete:hover {
+        background: #fecaca;
+      }
+
+      .status-badge {
+        position: absolute;
+        top: -10px;
+        right: 20px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .status-badge.done {
+        background: #22c55e;
+        color: white;
+      }
+
+      .status-badge.skipped {
+        background: #eab308;
+        color: white;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f3f4f6;
+      }
+
+      .empty-icon {
+        font-size: 64px;
+        opacity: 0.3;
+        margin-bottom: 16px;
+      }
+
+      .empty-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+      }
+
+      .empty-text {
         font-size: 14px;
-        white-space: nowrap;
+        color: #9ca3af;
+        margin-bottom: 24px;
+      }
+
+      .btn-empty {
+        padding: 12px 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s;
+      }
+
+      .btn-empty:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 24px 16px;
+        }
+
+        .title {
+          font-size: 28px;
+        }
+
+        .block-card {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+
+        .block-time {
+          flex-direction: row;
+          justify-content: center;
+        }
+
+        .block-time .separator {
+          padding: 0 8px;
+        }
+
+        .block-actions {
+          justify-content: center;
+        }
       }
     `,
   ],
