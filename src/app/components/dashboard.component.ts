@@ -1,4 +1,4 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { PlannerService } from '../services/planner.service';
 import { PomodoroService } from '../services/pomodoro.service';
@@ -9,24 +9,9 @@ import { StatsService } from '../services/stats.service';
   imports: [],
   template: `
     <div class="container">
-      <div class="timer-section">
-        <div class="status-label">{{ stateLabel() }}</div>
-        <div class="timer">{{ formatTime() }}</div>
-        <div class="cycle-info">
-          Ciclo {{ pomodoro.cycleCount() + 1 }} de {{ pomodoro.config().cyclesBeforeLongBreak }}
-        </div>
-
-        <div class="controls">
-          @if (pomodoro.state() === 'IDLE') {
-          <button class="btn btn-start" (click)="pomodoro.start()">▶ Iniciar</button>
-          } @else if (pomodoro.state() === 'PAUSED') {
-          <button class="btn btn-resume" (click)="pomodoro.start()">▶ Reanudar</button>
-          <button class="btn btn-stop" (click)="pomodoro.stop()">■ Stop</button>
-          } @else {
-          <button class="btn btn-pause" (click)="pomodoro.pause()">❚❚ Pausar</button>
-          <button class="btn btn-skip" (click)="pomodoro.skip()">⏭ Skip</button>
-          }
-        </div>
+      <div class="header">
+        <div class="title">🏠 Dashboard</div>
+        <div class="subtitle">Tu resumen de productividad</div>
       </div>
 
       <div class="stats-grid">
@@ -66,6 +51,38 @@ import { StatsService } from '../services/stats.service';
         </div>
         }
       </div>
+
+      <div class="quick-actions">
+        <div class="section-header">
+          <span class="icon">⚡</span>
+          <span>Accesos rápidos</span>
+        </div>
+        <div class="actions-grid">
+          <button class="action-btn" (click)="navigate('/pomodoro')">
+            <div class="action-icon">⏱️</div>
+            <div class="action-text">Pomodoro</div>
+          </button>
+          <button class="action-btn" (click)="navigate('/planner')">
+            <div class="action-icon">📅</div>
+            <div class="action-text">Planner</div>
+          </button>
+          <button class="action-btn" (click)="navigate('/stats')">
+            <div class="action-icon">📊</div>
+            <div class="action-text">Stats</div>
+          </button>
+          <button class="action-btn" (click)="navigate('/calculator')">
+            <div class="action-icon">🔢</div>
+            <div class="action-text">Calculadora</div>
+          </button>
+        </div>
+      </div>
+
+      @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
+      <div class="pomodoro-widget">
+        <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
+        <div class="pomodoro-time">{{ formatTime() }}</div>
+      </div>
+      }
     </div>
   `,
   styles: [
@@ -76,84 +93,23 @@ import { StatsService } from '../services/stats.service';
         padding: 40px 24px;
       }
 
-      .timer-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 24px;
-        padding: 48px 32px;
+      .header {
+        margin-bottom: 32px;
         text-align: center;
-        margin-bottom: 32px;
-        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
       }
 
-      .status-label {
-        font-size: 18px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.95);
-        margin-bottom: 24px;
-        letter-spacing: 0.3px;
+      .title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
       }
 
-      .timer {
-        font-size: 96px;
-        font-weight: 800;
-        color: white;
-        letter-spacing: -4px;
-        line-height: 1;
-        margin-bottom: 16px;
-        font-variant-numeric: tabular-nums;
-        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-
-      .cycle-info {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.8);
-        margin-bottom: 32px;
-        font-weight: 500;
-      }
-
-      .controls {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .btn {
-        padding: 14px 32px;
-        border: none;
-        border-radius: 12px;
+      .subtitle {
         font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-      }
-
-      .btn:active {
-        transform: translateY(0);
-      }
-
-      .btn-start,
-      .btn-resume {
-        background: white;
-        color: #667eea;
-      }
-
-      .btn-pause {
-        background: #fbbf24;
-        color: white;
-      }
-
-      .btn-stop,
-      .btn-skip {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        backdrop-filter: blur(10px);
+        color: #6b7280;
+        font-weight: 500;
       }
 
       .stats-grid {
@@ -256,23 +212,87 @@ import { StatsService } from '../services/stats.service';
         font-weight: 500;
       }
 
+      .quick-actions {
+        background: white;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f3f4f6;
+      }
+
+      .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+
+      .action-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 16px;
+        padding: 24px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+      }
+
+      .action-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+      }
+
+      .action-icon {
+        font-size: 36px;
+        margin-bottom: 12px;
+      }
+
+      .action-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: white;
+      }
+
+      .pomodoro-widget {
+        position: fixed;
+        bottom: 40px;
+        right: 40px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        padding: 20px 32px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        z-index: 10;
+        transition: all 0.3s ease;
+      }
+
+      .pomodoro-widget:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      .pomodoro-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .pomodoro-time {
+        font-size: 36px;
+        font-weight: 900;
+        color: white;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -1px;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      }
+
       @media (max-width: 768px) {
         .container {
           padding: 24px 16px;
-        }
-
-        .timer-section {
-          padding: 36px 24px;
-        }
-
-        .timer {
-          font-size: 72px;
-          letter-spacing: -2px;
-        }
-
-        .btn {
-          padding: 12px 24px;
-          font-size: 15px;
         }
 
         .stats-grid {
@@ -283,49 +303,72 @@ import { StatsService } from '../services/stats.service';
         .stat-card {
           padding: 24px 20px;
         }
+
+        .actions-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+
+        .pomodoro-widget {
+          bottom: 24px;
+          right: 24px;
+          padding: 16px 24px;
+        }
+
+        .pomodoro-label {
+          font-size: 12px;
+        }
+
+        .pomodoro-time {
+          font-size: 28px;
+        }
       }
 
       @media (max-width: 480px) {
-        .timer {
-          font-size: 64px;
+        .actions-grid {
+          grid-template-columns: 1fr;
         }
 
-        .controls {
-          gap: 10px;
+        .pomodoro-widget {
+          bottom: 16px;
+          right: 16px;
+          padding: 12px 20px;
         }
 
-        .btn {
-          flex: 1;
-          min-width: 140px;
+        .pomodoro-label {
+          font-size: 11px;
+          margin-bottom: 4px;
+        }
+
+        .pomodoro-time {
+          font-size: 24px;
         }
       }
     `,
   ],
 })
 export class DashboardComponent {
-  constructor(
-    protected pomodoro: PomodoroService,
-    private planner: PlannerService,
-    protected stats: StatsService,
-    private router: Router
-  ) {}
-
-  stateLabel = computed(() => {
-    const st = this.pomodoro.state();
-    if (st === 'IDLE') return 'Listo para comenzar';
-    if (st === 'PAUSED') return 'En pausa';
-    if (st === 'RUNNING_FOCUS') return '🎯 Modo Foco';
-    if (st === 'RUNNING_SHORT_BREAK') return '☕ Descanso Corto';
-    if (st === 'RUNNING_LONG_BREAK') return '🌟 Descanso Largo';
-    return '';
-  });
+  pomodoroService = inject(PomodoroService);
+  private planner = inject(PlannerService);
+  protected stats = inject(StatsService);
+  private router = inject(Router);
 
   formatTime = computed(() => {
-    const sec = this.pomodoro.secondsLeft();
+    const sec = this.pomodoroService.secondsLeft();
     const mins = Math.floor(sec / 60);
     const secs = sec % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   });
+
+  getPhaseLabel(): string {
+    const state = this.pomodoroService.state();
+    if (state === 'RUNNING_FOCUS') {
+      return 'Enfoque';
+    } else if (state === 'RUNNING_SHORT_BREAK' || state === 'RUNNING_LONG_BREAK') {
+      return 'Descanso';
+    }
+    return '';
+  }
 
   nextBlock = computed(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -335,13 +378,17 @@ export class DashboardComponent {
       .getMinutes()
       .toString()
       .padStart(2, '0')}`;
-    return blocks.find((b) => b.startTime >= currentTime);
+    return blocks.find((b: any) => b.startTime >= currentTime);
   });
 
   todayCompletion = computed(() => {
     const today = new Date().toISOString().split('T')[0];
     const blocks = this.planner.getBlocksForDate(today);
-    const done = blocks.filter((b) => b.status === 'DONE').length;
+    const done = blocks.filter((b: any) => b.status === 'DONE').length;
     return `${done}/${blocks.length}`;
   });
+
+  navigate(path: string): void {
+    this.router.navigate([path]);
+  }
 }

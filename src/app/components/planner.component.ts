@@ -8,10 +8,11 @@ import { Block, PlannerService } from '../services/planner.service';
   template: `
     <div class="container">
       <div class="header">
-        <div class="title-row">
-          <div class="title">📅 Planner</div>
-          <input type="date" [(ngModel)]="selectedDate" class="date-picker" />
-        </div>
+        <div class="title">📅 Planner</div>
+      </div>
+
+      <div class="controls">
+        <input type="date" [(ngModel)]="selectedDate" class="date-picker" />
         <button class="btn-add" (click)="openForm()">+ Nuevo Bloque</button>
       </div>
 
@@ -117,15 +118,7 @@ import { Block, PlannerService } from '../services/planner.service';
 
       .header {
         margin-bottom: 32px;
-      }
-
-      .title-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-        gap: 16px;
+        text-align: center;
       }
 
       .title {
@@ -135,7 +128,15 @@ import { Block, PlannerService } from '../services/planner.service';
         letter-spacing: -0.5px;
       }
 
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+
       .date-picker {
+        flex: 1;
         padding: 10px 16px;
         border: 2px solid #e5e7eb;
         border-radius: 12px;
@@ -153,7 +154,7 @@ import { Block, PlannerService } from '../services/planner.service';
       }
 
       .btn-add {
-        width: 100%;
+        flex: 1;
         padding: 14px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -164,6 +165,7 @@ import { Block, PlannerService } from '../services/planner.service';
         cursor: pointer;
         transition: all 0.3s;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        white-space: nowrap;
       }
 
       .btn-add:hover {

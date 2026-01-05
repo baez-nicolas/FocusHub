@@ -43,6 +43,10 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
             <i class="bi bi-journal-text"></i>
             <span>Notas</span>
           </a>
+          <a routerLink="/calculator" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-calculator"></i>
+            <span>Calculadora</span>
+          </a>
           <a routerLink="/setup" routerLinkActive="active" class="nav-link mt-auto">
             <i class="bi bi-cloud-sun"></i>
             <span>Setup</span>
@@ -102,6 +106,15 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
                 <li class="nav-item">
                   <a routerLink="/notes" routerLinkActive="active" class="nav-link mobile-link">
                     <i class="bi bi-journal-text me-2"></i>Notas
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    routerLink="/calculator"
+                    routerLinkActive="active"
+                    class="nav-link mobile-link"
+                  >
+                    <i class="bi bi-calculator me-2"></i>Calculadora
                   </a>
                 </li>
                 <li class="nav-item">

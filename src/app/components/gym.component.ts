@@ -10,8 +10,9 @@ import { Exercise, GymService } from '../services/gym.service';
       @if (!service.sessionState()) {
       <div class="header">
         <div class="title">💪 Gym</div>
-        <button class="btn-add" (click)="openRoutineForm()">+ Nueva Rutina</button>
       </div>
+
+      <button class="btn-add" (click)="openRoutineForm()">+ Nueva Rutina</button>
 
       @if (showRoutineForm()) {
       <div class="form-card">
@@ -109,6 +110,7 @@ import { Exercise, GymService } from '../services/gym.service';
 
       .header {
         margin-bottom: 32px;
+        text-align: center;
       }
 
       .title {
@@ -116,7 +118,6 @@ import { Exercise, GymService } from '../services/gym.service';
         font-weight: 700;
         color: #111827;
         letter-spacing: -0.5px;
-        margin-bottom: 16px;
       }
 
       .btn-add {
@@ -131,6 +132,7 @@ import { Exercise, GymService } from '../services/gym.service';
         cursor: pointer;
         transition: all 0.3s;
         box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        margin-bottom: 32px;
       }
 
       .btn-add:hover {

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { CalculatorComponent } from './components/calculator.component';
 import { DashboardComponent } from './components/dashboard.component';
 import { GymComponent } from './components/gym.component';
 import { NotesComponent } from './components/notes.component';
@@ -14,5 +15,6 @@ export const routes: Routes = [
   { path: 'stats', component: StatsComponent },
   { path: 'gym', component: GymComponent },
   { path: 'notes', component: NotesComponent },
+  { path: 'calculator', component: CalculatorComponent },
   { path: 'setup', component: SetupComponent },
 ];
