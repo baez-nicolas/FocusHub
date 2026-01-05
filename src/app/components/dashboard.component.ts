@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { PlannerService } from '../services/planner.service';
@@ -7,166 +6,297 @@ import { StatsService } from '../services/stats.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule],
+  imports: [],
   template: `
-    <div class="dashboard-container">
-      <div class="row g-4">
-        <div class="col-12 col-lg-8">
-          <div class="card timer-card shadow-sm border-0">
-            <div class="card-body p-4">
-              <div class="d-flex align-items-center mb-3">
-                <i class="bi bi-clock-history text-primary fs-4 me-2"></i>
-                <h5 class="mb-0 fw-bold">{{ stateLabel() }}</h5>
-              </div>
-
-              <div class="timer-display text-center my-4">
-                <div class="timer-value">{{ formatTime() }}</div>
-                <div class="timer-cycle text-muted mt-2">
-                  <small
-                    >Ciclo {{ pomodoro.cycleCount() + 1 }} de
-                    {{ pomodoro.config().cyclesBeforeLongBreak }}</small
-                  >
-                </div>
-              </div>
-
-              <div class="d-flex gap-2 justify-content-center flex-wrap">
-                @if (pomodoro.state() === 'IDLE') {
-                <button class="btn btn-primary btn-lg px-5" (click)="pomodoro.start()">
-                  <i class="bi bi-play-fill me-2"></i>Iniciar
-                </button>
-                } @else if (pomodoro.state() === 'PAUSED') {
-                <button class="btn btn-success btn-lg px-4" (click)="pomodoro.start()">
-                  <i class="bi bi-play-fill me-2"></i>Reanudar
-                </button>
-                <button class="btn btn-outline-danger btn-lg px-4" (click)="pomodoro.stop()">
-                  <i class="bi bi-stop-fill me-2"></i>Stop
-                </button>
-                } @else {
-                <button class="btn btn-warning btn-lg px-4" (click)="pomodoro.pause()">
-                  <i class="bi bi-pause-fill me-2"></i>Pausar
-                </button>
-                <button class="btn btn-outline-danger btn-lg px-4" (click)="pomodoro.stop()">
-                  <i class="bi bi-stop-fill me-2"></i>Stop
-                </button>
-                }
-              </div>
-            </div>
-          </div>
+    <div class="container">
+      <div class="timer-section">
+        <div class="status-label">{{ stateLabel() }}</div>
+        <div class="timer">{{ formatTime() }}</div>
+        <div class="cycle-info">
+          Ciclo {{ pomodoro.cycleCount() + 1 }} de {{ pomodoro.config().cyclesBeforeLongBreak }}
         </div>
 
-        <div class="col-12 col-lg-4">
-          <div class="card shadow-sm border-0 h-100">
-            <div class="card-body p-4">
-              <h6 class="text-muted mb-3 text-uppercase small fw-bold">
-                <i class="bi bi-lightning-charge me-1"></i>Hoy
-              </h6>
-              <div class="stat-item mb-3">
-                <div class="d-flex align-items-center">
-                  <div
-                    class="stat-icon bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3"
-                  >
-                    <i class="bi bi-clock"></i>
-                  </div>
-                  <div>
-                    <h3 class="mb-0 fw-bold">{{ stats.focusMinutesToday() }}</h3>
-                    <small class="text-muted">minutos de foco</small>
-                  </div>
-                </div>
-              </div>
-              <div class="stat-item">
-                <div class="d-flex align-items-center">
-                  <div
-                    class="stat-icon bg-success bg-opacity-10 text-success rounded-circle p-2 me-3"
-                  >
-                    <i class="bi bi-check-circle"></i>
-                  </div>
-                  <div>
-                    <h3 class="mb-0 fw-bold">{{ todayCompletion() }}</h3>
-                    <small class="text-muted">tareas completadas</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="controls">
+          @if (pomodoro.state() === 'IDLE') {
+          <button class="btn btn-start" (click)="pomodoro.start()">▶ Iniciar</button>
+          } @else if (pomodoro.state() === 'PAUSED') {
+          <button class="btn btn-resume" (click)="pomodoro.start()">▶ Reanudar</button>
+          <button class="btn btn-stop" (click)="pomodoro.stop()">■ Stop</button>
+          } @else {
+          <button class="btn btn-pause" (click)="pomodoro.pause()">❚❚ Pausar</button>
+          <button class="btn btn-skip" (click)="pomodoro.skip()">⏭ Skip</button>
+          }
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-value">{{ stats.focusMinutesToday() }}</div>
+          <div class="stat-label">minutos de foco</div>
         </div>
 
-        <div class="col-12 col-md-6">
-          <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-              <div class="d-flex align-items-center mb-3">
-                <i class="bi bi-calendar-event text-info fs-5 me-2"></i>
-                <h6 class="mb-0 fw-bold">Próximo bloque</h6>
-              </div>
-              @if (nextBlock(); as block) {
-              <div class="alert alert-info mb-0 d-flex align-items-start">
-                <i class="bi bi-clock me-2 mt-1"></i>
-                <div>
-                  <div class="fw-bold">{{ block.title }}</div>
-                  <small>{{ block.startTime }} – {{ block.endTime }}</small>
-                </div>
-              </div>
-              } @else {
-              <div class="text-center text-muted py-3">
-                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
-                <small>Sin bloques programados</small>
-              </div>
-              }
-            </div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value">{{ todayCompletion() }}</div>
+          <div class="stat-label">tareas completadas</div>
         </div>
 
-        <div class="col-12 col-md-6">
-          <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-              <div class="d-flex align-items-center mb-3">
-                <i class="bi bi-fire text-danger fs-5 me-2"></i>
-                <h6 class="mb-0 fw-bold">Racha</h6>
-              </div>
-              <div class="text-center">
-                <div class="display-4 fw-bold text-danger">{{ stats.streak() }}</div>
-                <small class="text-muted">días consecutivos</small>
-              </div>
-            </div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-value">{{ stats.streak() }}</div>
+          <div class="stat-label">días consecutivos</div>
         </div>
+      </div>
+
+      <div class="next-section">
+        <div class="section-header">
+          <span class="icon">📅</span>
+          <span>Próximo bloque</span>
+        </div>
+        @if (nextBlock(); as block) {
+        <div class="next-block">
+          <div class="block-title">{{ block.title }}</div>
+          <div class="block-time">{{ block.startTime }} – {{ block.endTime }}</div>
+        </div>
+        } @else {
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-text">Sin bloques programados</div>
+        </div>
+        }
       </div>
     </div>
   `,
   styles: [
     `
-      .dashboard-container {
-        max-width: 1400px;
+      .container {
+        max-width: 800px;
         margin: 0 auto;
+        padding: 40px 24px;
       }
 
-      .timer-card {
+      .timer-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 24px;
+        padding: 48px 32px;
+        text-align: center;
+        margin-bottom: 32px;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+      }
+
+      .status-label {
+        font-size: 18px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 24px;
+        letter-spacing: 0.3px;
+      }
+
+      .timer {
+        font-size: 96px;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -4px;
+        line-height: 1;
+        margin-bottom: 16px;
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .cycle-info {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 32px;
+        font-weight: 500;
+      }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 14px 32px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn-start,
+      .btn-resume {
+        background: white;
+        color: #667eea;
+      }
+
+      .btn-pause {
+        background: #fbbf24;
         color: white;
       }
 
-      .timer-card .text-primary {
-        color: white !important;
+      .btn-stop,
+      .btn-skip {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(10px);
       }
 
-      .timer-value {
-        font-size: 5rem;
-        font-weight: 700;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -2px;
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 32px;
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 28px 20px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f3f4f6;
+        transition: all 0.3s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
       }
 
       .stat-icon {
-        width: 48px;
-        height: 48px;
+        font-size: 36px;
+        margin-bottom: 12px;
+      }
+
+      .stat-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 6px;
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 600;
+      }
+
+      .next-section {
+        background: white;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f3f4f6;
+      }
+
+      .section-header {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 10px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 20px;
+      }
+
+      .section-header .icon {
         font-size: 20px;
       }
 
+      .next-block {
+        background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+        border-radius: 12px;
+        padding: 20px;
+        border-left: 4px solid #667eea;
+      }
+
+      .block-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 6px;
+      }
+
+      .block-time {
+        font-size: 14px;
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 32px 20px;
+      }
+
+      .empty-icon {
+        font-size: 48px;
+        opacity: 0.3;
+        margin-bottom: 12px;
+      }
+
+      .empty-text {
+        font-size: 14px;
+        color: #9ca3af;
+        font-weight: 500;
+      }
+
       @media (max-width: 768px) {
-        .timer-value {
-          font-size: 3.5rem;
+        .container {
+          padding: 24px 16px;
+        }
+
+        .timer-section {
+          padding: 36px 24px;
+        }
+
+        .timer {
+          font-size: 72px;
+          letter-spacing: -2px;
+        }
+
+        .btn {
+          padding: 12px 24px;
+          font-size: 15px;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+
+        .stat-card {
+          padding: 24px 20px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .timer {
+          font-size: 64px;
+        }
+
+        .controls {
+          gap: 10px;
+        }
+
+        .btn {
+          flex: 1;
+          min-width: 140px;
         }
       }
     `,
