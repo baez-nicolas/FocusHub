@@ -235,13 +235,122 @@ export class CalculatorComponent {
   calculate(): void {
     try {
       let expr = this.display().replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
-      const result = eval(expr);
+      const result = this.evaluateExpression(expr);
       this.lastResult = result.toString();
       this.display.set(this.lastResult);
     } catch {
       this.display.set('Error');
       setTimeout(() => this.display.set(''), 1500);
     }
+  }
+
+  private evaluateExpression(expr: string): number {
+    // Eliminar espacios
+    expr = expr.replace(/\s/g, '');
+
+    // Evaluar expresión de forma segura sin eval()
+    return this.parseExpression(expr);
+  }
+
+  private parseExpression(expr: string): number {
+    // Primero evaluamos sumas y restas
+    let terms = this.splitByOperator(expr, ['+', '-']);
+    if (terms.length > 1) {
+      let result = this.parseTerm(terms[0].value);
+      for (let i = 1; i < terms.length; i++) {
+        if (terms[i].operator === '+') {
+          result += this.parseTerm(terms[i].value);
+        } else {
+          result -= this.parseTerm(terms[i].value);
+        }
+      }
+      return result;
+    }
+    return this.parseTerm(expr);
+  }
+
+  private parseTerm(term: string): number {
+    // Evaluamos multiplicaciones, divisiones y módulos
+    let factors = this.splitByOperator(term, ['*', '/', '%']);
+    if (factors.length > 1) {
+      let result = this.parseFactor(factors[0].value);
+      for (let i = 1; i < factors.length; i++) {
+        if (factors[i].operator === '*') {
+          result *= this.parseFactor(factors[i].value);
+        } else if (factors[i].operator === '/') {
+          result /= this.parseFactor(factors[i].value);
+        } else if (factors[i].operator === '%') {
+          result %= this.parseFactor(factors[i].value);
+        }
+      }
+      return result;
+    }
+    return this.parseFactor(term);
+  }
+
+  private parseFactor(factor: string): number {
+    // Manejar paréntesis
+    if (factor.startsWith('(') && factor.endsWith(')')) {
+      return this.parseExpression(factor.slice(1, -1));
+    }
+
+    // Manejar números negativos
+    if (factor.startsWith('-')) {
+      return -this.parseFactor(factor.slice(1));
+    }
+
+    // Convertir a número
+    const num = parseFloat(factor);
+    if (isNaN(num)) {
+      throw new Error('Invalid number');
+    }
+    return num;
+  }
+
+  private splitByOperator(
+    expr: string,
+    operators: string[]
+  ): Array<{ operator: string; value: string }> {
+    const parts: Array<{ operator: string; value: string }> = [];
+    let currentPart = '';
+    let parenthesesLevel = 0;
+    let startIndex = 0;
+
+    for (let i = 0; i < expr.length; i++) {
+      const char = expr[i];
+
+      if (char === '(') {
+        parenthesesLevel++;
+        currentPart += char;
+      } else if (char === ')') {
+        parenthesesLevel--;
+        currentPart += char;
+      } else if (parenthesesLevel === 0 && operators.includes(char)) {
+        // Solo dividir si no estamos dentro de paréntesis
+        // y si no es un signo negativo al inicio o después de un operador
+        if (i > 0 && currentPart.length > 0) {
+          parts.push({ operator: parts.length === 0 ? '+' : expr[i], value: currentPart });
+          currentPart = '';
+          startIndex = i + 1;
+        } else if (char === '-' && (i === 0 || operators.includes(expr[i - 1]))) {
+          // Es un signo negativo, no un operador
+          currentPart += char;
+        } else {
+          currentPart += char;
+        }
+      } else {
+        currentPart += char;
+      }
+    }
+
+    if (currentPart) {
+      parts.push({
+        operator: parts.length === 0 ? '+' : expr[startIndex - 1],
+        value: currentPart,
+      });
+    }
+
+    return parts.length > 0 ? parts : [{ operator: '+', value: expr }];
   }
 
   applyFunction(func: string): void {
