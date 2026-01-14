@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
-    <div class="app-container">
+    <div class="app-container" [class.dark]="themeService.isDark()">
       <nav class="sidebar">
         <div class="brand mb-4">
           <i class="bi bi-bullseye text-primary fs-2"></i>
@@ -26,6 +27,13 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
             <span>{{ item.label }}</span>
           </a>
           }
+          <button class="theme-toggle" (click)="themeService.toggle()">
+            @if (themeService.isDark()) {
+            <i class="bi bi-sun-fill"></i>
+            } @else {
+            <i class="bi bi-moon-fill"></i>
+            }
+          </button>
         </div>
       </nav>
 
@@ -36,11 +44,20 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
               <i class="bi bi-bullseye text-primary"></i>
               <span class="fw-bold">FocusHub</span>
             </div>
-            <button class="menu-toggle" (click)="toggleMenu()" [class.active]="menuOpen()">
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
+            <div class="mobile-actions">
+              <button class="theme-toggle-mobile" (click)="themeService.toggle()">
+                @if (themeService.isDark()) {
+                <i class="bi bi-sun-fill"></i>
+                } @else {
+                <i class="bi bi-moon-fill"></i>
+                }
+              </button>
+              <button class="menu-toggle" (click)="toggleMenu()" [class.active]="menuOpen()">
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
+            </div>
           </div>
 
           @if (menuOpen()) {
@@ -158,6 +175,26 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
       }
 
+      .theme-toggle {
+        margin-top: auto;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        padding: 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+      }
+
       .main-content {
         flex: 1;
         display: flex;
@@ -188,6 +225,29 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         padding: 14px 20px;
         position: relative;
         z-index: 1001;
+      }
+
+      .mobile-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .theme-toggle-mobile {
+        background: none;
+        border: none;
+        color: #1a1d29;
+        font-size: 22px;
+        cursor: pointer;
+        padding: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .theme-toggle-mobile:hover {
+        transform: scale(1.1);
       }
 
       .brand-mobile {
@@ -360,10 +420,56 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
           font-size: 13px;
         }
       }
+
+      .app-container.dark .main-content {
+        background: #0f1419;
+      }
+
+      .app-container.dark .mobile-navbar {
+        background: #1a1f2e;
+        border-bottom-color: #2d3748;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .app-container.dark .brand-mobile {
+        color: #e5e7eb;
+      }
+
+      .app-container.dark .theme-toggle-mobile {
+        color: #e5e7eb;
+      }
+
+      .app-container.dark .menu-toggle span {
+        background: #e5e7eb;
+      }
+
+      .app-container.dark .mobile-menu-content {
+        background: #1a1f2e;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .app-container.dark .mobile-link {
+        color: #d1d5db;
+      }
+
+      .app-container.dark .mobile-link:hover {
+        background: #2d3748;
+        color: #e5e7eb;
+      }
+
+      .app-container.dark .app-footer {
+        background: #1a1f2e;
+        border-top-color: #2d3748;
+      }
+
+      .app-container.dark .app-footer p {
+        color: #9ca3af;
+      }
     `,
   ],
 })
 export class App {
+  themeService = inject(ThemeService);
   menuOpen = signal(false);
 
   navItems = [
