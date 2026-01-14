@@ -520,7 +520,7 @@ import { PomodoroService } from '../services/pomodoro.service';
         }
       }
 
-      @media (max-width: 480px) {
+      @media (max-width: 576px) {
         .pomodoro-widget {
           bottom: 16px;
           right: 16px;

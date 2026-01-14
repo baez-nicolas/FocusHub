@@ -324,7 +324,7 @@ import { StatsService } from '../services/stats.service';
         }
       }
 
-      @media (max-width: 480px) {
+      @media (max-width: 576px) {
         .actions-grid {
           grid-template-columns: 1fr;
         }

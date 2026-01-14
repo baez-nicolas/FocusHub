@@ -165,7 +165,7 @@ import { Component, signal } from '@angular/core';
         transform: translateY(-1px);
       }
 
-      @media (max-width: 520px) {
+      @media (max-width: 576px) {
         .display {
           font-size: 36px;
           padding: 24px 16px;

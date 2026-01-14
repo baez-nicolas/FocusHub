@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
@@ -14,122 +14,61 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         </div>
 
         <div class="nav-links flex-column">
+          @for (item of navItems; track item.path) {
           <a
-            routerLink="/"
+            [routerLink]="item.path"
             routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
+            [routerLinkActiveOptions]="{ exact: item.exact }"
             class="nav-link"
+            [class.mt-auto]="item.divider"
           >
-            <i class="bi bi-house-door"></i>
-            <span>Dashboard</span>
+            <i [class]="'bi bi-' + item.icon"></i>
+            <span>{{ item.label }}</span>
           </a>
-          <a routerLink="/pomodoro" routerLinkActive="active" class="nav-link">
-            <i class="bi bi-clock-history"></i>
-            <span>Pomodoro</span>
-          </a>
-          <a routerLink="/planner" routerLinkActive="active" class="nav-link">
-            <i class="bi bi-calendar-check"></i>
-            <span>Planner</span>
-          </a>
-          <a routerLink="/stats" routerLinkActive="active" class="nav-link">
-            <i class="bi bi-bar-chart"></i>
-            <span>Stats</span>
-          </a>
-          <a routerLink="/gym" routerLinkActive="active" class="nav-link">
-            <i class="bi bi-heart-pulse"></i>
-            <span>Gym</span>
-          </a>
-          <a routerLink="/notes" routerLinkActive="active" class="nav-link">
-            <i class="bi bi-journal-text"></i>
-            <span>Notas</span>
-          </a>
-          <a routerLink="/calculator" routerLinkActive="active" class="nav-link">
-            <i class="bi bi-calculator"></i>
-            <span>Calculadora</span>
-          </a>
-          <a routerLink="/setup" routerLinkActive="active" class="nav-link mt-auto">
-            <i class="bi bi-cloud-sun"></i>
-            <span>Setup</span>
-          </a>
+          }
         </div>
       </nav>
 
       <div class="main-content">
-        <nav
-          class="navbar navbar-expand-lg navbar-light bg-white border-bottom d-lg-none sticky-top"
-        >
-          <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-              <i class="bi bi-bullseye text-primary fs-4"></i>
-              <span class="ms-2 fw-bold">FocusHub</span>
-            </a>
-            <button
-              class="navbar-toggler"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#mobileNav"
-            >
-              <span class="navbar-toggler-icon"></span>
+        <nav class="mobile-navbar d-lg-none">
+          <div class="mobile-header">
+            <div class="brand-mobile">
+              <i class="bi bi-bullseye text-primary"></i>
+              <span class="fw-bold">FocusHub</span>
+            </div>
+            <button class="menu-toggle" (click)="toggleMenu()" [class.active]="menuOpen()">
+              <span></span>
+              <span></span>
+              <span></span>
             </button>
-            <div class="collapse navbar-collapse" id="mobileNav">
-              <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                  <a
-                    routerLink="/"
-                    routerLinkActive="active"
-                    [routerLinkActiveOptions]="{ exact: true }"
-                    class="nav-link mobile-link"
-                  >
-                    <i class="bi bi-house-door me-2"></i>Dashboard
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a routerLink="/pomodoro" routerLinkActive="active" class="nav-link mobile-link">
-                    <i class="bi bi-clock-history me-2"></i>Pomodoro
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a routerLink="/planner" routerLinkActive="active" class="nav-link mobile-link">
-                    <i class="bi bi-calendar-check me-2"></i>Planner
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a routerLink="/stats" routerLinkActive="active" class="nav-link mobile-link">
-                    <i class="bi bi-bar-chart me-2"></i>Stats
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a routerLink="/gym" routerLinkActive="active" class="nav-link mobile-link">
-                    <i class="bi bi-heart-pulse me-2"></i>Gym
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a routerLink="/notes" routerLinkActive="active" class="nav-link mobile-link">
-                    <i class="bi bi-journal-text me-2"></i>Notas
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a
-                    routerLink="/calculator"
-                    routerLinkActive="active"
-                    class="nav-link mobile-link"
-                  >
-                    <i class="bi bi-calculator me-2"></i>Calculadora
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a routerLink="/setup" routerLinkActive="active" class="nav-link mobile-link">
-                    <i class="bi bi-cloud-sun me-2"></i>Setup
-                  </a>
-                </li>
-              </ul>
+          </div>
+
+          @if (menuOpen()) {
+          <div class="mobile-menu" (click)="closeMenu()">
+            <div class="mobile-menu-content" (click)="$event.stopPropagation()">
+              @for (item of navItems; track item.path) {
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.exact }"
+                class="mobile-link"
+                (click)="closeMenu()"
+              >
+                <i [class]="'bi bi-' + item.icon"></i>
+                <span>{{ item.label }}</span>
+              </a>
+              }
             </div>
           </div>
+          }
         </nav>
 
         <main class="content-area">
           <router-outlet />
         </main>
+        <footer class="app-footer">
+          <p>&copy; 2026 Nicolás Báez</p>
+        </footer>
       </div>
     </div>
   `,
@@ -208,10 +147,156 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         background: #f8f9fa;
       }
 
-      @media (min-width: 992px) {
+      @media (min-width: 768px) {
         .main-content {
           margin-left: 260px;
         }
+      }
+
+      .mobile-navbar {
+        background: white;
+        border-bottom: 2px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .mobile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+      }
+
+      .brand-mobile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+      }
+
+      .brand-mobile i {
+        font-size: 24px;
+      }
+
+      .menu-toggle {
+        background: none;
+        border: none;
+        width: 30px;
+        height: 24px;
+        position: relative;
+        cursor: pointer;
+        padding: 0;
+        z-index: 101;
+      }
+
+      .menu-toggle span {
+        display: block;
+        position: absolute;
+        height: 3px;
+        width: 100%;
+        background: #1a1d29;
+        border-radius: 3px;
+        opacity: 1;
+        left: 0;
+        transition: all 0.3s ease;
+      }
+
+      .menu-toggle span:nth-child(1) {
+        top: 0;
+      }
+
+      .menu-toggle span:nth-child(2) {
+        top: 10px;
+      }
+
+      .menu-toggle span:nth-child(3) {
+        top: 20px;
+      }
+
+      .menu-toggle.active span:nth-child(1) {
+        top: 10px;
+        transform: rotate(135deg);
+      }
+
+      .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+        left: -60px;
+      }
+
+      .menu-toggle.active span:nth-child(3) {
+        top: 10px;
+        transform: rotate(-135deg);
+      }
+
+      .mobile-menu {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .mobile-menu-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 280px;
+        height: 100vh;
+        background: white;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        padding: 80px 20px 20px;
+        animation: slideIn 0.3s ease;
+        overflow-y: auto;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+
+      .mobile-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        color: #374151;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+      }
+
+      .mobile-link i {
+        font-size: 20px;
+        width: 24px;
+      }
+
+      .mobile-link:hover {
+        background: #f3f4f6;
+        color: #667eea;
+      }
+
+      .mobile-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
       }
 
       .content-area {
@@ -220,27 +305,57 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         padding: 24px;
       }
 
-      .mobile-link {
-        padding: 12px 20px !important;
-        border-radius: 8px;
-        margin: 4px 0;
-      }
-
-      .mobile-link.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white !important;
-      }
-
-      .mobile-link:hover {
-        background: rgba(102, 126, 234, 0.1);
-      }
-
-      @media (max-width: 991px) {
+      @media (max-width: 767px) {
         .content-area {
           padding: 16px;
+        }
+      }
+
+      .app-footer {
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        padding: 16px 24px;
+        text-align: center;
+      }
+
+      .app-footer p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      @media (max-width: 767px) {
+        .app-footer {
+          padding: 12px 16px;
+        }
+
+        .app-footer p {
+          font-size: 13px;
         }
       }
     `,
   ],
 })
-export class App {}
+export class App {
+  menuOpen = signal(false);
+
+  navItems = [
+    { path: '/', label: 'Dashboard', icon: 'house-door', exact: true, divider: false },
+    { path: '/pomodoro', label: 'Pomodoro', icon: 'clock-history', exact: false, divider: false },
+    { path: '/planner', label: 'Planner', icon: 'calendar-check', exact: false, divider: false },
+    { path: '/stats', label: 'Stats', icon: 'bar-chart', exact: false, divider: false },
+    { path: '/gym', label: 'Gym', icon: 'heart-pulse', exact: false, divider: false },
+    { path: '/notes', label: 'Notas', icon: 'journal-text', exact: false, divider: false },
+    { path: '/calculator', label: 'Calculadora', icon: 'calculator', exact: false, divider: false },
+    { path: '/more', label: 'Más Info', icon: 'info-circle', exact: false, divider: true },
+  ];
+
+  toggleMenu(): void {
+    this.menuOpen.set(!this.menuOpen());
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+}

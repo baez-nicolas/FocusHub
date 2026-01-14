@@ -193,14 +193,11 @@ import { StatsService } from '../services/stats.service';
         font-weight: 600;
       }
 
-      @media (max-width: 900px) {
+      @media (max-width: 768px) {
         .cards {
           grid-template-columns: repeat(2, 1fr);
           gap: 16px;
         }
-      }
-
-      @media (max-width: 768px) {
         .container {
           padding: 28px 20px;
         }
@@ -258,7 +255,7 @@ import { StatsService } from '../services/stats.service';
         }
       }
 
-      @media (max-width: 520px) {
+      @media (max-width: 576px) {
         .container {
           padding: 24px 16px;
         }

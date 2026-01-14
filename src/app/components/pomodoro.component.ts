@@ -288,7 +288,7 @@ import { PomodoroService } from '../services/pomodoro.service';
         }
       }
 
-      @media (max-width: 480px) {
+      @media (max-width: 576px) {
         .timer {
           font-size: 64px;
         }
