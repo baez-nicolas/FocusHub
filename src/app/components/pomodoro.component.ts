@@ -184,12 +184,22 @@ import { PomodoroService } from '../services/pomodoro.service';
         border: 1px solid #f3f4f6;
       }
 
+      :host-context(.dark) .config-section {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .config-header {
         font-size: 18px;
         font-weight: 700;
         color: #111827;
         margin-bottom: 28px;
         text-align: center;
+      }
+
+      :host-context(.dark) .config-header {
+        color: #d1d5db !important;
       }
 
       .config-grid {
@@ -212,6 +222,10 @@ import { PomodoroService } from '../services/pomodoro.service';
         text-transform: lowercase;
       }
 
+      :host-context(.dark) .config-item label {
+        color: #9ca3af !important;
+      }
+
       .config-item input {
         padding: 12px 16px;
         border: 2px solid #e5e7eb;
@@ -223,10 +237,21 @@ import { PomodoroService } from '../services/pomodoro.service';
         text-align: center;
       }
 
+      :host-context(.dark) .config-item input {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .config-item input:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .config-item input:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .config-item .unit {
@@ -234,6 +259,10 @@ import { PomodoroService } from '../services/pomodoro.service';
         color: #9ca3af;
         font-weight: 600;
         text-align: center;
+      }
+
+      :host-context(.dark) .config-item .unit {
+        color: #6b7280 !important;
       }
 
       .btn-save {

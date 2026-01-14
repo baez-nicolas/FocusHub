@@ -75,10 +75,18 @@ import { StatsService } from '../services/stats.service';
         letter-spacing: -0.5px;
       }
 
+      :host-context(.dark) .title {
+        color: #f3f4f6 !important;
+      }
+
       .subtitle {
         font-size: 15px;
         color: #6b7280;
         font-weight: 500;
+      }
+
+      :host-context(.dark) .subtitle {
+        color: #9ca3af !important;
       }
 
       .cards {
@@ -98,9 +106,19 @@ import { StatsService } from '../services/stats.service';
         transition: all 0.3s;
       }
 
+      :host-context(.dark) .card {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .card:hover {
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      :host-context(.dark) .card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
       }
 
       .card-icon {
@@ -117,11 +135,19 @@ import { StatsService } from '../services/stats.service';
         letter-spacing: -1px;
       }
 
+      :host-context(.dark) .card-value {
+        color: #f3f4f6 !important;
+      }
+
       .card-label {
         font-size: 13px;
         color: #6b7280;
         font-weight: 600;
         text-transform: lowercase;
+      }
+
+      :host-context(.dark) .card-label {
+        color: #9ca3af !important;
       }
 
       .chart-section {
@@ -132,6 +158,12 @@ import { StatsService } from '../services/stats.service';
         border: 1px solid #f3f4f6;
       }
 
+      :host-context(.dark) .chart-section {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .chart-header {
         font-size: 18px;
         font-weight: 700;
@@ -139,6 +171,10 @@ import { StatsService } from '../services/stats.service';
         margin-bottom: 32px;
         text-align: center;
         letter-spacing: -0.3px;
+      }
+
+      :host-context(.dark) .chart-header {
+        color: #d1d5db !important;
       }
 
       .chart {
@@ -191,6 +227,10 @@ import { StatsService } from '../services/stats.service';
         color: #6b7280;
         margin-top: 12px;
         font-weight: 600;
+      }
+
+      :host-context(.dark) .bar-date {
+        color: #9ca3af !important;
       }
 
       @media (max-width: 768px) {

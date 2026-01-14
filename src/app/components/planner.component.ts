@@ -134,6 +134,10 @@ import { Block, PlannerService } from '../services/planner.service';
         letter-spacing: -0.5px;
       }
 
+      :host-context(.dark) .title {
+        color: #f3f4f6 !important;
+      }
+
       .controls {
         display: flex;
         align-items: center;
@@ -153,10 +157,21 @@ import { Block, PlannerService } from '../services/planner.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .date-picker {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .date-picker:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .date-picker:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .btn-add {
@@ -188,12 +203,22 @@ import { Block, PlannerService } from '../services/planner.service';
         border: 1px solid #f3f4f6;
       }
 
+      :host-context(.dark) .form-card {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .form-header {
         font-size: 20px;
         font-weight: 700;
         color: #111827;
         margin-bottom: 20px;
         text-align: center;
+      }
+
+      :host-context(.dark) .form-header {
+        color: #d1d5db !important;
       }
 
       .input-title {
@@ -208,10 +233,21 @@ import { Block, PlannerService } from '../services/planner.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .input-title {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .input-title:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .input-title:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .time-row {
@@ -229,6 +265,10 @@ import { Block, PlannerService } from '../services/planner.service';
         margin-bottom: 8px;
       }
 
+      :host-context(.dark) .time-input label {
+        color: #9ca3af !important;
+      }
+
       .time-input input {
         width: 100%;
         padding: 12px 16px;
@@ -240,10 +280,21 @@ import { Block, PlannerService } from '../services/planner.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .time-input input {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .time-input input:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .time-input input:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .category-select {
@@ -259,10 +310,21 @@ import { Block, PlannerService } from '../services/planner.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .category-select {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .category-select:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .category-select:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .form-actions {
@@ -298,8 +360,17 @@ import { Block, PlannerService } from '../services/planner.service';
         color: #6b7280;
       }
 
+      :host-context(.dark) .btn-cancel {
+        background: #252b3b !important;
+        color: #9ca3af !important;
+      }
+
       .btn-cancel:hover {
         background: #e5e7eb;
+      }
+
+      :host-context(.dark) .btn-cancel:hover {
+        background: #2d3748 !important;
       }
 
       .blocks-list {
@@ -322,9 +393,19 @@ import { Block, PlannerService } from '../services/planner.service';
         position: relative;
       }
 
+      :host-context(.dark) .block-card {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .block-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      :host-context(.dark) .block-card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
       }
 
       .block-card.done {
@@ -353,6 +434,11 @@ import { Block, PlannerService } from '../services/planner.service';
         border-radius: 8px;
       }
 
+      :host-context(.dark) .block-time .time {
+        background: #252b3b !important;
+        color: #d1d5db !important;
+      }
+
       .block-time .separator {
         font-size: 12px;
         color: #9ca3af;
@@ -370,10 +456,18 @@ import { Block, PlannerService } from '../services/planner.service';
         color: #111827;
       }
 
+      :host-context(.dark) .block-title {
+        color: #e5e7eb !important;
+      }
+
       .block-category {
         font-size: 13px;
         font-weight: 600;
         color: #6b7280;
+      }
+
+      :host-context(.dark) .block-category {
+        color: #9ca3af !important;
       }
 
       .block-actions {
@@ -458,6 +552,12 @@ import { Block, PlannerService } from '../services/planner.service';
         border: 1px solid #f3f4f6;
       }
 
+      :host-context(.dark) .empty-state {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .empty-icon {
         font-size: 64px;
         opacity: 0.3;
@@ -471,10 +571,18 @@ import { Block, PlannerService } from '../services/planner.service';
         margin-bottom: 8px;
       }
 
+      :host-context(.dark) .empty-title {
+        color: #d1d5db !important;
+      }
+
       .empty-text {
         font-size: 14px;
         color: #9ca3af;
         margin-bottom: 24px;
+      }
+
+      :host-context(.dark) .empty-text {
+        color: #6b7280 !important;
       }
 
       .btn-empty {
