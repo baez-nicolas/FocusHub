@@ -144,7 +144,6 @@ import { ThemeService } from './services/theme.service';
         flex-direction: column;
         gap: 4px;
         flex: 1;
-        padding-bottom: 80px;
       }
 
       .sidebar .nav-link {
@@ -160,6 +159,7 @@ import { ThemeService } from './services/theme.service';
 
       .sidebar .nav-link.mt-auto {
         margin-top: auto;
+        margin-bottom: 80px;
       }
 
       .sidebar .nav-link i {
@@ -181,7 +181,6 @@ import { ThemeService } from './services/theme.service';
       }
 
       .theme-toggle {
-        margin-top: auto;
         background: rgba(255, 255, 255, 0.1);
         border: none;
         color: white;
@@ -193,11 +192,17 @@ import { ThemeService } from './services/theme.service';
         display: flex;
         align-items: center;
         justify-content: center;
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
       }
 
       .theme-toggle:hover {
         background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.05);
+        transform: translateX(-50%);
+        box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
       }
 
       .main-content {
