@@ -447,6 +447,17 @@ import { Component } from '@angular/core';
 
         .feature-card {
           padding: 24px;
+          text-align: center;
+        }
+
+        .feature-icon {
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .example,
+        .use-case {
+          text-align: left;
         }
 
         .tips-section {
@@ -459,6 +470,16 @@ import { Component } from '@angular/core';
 
         .tips-grid {
           grid-template-columns: 1fr;
+        }
+
+        .tip {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        .tip i {
+          margin-top: 0;
         }
       }
     `,
