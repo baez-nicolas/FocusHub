@@ -332,7 +332,8 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
       @media (max-width: 767px) {
         .content-area {
-          padding: 16px;
+          padding: 0;
+          padding-top: 0;
         }
       }
 

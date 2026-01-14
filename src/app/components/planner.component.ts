@@ -116,6 +116,12 @@ import { Block, PlannerService } from '../services/planner.service';
         padding: 40px 24px;
       }
 
+      @media (max-width: 767px) {
+        .container {
+          padding: 24px 16px;
+        }
+      }
+
       .header {
         margin-bottom: 32px;
         text-align: center;
