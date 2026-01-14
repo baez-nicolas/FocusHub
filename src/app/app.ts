@@ -7,7 +7,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
     <div class="app-container">
-      <nav class="sidebar d-none d-lg-flex flex-column p-3">
+      <nav class="sidebar">
         <div class="brand mb-4">
           <i class="bi bi-bullseye text-primary fs-2"></i>
           <h4 class="ms-2 mb-0 fw-bold">FocusHub</h4>
@@ -30,7 +30,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
       </nav>
 
       <div class="main-content">
-        <nav class="mobile-navbar d-lg-none">
+        <nav class="mobile-navbar">
           <div class="mobile-header">
             <div class="brand-mobile">
               <i class="bi bi-bullseye text-primary"></i>
@@ -90,6 +90,25 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         top: 0;
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
         z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+      }
+
+      @media (max-width: 767px) {
+        .sidebar {
+          display: none;
+        }
+
+        .mobile-navbar {
+          display: block;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .mobile-navbar {
+          display: none;
+        }
       }
 
       .brand {
@@ -158,14 +177,17 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         border-bottom: 2px solid #e5e7eb;
         position: sticky;
         top: 0;
-        z-index: 100;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
 
       .mobile-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 16px 20px;
+        padding: 14px 20px;
+        position: relative;
+        z-index: 1001;
       }
 
       .brand-mobile {
@@ -187,7 +209,10 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         position: relative;
         cursor: pointer;
         padding: 0;
-        z-index: 101;
+        z-index: 1002;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
 
       .menu-toggle span {
@@ -233,7 +258,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         position: fixed;
         inset: 0;
         background: rgba(0, 0, 0, 0.5);
-        z-index: 99;
+        z-index: 999;
         animation: fadeIn 0.3s ease;
       }
 
