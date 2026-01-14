@@ -123,10 +123,18 @@ import { PomodoroService } from '../services/pomodoro.service';
         letter-spacing: -0.5px;
       }
 
+      :host-context(.dark) .title {
+        color: #f3f4f6 !important;
+      }
+
       .subtitle {
         font-size: 15px;
         color: #6b7280;
         font-weight: 500;
+      }
+
+      :host-context(.dark) .subtitle {
+        color: #9ca3af !important;
       }
 
       .toolbar {
@@ -162,10 +170,21 @@ import { PomodoroService } from '../services/pomodoro.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .search-input {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .search-input:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .search-input:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .category-filter {
@@ -179,10 +198,21 @@ import { PomodoroService } from '../services/pomodoro.service';
         background: white;
       }
 
+      :host-context(.dark) .category-filter {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .category-filter:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .category-filter:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .btn-new {
@@ -213,12 +243,22 @@ import { PomodoroService } from '../services/pomodoro.service';
         border: 1px solid #f3f4f6;
       }
 
+      :host-context(.dark) .form-card {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .form-header {
         font-size: 20px;
         font-weight: 700;
         color: #111827;
         margin-bottom: 20px;
         text-align: center;
+      }
+
+      :host-context(.dark) .form-header {
+        color: #d1d5db !important;
       }
 
       .input-title {
@@ -233,10 +273,21 @@ import { PomodoroService } from '../services/pomodoro.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .input-title {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .input-title:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .input-title:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .input-content {
@@ -253,10 +304,21 @@ import { PomodoroService } from '../services/pomodoro.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .input-content {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .input-content:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .input-content:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .category-select {
@@ -271,10 +333,21 @@ import { PomodoroService } from '../services/pomodoro.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .category-select {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .category-select:focus {
         outline: none;
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      :host-context(.dark) .category-select:focus {
+        border-color: #7066e0 !important;
+        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
       }
 
       .form-actions {
@@ -313,8 +386,17 @@ import { PomodoroService } from '../services/pomodoro.service';
         transition: all 0.3s;
       }
 
+      :host-context(.dark) .btn-cancel {
+        background: #252b3b !important;
+        color: #9ca3af !important;
+      }
+
       .btn-cancel:hover {
         background: #e5e7eb;
+      }
+
+      :host-context(.dark) .btn-cancel:hover {
+        background: #2d3748 !important;
       }
 
       .notes-grid {
@@ -333,9 +415,19 @@ import { PomodoroService } from '../services/pomodoro.service';
         cursor: pointer;
       }
 
+      :host-context(.dark) .note-card {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .note-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      :host-context(.dark) .note-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
       }
 
       .note-header {
@@ -381,6 +473,10 @@ import { PomodoroService } from '../services/pomodoro.service';
         line-height: 1.3;
       }
 
+      :host-context(.dark) .note-title {
+        color: #e5e7eb !important;
+      }
+
       .note-content {
         font-size: 14px;
         color: #6b7280;
@@ -392,10 +488,18 @@ import { PomodoroService } from '../services/pomodoro.service';
         overflow: hidden;
       }
 
+      :host-context(.dark) .note-content {
+        color: #9ca3af !important;
+      }
+
       .note-date {
         font-size: 12px;
         color: #9ca3af;
         font-weight: 500;
+      }
+
+      :host-context(.dark) .note-date {
+        color: #6b7280 !important;
       }
 
       .empty-state {
@@ -417,10 +521,18 @@ import { PomodoroService } from '../services/pomodoro.service';
         margin-bottom: 8px;
       }
 
+      :host-context(.dark) .empty-title {
+        color: #d1d5db !important;
+      }
+
       .empty-text {
         font-size: 14px;
         color: #9ca3af;
         margin-bottom: 24px;
+      }
+
+      :host-context(.dark) .empty-text {
+        color: #6b7280 !important;
       }
 
       .btn-empty {

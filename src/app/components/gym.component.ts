@@ -120,6 +120,10 @@ import { Exercise, GymService } from '../services/gym.service';
         letter-spacing: -0.5px;
       }
 
+      :host-context(.dark) .title {
+        color: #f3f4f6 !important;
+      }
+
       .btn-add {
         width: 100%;
         padding: 14px;
@@ -149,12 +153,22 @@ import { Exercise, GymService } from '../services/gym.service';
         border: 1px solid #f3f4f6;
       }
 
+      :host-context(.dark) .form-card {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .form-header {
         font-size: 20px;
         font-weight: 700;
         color: #111827;
         margin-bottom: 20px;
         text-align: center;
+      }
+
+      :host-context(.dark) .form-header {
+        color: #d1d5db !important;
       }
 
       .input-name {
@@ -169,10 +183,21 @@ import { Exercise, GymService } from '../services/gym.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .input-name {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .input-name:focus {
         outline: none;
         border-color: #ef4444;
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+
+      :host-context(.dark) .input-name:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
       }
 
       .exercises-label {
@@ -180,6 +205,10 @@ import { Exercise, GymService } from '../services/gym.service';
         font-weight: 700;
         color: #6b7280;
         margin-bottom: 12px;
+      }
+
+      :host-context(.dark) .exercises-label {
+        color: #9ca3af !important;
       }
 
       .exercise-row {
@@ -199,10 +228,21 @@ import { Exercise, GymService } from '../services/gym.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .exercise-row input {
+        background: #252b3b !important;
+        border: 2px solid #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
       .exercise-row input:focus {
         outline: none;
         border-color: #ef4444;
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+
+      :host-context(.dark) .exercise-row input:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
       }
 
       .btn-remove {
@@ -235,10 +275,22 @@ import { Exercise, GymService } from '../services/gym.service';
         transition: all 0.2s;
       }
 
+      :host-context(.dark) .btn-add-exercise {
+        background: #252b3b !important;
+        border: 2px dashed #2d3748 !important;
+        color: #9ca3af !important;
+      }
+
       .btn-add-exercise:hover {
         background: #f3f4f6;
         border-color: #9ca3af;
         color: #374151;
+      }
+
+      :host-context(.dark) .btn-add-exercise:hover {
+        background: #2d3748 !important;
+        border-color: #374151 !important;
+        color: #d1d5db !important;
       }
 
       .form-actions {
@@ -274,8 +326,17 @@ import { Exercise, GymService } from '../services/gym.service';
         color: #6b7280;
       }
 
+      :host-context(.dark) .btn-cancel {
+        background: #252b3b !important;
+        color: #9ca3af !important;
+      }
+
       .btn-cancel:hover {
         background: #e5e7eb;
+      }
+
+      :host-context(.dark) .btn-cancel:hover {
+        background: #2d3748 !important;
       }
 
       .routines-grid {
@@ -293,9 +354,19 @@ import { Exercise, GymService } from '../services/gym.service';
         transition: all 0.3s;
       }
 
+      :host-context(.dark) .routine-card {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .routine-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      :host-context(.dark) .routine-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
       }
 
       .routine-name {
@@ -305,11 +376,19 @@ import { Exercise, GymService } from '../services/gym.service';
         margin-bottom: 8px;
       }
 
+      :host-context(.dark) .routine-name {
+        color: #e5e7eb !important;
+      }
+
       .routine-info {
         font-size: 14px;
         color: #6b7280;
         margin-bottom: 16px;
         font-weight: 600;
+      }
+
+      :host-context(.dark) .routine-info {
+        color: #9ca3af !important;
       }
 
       .routine-actions {
@@ -361,6 +440,12 @@ import { Exercise, GymService } from '../services/gym.service';
         grid-column: 1 / -1;
       }
 
+      :host-context(.dark) .empty-state {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .empty-icon {
         font-size: 64px;
         opacity: 0.3;
@@ -374,9 +459,17 @@ import { Exercise, GymService } from '../services/gym.service';
         margin-bottom: 8px;
       }
 
+      :host-context(.dark) .empty-title {
+        color: #d1d5db !important;
+      }
+
       .empty-text {
         font-size: 14px;
         color: #9ca3af;
+      }
+
+      :host-context(.dark) .empty-text {
+        color: #6b7280 !important;
       }
 
       .session-view {
@@ -394,6 +487,10 @@ import { Exercise, GymService } from '../services/gym.service';
         font-weight: 700;
         color: #111827;
         letter-spacing: -0.5px;
+      }
+
+      :host-context(.dark) .session-title {
+        color: #f3f4f6 !important;
       }
 
       .exercise-card {
@@ -484,6 +581,12 @@ import { Exercise, GymService } from '../services/gym.service';
         background: white;
         color: #ef4444;
         border: 2px solid #ef4444;
+      }
+
+      :host-context(.dark) .btn-control {
+        background: #252b3b !important;
+        color: #ef4444 !important;
+        border: 2px solid #ef4444 !important;
       }
 
       .btn-control:hover {

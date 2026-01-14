@@ -80,12 +80,22 @@ import { Component, signal } from '@angular/core';
         letter-spacing: -0.5px;
       }
 
+      :host-context(.dark) .title {
+        color: #f3f4f6 !important;
+      }
+
       .calculator-card {
         background: white;
         border-radius: 20px;
         padding: 28px;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         border: 1px solid #f3f4f6;
+      }
+
+      :host-context(.dark) .calculator-card {
+        background: #1e2433 !important;
+        border: 1px solid #2d3748 !important;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
       }
 
       .display {
@@ -124,9 +134,19 @@ import { Component, signal } from '@angular/core';
         color: #111827;
       }
 
+      :host-context(.dark) .btn {
+        background: #252b3b !important;
+        color: #d1d5db !important;
+      }
+
       .btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      :host-context(.dark) .btn:hover {
+        background: #2d3748 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
       }
 
       .btn:active {
@@ -166,9 +186,18 @@ import { Component, signal } from '@angular/core';
         color: #374151;
       }
 
+      :host-context(.dark) .btn-sci {
+        background: #252b3b !important;
+        color: #9ca3af !important;
+      }
+
       .btn-sci:hover {
         background: #d1d5db;
         transform: translateY(-1px);
+      }
+
+      :host-context(.dark) .btn-sci:hover {
+        background: #2d3748 !important;
       }
 
       @media (max-width: 576px) {

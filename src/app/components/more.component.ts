@@ -242,6 +242,10 @@ import { Component } from '@angular/core';
         justify-content: center;
       }
 
+      :host-context(.dark) .header h1 {
+        color: #f3f4f6 !important;
+      }
+
       .header h1 i {
         color: #4f46e5;
       }
@@ -250,6 +254,10 @@ import { Component } from '@angular/core';
         font-size: 20px;
         color: #6b7280;
         font-weight: 500;
+      }
+
+      :host-context(.dark) .subtitle {
+        color: #9ca3af !important;
       }
 
       .features-grid {
@@ -268,10 +276,20 @@ import { Component } from '@angular/core';
         border: 2px solid transparent;
       }
 
+      :host-context(.dark) .feature-card {
+        background: #1e2433 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+      }
+
       .feature-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
         border-color: #4f46e5;
+      }
+
+      :host-context(.dark) .feature-card:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+        border-color: #6366f1 !important;
       }
 
       .feature-icon {
@@ -317,11 +335,19 @@ import { Component } from '@angular/core';
         margin-bottom: 12px;
       }
 
+      :host-context(.dark) .feature-card h2 {
+        color: #e5e7eb !important;
+      }
+
       .description {
         font-size: 16px;
         color: #6b7280;
         line-height: 1.6;
         margin-bottom: 24px;
+      }
+
+      :host-context(.dark) .description {
+        color: #9ca3af !important;
       }
 
       .example,
@@ -332,6 +358,11 @@ import { Component } from '@angular/core';
         margin-bottom: 16px;
       }
 
+      :host-context(.dark) .example,
+      :host-context(.dark) .use-case {
+        background: #252b3b !important;
+      }
+
       .example h3,
       .use-case h3 {
         font-size: 18px;
@@ -340,6 +371,11 @@ import { Component } from '@angular/core';
         margin-bottom: 12px;
         display: flex;
         align-items: center;
+      }
+
+      :host-context(.dark) .example h3,
+      :host-context(.dark) .use-case h3 {
+        color: #d1d5db !important;
       }
 
       .example ul {
@@ -355,9 +391,17 @@ import { Component } from '@angular/core';
         line-height: 1.5;
       }
 
+      :host-context(.dark) .example li {
+        color: #9ca3af !important;
+      }
+
       .example li strong {
         color: #1f2937;
         font-weight: 600;
+      }
+
+      :host-context(.dark) .example li strong {
+        color: #d1d5db !important;
       }
 
       .use-case p {
@@ -365,6 +409,10 @@ import { Component } from '@angular/core';
         font-size: 15px;
         line-height: 1.6;
         margin: 0;
+      }
+
+      :host-context(.dark) .use-case p {
+        color: #9ca3af !important;
       }
 
       .use-case i {
