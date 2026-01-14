@@ -345,6 +345,56 @@ import { StatsService } from '../services/stats.service';
           font-size: 24px;
         }
       }
+
+      :host-context(.dark) .stat-card,
+      :host-context(.dark) .next-section,
+      :host-context(.dark) .quick-actions {
+        background: #1e2433 !important;
+        border-color: #2d3748 !important;
+        color: #d1d5db !important;
+      }
+
+      :host-context(.dark) .stat-card:hover {
+        background: #252b3b !important;
+      }
+
+      :host-context(.dark) .stat-value {
+        color: #d1d5db !important;
+      }
+
+      :host-context(.dark) .stat-label {
+        color: #9ca3af !important;
+      }
+
+      :host-context(.dark) .section-header {
+        color: #e5e7eb !important;
+      }
+
+      :host-context(.dark) .next-block {
+        background: linear-gradient(135deg, #252b3b 0%, #2d3748 100%) !important;
+        border-left-color: #6366f1 !important;
+      }
+
+      :host-context(.dark) .block-title {
+        color: #e5e7eb !important;
+      }
+
+      :host-context(.dark) .block-time {
+        color: #9ca3af !important;
+      }
+
+      :host-context(.dark) .action-btn {
+        background: linear-gradient(135deg, #5b52d6 0%, #7066e0 100%) !important;
+      }
+
+      :host-context(.dark) .action-btn:hover {
+        background: linear-gradient(135deg, #6b61e0 0%, #8076ea 100%) !important;
+      }
+
+      :host-context(.dark) .action-text {
+        color: #ffffff !important;
+        opacity: 0.95;
+      }
     `,
   ],
 })

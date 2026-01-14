@@ -144,6 +144,7 @@ import { ThemeService } from './services/theme.service';
         flex-direction: column;
         gap: 4px;
         flex: 1;
+        padding-bottom: 80px;
       }
 
       .sidebar .nav-link {
@@ -155,6 +156,10 @@ import { ThemeService } from './services/theme.service';
         border-radius: 10px;
         transition: all 0.2s ease;
         font-weight: 500;
+      }
+
+      .sidebar .nav-link.mt-auto {
+        margin-top: auto;
       }
 
       .sidebar .nav-link i {

@@ -42,7 +42,7 @@ body {
 .dark .chart-section,
 .dark .next-section,
 .dark .quick-actions {
-  background: #1a1f2e;
+  background: #1e2433;
   border-color: #2d3748;
   color: #d1d5db;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -51,12 +51,26 @@ body {
 .dark .stat-card:hover,
 .dark .action-card:hover,
 .dark .feature-card:hover {
-  background: #232936;
+  background: #252b3b;
   border-color: #374151;
 }
 
+.dark .stat-icon,
+.dark .action-icon {
+  opacity: 0.85;
+}
+
+.dark .stat-value,
+.dark .stat-label {
+  color: #d1d5db;
+}
+
+.dark .section-header {
+  color: #e5e7eb;
+}
+
 .dark .next-block {
-  background: linear-gradient(135deg, #1f2937 0%, #2d3748 100%);
+  background: linear-gradient(135deg, #252b3b 0%, #2d3748 100%);
   border-left-color: #6366f1;
 }
 
@@ -69,12 +83,18 @@ body {
 }
 
 .dark .action-btn {
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+  background: linear-gradient(135deg, #5b52d6 0%, #7066e0 100%);
+  box-shadow: 0 2px 8px rgba(91, 82, 214, 0.3);
 }
 
 .dark .action-btn:hover {
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.5);
+  box-shadow: 0 8px 24px rgba(91, 82, 214, 0.5);
+  background: linear-gradient(135deg, #6b61e0 0%, #8076ea 100%);
+}
+
+.dark .action-text {
+  color: #ffffff;
+  opacity: 0.95;
 }
 
 .dark .btn,
