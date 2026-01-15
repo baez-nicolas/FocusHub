@@ -1,7 +1,9 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { Block, PlannerService } from '../services/planner.service';
+import { PomodoroService } from '../services/pomodoro.service';
 
 @Component({
   selector: 'app-planner',
@@ -71,6 +73,16 @@ import { Block, PlannerService } from '../services/planner.service';
         </div>
         }
       </div>
+
+      @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
+      <div class="pomodoro-widget" (click)="goToPomodoro()">
+        <div class="pomodoro-icon">⏱️</div>
+        <div class="pomodoro-content">
+          <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
+          <div class="pomodoro-time">{{ formatTime() }}</div>
+        </div>
+      </div>
+      }
     </div>
   `,
   styles: [
@@ -489,13 +501,115 @@ import { Block, PlannerService } from '../services/planner.service';
           justify-content: center;
         }
       }
+
+      .pomodoro-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.95) 0%,
+          rgba(139, 92, 246, 0.95) 100%
+        );
+        backdrop-filter: blur(16px);
+        padding: 12px 20px;
+        border-radius: 16px;
+        border: 1.5px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+        z-index: 1000;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        width: 160px;
+      }
+
+      .pomodoro-widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
+        border-color: rgba(255, 255, 255, 0.35);
+      }
+
+      .pomodoro-widget:active {
+        transform: translateY(-1px);
+      }
+
+      .pomodoro-icon {
+        font-size: 24px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .pomodoro-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .pomodoro-label {
+        font-size: 9px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.85);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        line-height: 1;
+      }
+
+      .pomodoro-time {
+        font-size: 20px;
+        font-weight: 800;
+        color: white;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.5px;
+        line-height: 1;
+      }
+
+      :host-context(.dark) .pomodoro-widget {
+        background: linear-gradient(
+          135deg,
+          rgba(79, 70, 229, 0.95) 0%,
+          rgba(124, 58, 237, 0.95) 100%
+        );
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      :host-context(.dark) .pomodoro-widget:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.4);
+      }
     `,
   ],
 })
 export class PlannerComponent {
+  pomodoroService = inject(PomodoroService);
+  private router = inject(Router);
   selectedDate = signal(new Date().toISOString().split('T')[0]);
 
   constructor(protected service: PlannerService) {}
+
+  formatTime = computed(() => {
+    const sec = this.pomodoroService.secondsLeft();
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  });
+
+  getPhaseLabel(): string {
+    const state = this.pomodoroService.state();
+    if (state === 'RUNNING_FOCUS') {
+      return 'Enfoque';
+    } else if (state === 'RUNNING_SHORT_BREAK' || state === 'RUNNING_LONG_BREAK') {
+      return 'Descanso';
+    }
+    return '';
+  }
+
+  goToPomodoro(): void {
+    this.router.navigate(['/pomodoro']);
+  }
 
   todayBlocks = computed(() => this.service.getBlocksForDate(this.selectedDate()));
 

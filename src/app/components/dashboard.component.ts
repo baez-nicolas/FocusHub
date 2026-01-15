@@ -75,9 +75,12 @@ import { StatsService } from '../services/stats.service';
       </div>
 
       @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
-      <div class="pomodoro-widget">
-        <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
-        <div class="pomodoro-time">{{ formatTime() }}</div>
+      <div class="pomodoro-widget" (click)="goToPomodoro()">
+        <div class="pomodoro-icon">⏱️</div>
+        <div class="pomodoro-content">
+          <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
+          <div class="pomodoro-time">{{ formatTime() }}</div>
+        </div>
       </div>
       }
     </div>
@@ -259,40 +262,63 @@ import { StatsService } from '../services/stats.service';
 
       .pomodoro-widget {
         position: fixed;
-        bottom: 40px;
-        right: 40px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(20px);
-        padding: 20px 32px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        z-index: 10;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.95) 0%,
+          rgba(139, 92, 246, 0.95) 100%
+        );
+        backdrop-filter: blur(16px);
+        padding: 12px 20px;
+        border-radius: 16px;
+        border: 1.5px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+        z-index: 1000;
         transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        width: 160px;
       }
 
       .pomodoro-widget:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
+        border-color: rgba(255, 255, 255, 0.35);
+      }
+
+      .pomodoro-icon {
+        font-size: 24px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .pomodoro-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
       }
 
       .pomodoro-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.8);
+        font-size: 9px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.85);
         text-transform: uppercase;
         letter-spacing: 1px;
-        margin-bottom: 8px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        line-height: 1;
       }
 
       .pomodoro-time {
-        font-size: 36px;
-        font-weight: 900;
+        font-size: 20px;
+        font-weight: 800;
         color: white;
         font-variant-numeric: tabular-nums;
-        letter-spacing: -1px;
-        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        letter-spacing: -0.5px;
+        line-height: 1;
       }
 
       @media (max-width: 768px) {
@@ -313,41 +339,26 @@ import { StatsService } from '../services/stats.service';
           grid-template-columns: repeat(2, 1fr);
           gap: 12px;
         }
-
-        .pomodoro-widget {
-          bottom: 24px;
-          right: 24px;
-          padding: 16px 24px;
-        }
-
-        .pomodoro-label {
-          font-size: 12px;
-        }
-
-        .pomodoro-time {
-          font-size: 28px;
-        }
       }
 
       @media (max-width: 576px) {
         .actions-grid {
           grid-template-columns: 1fr;
         }
+      }
 
-        .pomodoro-widget {
-          bottom: 16px;
-          right: 16px;
-          padding: 12px 20px;
-        }
+      :host-context(.dark) .pomodoro-widget {
+        background: linear-gradient(
+          135deg,
+          rgba(79, 70, 229, 0.95) 0%,
+          rgba(124, 58, 237, 0.95) 100%
+        );
+        border-color: rgba(255, 255, 255, 0.2);
+      }
 
-        .pomodoro-label {
-          font-size: 11px;
-          margin-bottom: 4px;
-        }
-
-        .pomodoro-time {
-          font-size: 24px;
-        }
+      :host-context(.dark) .pomodoro-widget:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.4);
       }
 
       :host-context(.dark) .stat-card,
@@ -452,6 +463,10 @@ export class DashboardComponent {
       return 'Descanso';
     }
     return '';
+  }
+
+  goToPomodoro(): void {
+    this.router.navigate(['/pomodoro']);
   }
 
   nextBlock = computed(() => {
