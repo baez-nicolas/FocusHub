@@ -12,6 +12,7 @@ import { StatsService } from '../services/stats.service';
       <div class="header">
         <div class="title">🏠 Dashboard</div>
         <div class="subtitle">Tu resumen de productividad</div>
+        <div class="datetime">{{ currentDateTime() }}</div>
       </div>
 
       <div class="stats-grid">
@@ -66,10 +67,6 @@ import { StatsService } from '../services/stats.service';
             <div class="action-icon">📅</div>
             <div class="action-text">Planner</div>
           </button>
-          <button class="action-btn" (click)="navigate('/stats')">
-            <div class="action-icon">📊</div>
-            <div class="action-text">Stats</div>
-          </button>
           <button class="action-btn" (click)="navigate('/calculator')">
             <div class="action-icon">🔢</div>
             <div class="action-text">Calculadora</div>
@@ -110,6 +107,13 @@ import { StatsService } from '../services/stats.service';
         font-size: 16px;
         color: #6b7280;
         font-weight: 500;
+      }
+
+      .datetime {
+        font-size: 13px;
+        color: #9ca3af;
+        font-weight: 500;
+        margin-top: 12px;
       }
 
       .stats-grid {
@@ -223,7 +227,7 @@ import { StatsService } from '../services/stats.service';
 
       .actions-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 16px;
       }
 
@@ -395,6 +399,10 @@ import { StatsService } from '../services/stats.service';
         color: #ffffff !important;
         opacity: 0.95;
       }
+
+      :host-context(.dark) .datetime {
+        color: #6b7280 !important;
+      }
     `,
   ],
 })
@@ -403,6 +411,31 @@ export class DashboardComponent {
   private planner = inject(PlannerService);
   protected stats = inject(StatsService);
   private router = inject(Router);
+
+  currentDateTime = computed(() => {
+    const now = new Date();
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
+    const day = days[now.getDay()];
+    const date = now.getDate();
+    const month = months[now.getMonth()];
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    return `${day} ${date} ${month} • ${hours}:${minutes}`;
+  });
 
   formatTime = computed(() => {
     const sec = this.pomodoroService.secondsLeft();
