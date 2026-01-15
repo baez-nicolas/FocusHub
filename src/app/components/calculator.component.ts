@@ -280,15 +280,12 @@ export class CalculatorComponent {
   }
 
   private evaluateExpression(expr: string): number {
-    // Eliminar espacios
     expr = expr.replace(/\s/g, '');
 
-    // Evaluar expresión de forma segura sin eval()
     return this.parseExpression(expr);
   }
 
   private parseExpression(expr: string): number {
-    // Primero evaluamos sumas y restas
     let terms = this.splitByOperator(expr, ['+', '-']);
     if (terms.length > 1) {
       let result = this.parseTerm(terms[0].value);
@@ -305,7 +302,6 @@ export class CalculatorComponent {
   }
 
   private parseTerm(term: string): number {
-    // Evaluamos multiplicaciones, divisiones y módulos
     let factors = this.splitByOperator(term, ['*', '/', '%']);
     if (factors.length > 1) {
       let result = this.parseFactor(factors[0].value);
@@ -324,17 +320,14 @@ export class CalculatorComponent {
   }
 
   private parseFactor(factor: string): number {
-    // Manejar paréntesis
     if (factor.startsWith('(') && factor.endsWith(')')) {
       return this.parseExpression(factor.slice(1, -1));
     }
 
-    // Manejar números negativos
     if (factor.startsWith('-')) {
       return -this.parseFactor(factor.slice(1));
     }
 
-    // Convertir a número
     const num = parseFloat(factor);
     if (isNaN(num)) {
       throw new Error('Invalid number');
@@ -361,14 +354,11 @@ export class CalculatorComponent {
         parenthesesLevel--;
         currentPart += char;
       } else if (parenthesesLevel === 0 && operators.includes(char)) {
-        // Solo dividir si no estamos dentro de paréntesis
-        // y si no es un signo negativo al inicio o después de un operador
         if (i > 0 && currentPart.length > 0) {
           parts.push({ operator: parts.length === 0 ? '+' : expr[i], value: currentPart });
           currentPart = '';
           startIndex = i + 1;
         } else if (char === '-' && (i === 0 || operators.includes(expr[i - 1]))) {
-          // Es un signo negativo, no un operador
           currentPart += char;
         } else {
           currentPart += char;

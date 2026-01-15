@@ -33,7 +33,15 @@ export class StatsService {
     });
 
     let streak = 0;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const todayMinutes = dateMap.get(todayStr) || 0;
+
     let current = new Date();
+    if (todayMinutes < 25) {
+      current.setDate(current.getDate() - 1);
+    }
+
     while (true) {
       const dateStr = current.toISOString().split('T')[0];
       const mins = dateMap.get(dateStr) || 0;

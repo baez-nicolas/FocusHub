@@ -650,10 +650,8 @@ export class PlannerComponent {
           }
         };
 
-        // Validar al inicio
         validateForm();
 
-        // Validar en cada cambio
         titleInput.addEventListener('input', validateForm);
         startTimeInput.addEventListener('change', validateForm);
         endTimeInput.addEventListener('change', validateForm);
@@ -851,10 +849,8 @@ export class PlannerComponent {
           }
         };
 
-        // Validar al inicio
         validateForm();
 
-        // Validar en cada cambio
         titleInput.addEventListener('input', validateForm);
         startTimeInput.addEventListener('change', validateForm);
         endTimeInput.addEventListener('change', validateForm);

@@ -634,9 +634,8 @@ export class GymComponent {
   async openRoutineForm(): Promise<void> {
     const isDark = document.documentElement.classList.contains('dark');
 
-    // Generar HTML dinámico para los ejercicios
     let exercisesHTML = '';
-    this.routineForm.exercises = []; // Resetear ejercicios
+    this.routineForm.exercises = [];
 
     const { value: formValues } = await Swal.fire({
       title: '💪 Nueva Rutina',
@@ -887,7 +886,6 @@ export class GymComponent {
             )
             .join('');
 
-          // Agregar event listeners
           exercisesContainer.querySelectorAll('.ex-name').forEach((input) => {
             input.addEventListener('input', (e) => {
               const idx = parseInt((e.target as HTMLInputElement).dataset['index']!);
@@ -931,7 +929,6 @@ export class GymComponent {
 
         nameInput.addEventListener('input', validateForm);
 
-        // Validar al inicio
         validateForm();
       },
       preConfirm: () => {
