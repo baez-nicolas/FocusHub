@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 import { NotesService } from '../services/notes.service';
 import { PomodoroService } from '../services/pomodoro.service';
 
@@ -33,40 +34,6 @@ import { PomodoroService } from '../services/pomodoro.service';
 
         <button class="btn-new" (click)="openForm()">+ Nueva Nota</button>
       </div>
-
-      @if (showForm()) {
-      <div class="form-card">
-        <div class="form-header">{{ editingId() ? 'Editar' : 'Nueva' }} Nota</div>
-
-        <input
-          type="text"
-          [(ngModel)]="form.title"
-          placeholder="Título de la nota"
-          class="input-title"
-        />
-
-        <textarea
-          [(ngModel)]="form.content"
-          placeholder="Escribe el contenido de tu nota..."
-          class="input-content"
-          rows="8"
-        ></textarea>
-
-        <select [(ngModel)]="form.category" class="category-select">
-          <option value="Personal">👤 Personal</option>
-          <option value="Trabajo">💼 Trabajo</option>
-          <option value="Estudio">📚 Estudio</option>
-          <option value="Ideas">💡 Ideas</option>
-          <option value="Pendientes">✅ Pendientes</option>
-          <option value="Otros">📌 Otros</option>
-        </select>
-
-        <div class="form-actions">
-          <button class="btn-save" (click)="saveNote()">✓ Guardar</button>
-          <button class="btn-cancel" (click)="cancelForm()">✕ Cancelar</button>
-        </div>
-      </div>
-      }
 
       <div class="notes-grid">
         @for (note of service.filteredNotes(); track note.id) {
@@ -663,22 +630,365 @@ export class NotesComponent {
     category: 'Personal',
   };
 
-  openForm(): void {
-    this.showForm.set(true);
-    this.editingId.set(null);
-    this.form = { title: '', content: '', category: 'Personal' };
+  async openForm(): Promise<void> {
+    const isDark = document.documentElement.classList.contains('dark');
+
+    const { value: formValues } = await Swal.fire({
+      title: '📝 Nueva Nota',
+      html: `
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+          .swal2-html-container {
+            overflow-x: hidden !important;
+            max-width: 100%;
+          }
+          @media (max-width: 640px) {
+            .modal-container {
+              padding: 12px !important;
+              max-width: 100% !important;
+              overflow-x: hidden !important;
+            }
+            .swal2-input, .swal2-textarea {
+              padding: 10px 12px !important;
+              font-size: 14px !important;
+            }
+            .modal-label {
+              font-size: 14px !important;
+            }
+          }
+        </style>
+        <div class="modal-container" style="padding: 16px; max-width: 100%; margin: 0 auto; overflow-x: hidden;">
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Título</label>
+            <input
+              id="noteTitle"
+              class="swal2-input"
+              placeholder="Título de la nota"
+              autofocus
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+              "
+            >
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Contenido</label>
+            <textarea
+              id="noteContent"
+              class="swal2-textarea"
+              placeholder="Escribe el contenido de tu nota..."
+              rows="6"
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+                resize: vertical;
+                line-height: 1.6;
+              "
+            ></textarea>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Categoría</label>
+            <select
+              id="noteCategory"
+              class="swal2-select"
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+              "
+            >
+              <option value="Personal">👤 Personal</option>
+              <option value="Trabajo">💼 Trabajo</option>
+              <option value="Estudio">📚 Estudio</option>
+              <option value="Ideas">💡 Ideas</option>
+              <option value="Pendientes">✅ Pendientes</option>
+              <option value="Otros">📌 Otros</option>
+            </select>
+          </div>
+        </div>
+      `,
+      width: window.innerWidth < 640 ? '95vw' : '580px',
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: '✓ Guardar',
+      cancelButtonText: '✕ Cancelar',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      customClass: {
+        popup: 'swal-planner-modal',
+        confirmButton: 'swal-btn-confirm',
+        cancelButton: 'swal-btn-cancel',
+      },
+      didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
+        const titleInput = document.getElementById('noteTitle') as HTMLInputElement;
+        const contentInput = document.getElementById('noteContent') as HTMLTextAreaElement;
+
+        const validateForm = () => {
+          const hasTitle = titleInput.value.trim() !== '';
+          const hasContent = contentInput.value.trim() !== '';
+          const isValid = hasTitle && hasContent;
+
+          if (confirmButton) {
+            confirmButton.disabled = !isValid;
+            confirmButton.style.opacity = isValid ? '1' : '0.5';
+            confirmButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+          }
+        };
+
+        titleInput.addEventListener('input', validateForm);
+        contentInput.addEventListener('input', validateForm);
+        validateForm();
+      },
+      preConfirm: () => {
+        const title = (document.getElementById('noteTitle') as HTMLInputElement).value;
+        const content = (document.getElementById('noteContent') as HTMLTextAreaElement).value;
+        const category = (document.getElementById('noteCategory') as HTMLSelectElement).value;
+
+        if (!title.trim() || !content.trim()) {
+          Swal.showValidationMessage('Por favor completa todos los campos');
+          return false;
+        }
+
+        return { title, content, category };
+      },
+    });
+
+    if (formValues) {
+      this.service.addNote(formValues.title, formValues.content, formValues.category);
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Nota creada!',
+        text: 'La nota se ha agregado correctamente',
+        timer: 2000,
+        showConfirmButton: false,
+        background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
+        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
+      });
+    }
   }
 
-  editNote(id: string): void {
+  async editNote(id: string): Promise<void> {
     const note = this.service.getNoteById(id);
-    if (note) {
-      this.showForm.set(true);
-      this.editingId.set(id);
-      this.form = {
-        title: note.title,
-        content: note.content,
-        category: note.category,
-      };
+    if (!note) return;
+
+    const isDark = document.documentElement.classList.contains('dark');
+
+    const { value: formValues } = await Swal.fire({
+      title: '✏️ Editar Nota',
+      html: `
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+          .swal2-html-container {
+            overflow-x: hidden !important;
+            max-width: 100%;
+          }
+          @media (max-width: 640px) {
+            .modal-container {
+              padding: 12px !important;
+              max-width: 100% !important;
+              overflow-x: hidden !important;
+            }
+            .swal2-input, .swal2-textarea {
+              padding: 10px 12px !important;
+              font-size: 14px !important;
+            }
+            .modal-label {
+              font-size: 14px !important;
+            }
+          }
+        </style>
+        <div class="modal-container" style="padding: 16px; max-width: 100%; margin: 0 auto; overflow-x: hidden;">
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Título</label>
+            <input
+              id="noteTitle"
+              class="swal2-input"
+              placeholder="Título de la nota"
+              value="${note.title}"
+              autofocus
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+              "
+            >
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Contenido</label>
+            <textarea
+              id="noteContent"
+              class="swal2-textarea"
+              placeholder="Escribe el contenido de tu nota..."
+              rows="6"
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+                resize: vertical;
+                line-height: 1.6;
+              "
+            >${note.content}</textarea>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Categoría</label>
+            <select
+              id="noteCategory"
+              class="swal2-select"
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+              "
+            >
+              <option value="Personal" ${
+                note.category === 'Personal' ? 'selected' : ''
+              }>👤 Personal</option>
+              <option value="Trabajo" ${
+                note.category === 'Trabajo' ? 'selected' : ''
+              }>💼 Trabajo</option>
+              <option value="Estudio" ${
+                note.category === 'Estudio' ? 'selected' : ''
+              }>📚 Estudio</option>
+              <option value="Ideas" ${note.category === 'Ideas' ? 'selected' : ''}>💡 Ideas</option>
+              <option value="Pendientes" ${
+                note.category === 'Pendientes' ? 'selected' : ''
+              }>✅ Pendientes</option>
+              <option value="Otros" ${note.category === 'Otros' ? 'selected' : ''}>📌 Otros</option>
+            </select>
+          </div>
+        </div>
+      `,
+      width: window.innerWidth < 640 ? '95vw' : '580px',
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: '✓ Guardar',
+      cancelButtonText: '✕ Cancelar',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      customClass: {
+        popup: 'swal-planner-modal',
+        confirmButton: 'swal-btn-confirm',
+        cancelButton: 'swal-btn-cancel',
+      },
+      didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
+        const titleInput = document.getElementById('noteTitle') as HTMLInputElement;
+        const contentInput = document.getElementById('noteContent') as HTMLTextAreaElement;
+
+        const validateForm = () => {
+          const hasTitle = titleInput.value.trim() !== '';
+          const hasContent = contentInput.value.trim() !== '';
+          const isValid = hasTitle && hasContent;
+
+          if (confirmButton) {
+            confirmButton.disabled = !isValid;
+            confirmButton.style.opacity = isValid ? '1' : '0.5';
+            confirmButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+          }
+        };
+
+        titleInput.addEventListener('input', validateForm);
+        contentInput.addEventListener('input', validateForm);
+        validateForm();
+      },
+      preConfirm: () => {
+        const title = (document.getElementById('noteTitle') as HTMLInputElement).value;
+        const content = (document.getElementById('noteContent') as HTMLTextAreaElement).value;
+        const category = (document.getElementById('noteCategory') as HTMLSelectElement).value;
+
+        if (!title.trim() || !content.trim()) {
+          Swal.showValidationMessage('Por favor completa todos los campos');
+          return false;
+        }
+
+        return { title, content, category };
+      },
+    });
+
+    if (formValues) {
+      this.service.updateNote(id, formValues.title, formValues.content, formValues.category);
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Nota actualizada!',
+        text: 'Los cambios se han guardado correctamente',
+        timer: 2000,
+        showConfirmButton: false,
+        background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
+        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
+      });
     }
   }
 
@@ -700,9 +1010,31 @@ export class NotesComponent {
     this.editingId.set(null);
   }
 
-  deleteNote(id: string): void {
-    if (confirm('¿Eliminar esta nota?')) {
+  async deleteNote(id: string): Promise<void> {
+    const result = await Swal.fire({
+      title: '¿Eliminar nota?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '✓ Eliminar',
+      cancelButtonText: '✕ Cancelar',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
+      color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
+    });
+
+    if (result.isConfirmed) {
       this.service.deleteNote(id);
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Nota eliminada!',
+        timer: 1500,
+        showConfirmButton: false,
+        background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
+        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
+      });
     }
   }
 
