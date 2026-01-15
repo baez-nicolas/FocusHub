@@ -1,5 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 import { Block, PlannerService } from '../services/planner.service';
 
 @Component({
@@ -15,42 +16,6 @@ import { Block, PlannerService } from '../services/planner.service';
         <input type="date" [(ngModel)]="selectedDate" class="date-picker" />
         <button class="btn-add" (click)="openForm()">+ Nuevo Bloque</button>
       </div>
-
-      @if (showForm()) {
-      <div class="form-card">
-        <div class="form-header">{{ editingId() ? 'Editar' : 'Nuevo' }} Bloque</div>
-
-        <input
-          type="text"
-          placeholder="Título del bloque"
-          [(ngModel)]="form.title"
-          class="input-title"
-        />
-
-        <div class="time-row">
-          <div class="time-input">
-            <label>Inicio</label>
-            <input type="time" [(ngModel)]="form.startTime" />
-          </div>
-          <div class="time-input">
-            <label>Fin</label>
-            <input type="time" [(ngModel)]="form.endTime" />
-          </div>
-        </div>
-
-        <select [(ngModel)]="form.category" class="category-select">
-          <option value="Focus">🎯 Focus</option>
-          <option value="Break">☕ Break</option>
-          <option value="Gym">💪 Gym</option>
-          <option value="Personal">👤 Personal</option>
-        </select>
-
-        <div class="form-actions">
-          <button class="btn-save" (click)="saveBlock()">✓ Guardar</button>
-          <button class="btn-cancel" (click)="cancelForm()">✕ Cancelar</button>
-        </div>
-      </div>
-      }
 
       <div class="blocks-list">
         @for (block of todayBlocks(); track block.id) {
@@ -194,183 +159,68 @@ import { Block, PlannerService } from '../services/planner.service';
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
       }
 
-      .form-card {
-        background: white;
-        border-radius: 20px;
-        padding: 28px;
-        margin-bottom: 32px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        border: 1px solid #f3f4f6;
+      :host ::ng-deep .swal-planner-modal {
+        border-radius: 20px !important;
+        padding: 20px !important;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
       }
 
-      :host-context(.dark) .form-card {
-        background: #1e2433 !important;
-        border: 1px solid #2d3748 !important;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      :host ::ng-deep .swal-planner-modal .swal2-title {
+        font-size: 24px !important;
+        font-weight: 700 !important;
+        margin-bottom: 24px !important;
       }
 
-      .form-header {
-        font-size: 20px;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 20px;
-        text-align: center;
+      :host ::ng-deep .swal-planner-modal .swal2-html-container {
+        margin: 0 !important;
       }
 
-      :host-context(.dark) .form-header {
-        color: #d1d5db !important;
+      :host ::ng-deep .swal2-input {
+        border-radius: 12px !important;
+        font-size: 15px !important;
+        padding: 14px 16px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
       }
 
-      .input-title {
-        width: 100%;
-        padding: 14px 16px;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 600;
-        color: #111827;
-        margin-bottom: 16px;
-        transition: all 0.2s;
+      :host ::ng-deep .swal2-input:focus {
+        outline: none !important;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15) !important;
       }
 
-      :host-context(.dark) .input-title {
-        background: #252b3b !important;
-        border: 2px solid #2d3748 !important;
-        color: #d1d5db !important;
-      }
-
-      .input-title:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-      }
-
-      :host-context(.dark) .input-title:focus {
-        border-color: #7066e0 !important;
-        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
-      }
-
-      .time-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 16px;
-      }
-
-      .time-input label {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        color: #6b7280;
-        margin-bottom: 8px;
-      }
-
-      :host-context(.dark) .time-input label {
+      :host ::ng-deep .swal2-input::placeholder {
         color: #9ca3af !important;
       }
 
-      .time-input input {
-        width: 100%;
-        padding: 12px 16px;
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        font-size: 15px;
-        font-weight: 600;
-        color: #111827;
-        transition: all 0.2s;
+      :host ::ng-deep .swal-btn-confirm {
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        padding: 14px 32px !important;
+        font-size: 16px !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
       }
 
-      :host-context(.dark) .time-input input {
-        background: #252b3b !important;
-        border: 2px solid #2d3748 !important;
-        color: #d1d5db !important;
+      :host ::ng-deep .swal-btn-confirm:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
       }
 
-      .time-input input:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      :host ::ng-deep .swal-btn-cancel {
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        padding: 14px 32px !important;
+        font-size: 16px !important;
+        transition: all 0.2s ease !important;
       }
 
-      :host-context(.dark) .time-input input:focus {
-        border-color: #7066e0 !important;
-        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
+      :host ::ng-deep .swal-btn-cancel:hover {
+        background: #9ca3af !important;
       }
 
-      .category-select {
-        width: 100%;
-        padding: 14px 16px;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 600;
-        color: #111827;
-        margin-bottom: 20px;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      :host-context(.dark) .category-select {
-        background: #252b3b !important;
-        border: 2px solid #2d3748 !important;
-        color: #d1d5db !important;
-      }
-
-      .category-select:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-      }
-
-      :host-context(.dark) .category-select:focus {
-        border-color: #7066e0 !important;
-        box-shadow: 0 0 0 3px rgba(112, 102, 224, 0.2) !important;
-      }
-
-      .form-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-
-      .btn-save,
-      .btn-cancel {
-        padding: 14px;
-        border: none;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .btn-save {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      }
-
-      .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-      }
-
-      .btn-cancel {
-        background: #f3f4f6;
-        color: #6b7280;
-      }
-
-      :host-context(.dark) .btn-cancel {
-        background: #252b3b !important;
-        color: #9ca3af !important;
-      }
-
-      .btn-cancel:hover {
-        background: #e5e7eb;
-      }
-
-      :host-context(.dark) .btn-cancel:hover {
-        background: #2d3748 !important;
+      :host ::ng-deep .swal2-actions {
+        gap: 12px !important;
+        margin-top: 24px !important;
       }
 
       .blocks-list {
@@ -635,42 +485,399 @@ import { Block, PlannerService } from '../services/planner.service';
 })
 export class PlannerComponent {
   selectedDate = signal(new Date().toISOString().split('T')[0]);
-  showForm = signal(false);
-  editingId = signal<string | null>(null);
-  form = { title: '', startTime: '', endTime: '', category: 'Focus' as any };
 
   constructor(protected service: PlannerService) {}
 
   todayBlocks = computed(() => this.service.getBlocksForDate(this.selectedDate()));
 
-  openForm(): void {
-    this.showForm.set(true);
-    this.editingId.set(null);
-    this.form = { title: '', startTime: '', endTime: '', category: 'Focus' };
-  }
+  async openForm(): Promise<void> {
+    const isDark = document.documentElement.classList.contains('dark');
 
-  editBlock(block: Block): void {
-    this.showForm.set(true);
-    this.editingId.set(block.id);
-    this.form = {
-      title: block.title,
-      startTime: block.startTime,
-      endTime: block.endTime,
-      category: block.category,
-    };
-  }
+    const { value: formValues } = await Swal.fire({
+      title: '📅 Nuevo Bloque',
+      html: `
+        <style>
+          @media (max-width: 640px) {
+            .modal-container { padding: 12px !important; }
+            .modal-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+            .swal2-input { padding: 10px 12px !important; font-size: 14px !important; }
+            .modal-label { font-size: 14px !important; }
+          }
+        </style>
+        <div class="modal-container" style="padding: 16px; max-width: 480px; margin: 0 auto;">
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Título del bloque</label>
+            <input
+              id="title"
+              class="swal2-input"
+              placeholder="Ej: Estudiar Angular"
+              autofocus
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+              "
+            >
+          </div>
 
-  saveBlock(): void {
-    if (this.editingId()) {
-      this.service.updateBlock(this.editingId()!, this.form);
-    } else {
-      this.service.addBlock({ ...this.form, date: this.selectedDate(), status: 'PLANNED' });
+          <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div>
+              <label class="modal-label" style="
+                display: block;
+                font-size: 15px;
+                font-weight: 700;
+                color: ${isDark ? '#ffffff' : '#111827'};
+                margin-bottom: 8px;
+                letter-spacing: 0.3px;
+              ">Hora inicio</label>
+              <input
+                id="startTime"
+                type="time"
+                class="swal2-input"
+                style="
+                  width: 100%;
+                  margin: 0;
+                  padding: 12px 14px;
+                  font-size: 15px;
+                  border-radius: 8px;
+                  box-sizing: border-box;
+                "
+              >
+            </div>
+            <div>
+              <label class="modal-label" style="
+                display: block;
+                font-size: 15px;
+                font-weight: 700;
+                color: ${isDark ? '#ffffff' : '#111827'};
+                margin-bottom: 8px;
+                letter-spacing: 0.3px;
+              ">Hora fin</label>
+              <input
+                id="endTime"
+                type="time"
+                class="swal2-input"
+                style="
+                  width: 100%;
+                  margin: 0;
+                  padding: 12px 14px;
+                  font-size: 15px;
+                  border-radius: 8px;
+                  box-sizing: border-box;
+                "
+              >
+            </div>
+          </div>
+
+          <div>
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Categoría</label>
+            <select
+              id="category"
+              class="swal2-input"
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+                height: 48px;
+                cursor: pointer;
+              "
+            >
+              <option value="Focus">🎯 Focus</option>
+              <option value="Break">☕ Break</option>
+              <option value="Gym">💪 Gym</option>
+              <option value="Personal">👤 Personal</option>
+            </select>
+          </div>
+        </div>
+      `,
+      width: window.innerWidth < 640 ? '95vw' : '560px',
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: '✓ Guardar',
+      cancelButtonText: '✕ Cancelar',
+      confirmButtonColor: '#667eea',
+      cancelButtonColor: '#6b7280',
+      customClass: {
+        popup: 'swal-planner-modal',
+        confirmButton: 'swal-btn-confirm',
+        cancelButton: 'swal-btn-cancel',
+      },
+      didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
+        const titleInput = document.getElementById('title') as HTMLInputElement;
+        const startTimeInput = document.getElementById('startTime') as HTMLInputElement;
+        const endTimeInput = document.getElementById('endTime') as HTMLInputElement;
+
+        const validateForm = () => {
+          const isValid =
+            titleInput.value.trim() !== '' &&
+            startTimeInput.value !== '' &&
+            endTimeInput.value !== '';
+
+          if (confirmButton) {
+            confirmButton.disabled = !isValid;
+            confirmButton.style.opacity = isValid ? '1' : '0.5';
+            confirmButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+          }
+        };
+
+        // Validar al inicio
+        validateForm();
+
+        // Validar en cada cambio
+        titleInput.addEventListener('input', validateForm);
+        startTimeInput.addEventListener('change', validateForm);
+        endTimeInput.addEventListener('change', validateForm);
+      },
+      preConfirm: () => {
+        const title = (document.getElementById('title') as HTMLInputElement).value;
+        const startTime = (document.getElementById('startTime') as HTMLInputElement).value;
+        const endTime = (document.getElementById('endTime') as HTMLInputElement).value;
+        const category = (document.getElementById('category') as HTMLSelectElement).value;
+
+        if (!title || !startTime || !endTime) {
+          Swal.showValidationMessage('Por favor completa todos los campos');
+          return false;
+        }
+
+        return { title, startTime, endTime, category };
+      },
+    });
+
+    if (formValues) {
+      this.service.addBlock({
+        ...formValues,
+        date: this.selectedDate(),
+        status: 'PLANNED',
+      });
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Bloque creado!',
+        text: 'El bloque se ha agregado correctamente',
+        timer: 2000,
+        showConfirmButton: false,
+        background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
+        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
+      });
     }
-    this.cancelForm();
   }
 
-  cancelForm(): void {
-    this.showForm.set(false);
+  async editBlock(block: Block): Promise<void> {
+    const isDark = document.documentElement.classList.contains('dark');
+
+    const { value: formValues } = await Swal.fire({
+      title: '✎ Editar Bloque',
+      html: `
+        <style>
+          @media (max-width: 640px) {
+            .modal-container { padding: 12px !important; }
+            .modal-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+            .swal2-input { padding: 10px 12px !important; font-size: 14px !important; }
+            .modal-label { font-size: 14px !important; }
+          }
+        </style>
+        <div class="modal-container" style="padding: 16px; max-width: 480px; margin: 0 auto;">
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Título del bloque</label>
+            <input
+              id="title"
+              class="swal2-input"
+              placeholder="Ej: Estudiar Angular"
+              value="${block.title}"
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+              "
+            >
+          </div>
+
+          <div class="modal-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div>
+              <label class="modal-label" style="
+                display: block;
+                font-size: 15px;
+                font-weight: 700;
+                color: ${isDark ? '#ffffff' : '#111827'};
+                margin-bottom: 8px;
+                letter-spacing: 0.3px;
+              ">Hora inicio</label>
+              <input
+                id="startTime"
+                type="time"
+                class="swal2-input"
+                value="${block.startTime}"
+                style="
+                  width: 100%;
+                  margin: 0;
+                  padding: 12px 14px;
+                  font-size: 15px;
+                  border-radius: 8px;
+                  box-sizing: border-box;
+                "
+              >
+            </div>
+            <div>
+              <label class="modal-label" style="
+                display: block;
+                font-size: 15px;
+                font-weight: 700;
+                color: ${isDark ? '#ffffff' : '#111827'};
+                margin-bottom: 8px;
+                letter-spacing: 0.3px;
+              ">Hora fin</label>
+              <input
+                id="endTime"
+                type="time"
+                class="swal2-input"
+                value="${block.endTime}"
+                style="
+                  width: 100%;
+                  margin: 0;
+                  padding: 12px 14px;
+                  font-size: 15px;
+                  border-radius: 8px;
+                  box-sizing: border-box;
+                "
+              >
+            </div>
+          </div>
+
+          <div>
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Categoría</label>
+            <select
+              id="category"
+              class="swal2-input"
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+                height: 48px;
+                cursor: pointer;
+              "
+            >
+              <option value="Focus" ${
+                block.category === 'Focus' ? 'selected' : ''
+              }>🎯 Focus</option>
+              <option value="Break" ${
+                block.category === 'Break' ? 'selected' : ''
+              }>☕ Break</option>
+              <option value="Gym" ${block.category === 'Gym' ? 'selected' : ''}>💪 Gym</option>
+              <option value="Personal" ${
+                block.category === 'Personal' ? 'selected' : ''
+              }>👤 Personal</option>
+            </select>
+          </div>
+        </div>
+      `,
+      width: window.innerWidth < 640 ? '95vw' : '560px',
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: '✓ Guardar',
+      cancelButtonText: '✕ Cancelar',
+      confirmButtonColor: '#667eea',
+      cancelButtonColor: '#6b7280',
+      customClass: {
+        popup: 'swal-planner-modal',
+        confirmButton: 'swal-btn-confirm',
+        cancelButton: 'swal-btn-cancel',
+      },
+      didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
+        const titleInput = document.getElementById('title') as HTMLInputElement;
+        const startTimeInput = document.getElementById('startTime') as HTMLInputElement;
+        const endTimeInput = document.getElementById('endTime') as HTMLInputElement;
+
+        const validateForm = () => {
+          const isValid =
+            titleInput.value.trim() !== '' &&
+            startTimeInput.value !== '' &&
+            endTimeInput.value !== '';
+
+          if (confirmButton) {
+            confirmButton.disabled = !isValid;
+            confirmButton.style.opacity = isValid ? '1' : '0.5';
+            confirmButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+          }
+        };
+
+        // Validar al inicio
+        validateForm();
+
+        // Validar en cada cambio
+        titleInput.addEventListener('input', validateForm);
+        startTimeInput.addEventListener('change', validateForm);
+        endTimeInput.addEventListener('change', validateForm);
+      },
+      preConfirm: () => {
+        const title = (document.getElementById('title') as HTMLInputElement).value;
+        const startTime = (document.getElementById('startTime') as HTMLInputElement).value;
+        const endTime = (document.getElementById('endTime') as HTMLInputElement).value;
+        const category = (document.getElementById('category') as HTMLSelectElement).value;
+
+        if (!title || !startTime || !endTime) {
+          Swal.showValidationMessage('Por favor completa todos los campos');
+          return false;
+        }
+
+        return { title, startTime, endTime, category };
+      },
+    });
+
+    if (formValues) {
+      this.service.updateBlock(block.id, formValues);
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Bloque actualizado!',
+        text: 'Los cambios se han guardado correctamente',
+        timer: 2000,
+        showConfirmButton: false,
+        background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
+        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
+      });
+    }
   }
 
   getCategoryClass(category: string): string {

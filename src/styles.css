@@ -167,3 +167,55 @@ button:focus {
   outline: 2px solid #6366f1;
   outline-offset: 2px;
 }
+
+/* SweetAlert2 Dark Mode */
+.dark .swal2-popup {
+  background: #1e2433 !important;
+  color: #e5e7eb !important;
+}
+
+.dark .swal2-title {
+  color: #f3f4f6 !important;
+}
+
+.dark .swal2-html-container {
+  color: #d1d5db !important;
+  background: transparent !important;
+}
+
+.dark .swal2-html-container * {
+  background-color: transparent !important;
+}
+
+.dark .swal2-html-container div[style*='background'] {
+  background: #1e2433 !important;
+}
+
+.dark .swal2-input,
+.dark .swal2-textarea,
+.dark .swal2-select,
+.dark input.swal2-input,
+.dark select.swal2-input {
+  background: #2d3748 !important;
+  background-color: #2d3748 !important;
+  color: #f3f4f6 !important;
+  border: 2px solid #4a5568 !important;
+}
+
+.dark .swal2-input::placeholder,
+.dark .swal2-textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+.dark .swal2-input:focus,
+.dark .swal2-textarea:focus,
+.dark .swal2-select:focus {
+  border-color: #8b5cf6 !important;
+  background: #374151 !important;
+  background-color: #374151 !important;
+}
+
+.dark .swal2-select option {
+  background: #2d3748 !important;
+  color: #f3f4f6 !important;
+}
