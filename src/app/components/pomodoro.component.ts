@@ -195,12 +195,17 @@ import { PomodoroService } from '../services/pomodoro.service';
       }
 
       .btn-config {
-        background: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.2);
         color: white;
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.25);
         font-size: 16px;
         padding: 16px 32px;
+      }
+
+      :host-context(.dark) .btn-config {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
       }
 
       .config-section {
