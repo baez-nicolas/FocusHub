@@ -104,9 +104,18 @@ import { Exercise, GymService } from '../services/gym.service';
         margin-bottom: 32px;
       }
 
+      :host-context(.dark) .btn-add {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+      }
+
       .btn-add:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+      }
+
+      :host-context(.dark) .btn-add:hover {
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
       }
 
       .form-card {

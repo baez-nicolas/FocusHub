@@ -154,9 +154,18 @@ import { Block, PlannerService } from '../services/planner.service';
         white-space: nowrap;
       }
 
+      :host-context(.dark) .btn-add {
+        background: linear-gradient(135deg, #5b5fc7 0%, #6b46a8 100%);
+        box-shadow: 0 4px 12px rgba(91, 95, 199, 0.4);
+      }
+
       .btn-add:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      :host-context(.dark) .btn-add:hover {
+        box-shadow: 0 6px 20px rgba(91, 95, 199, 0.5);
       }
 
       :host ::ng-deep .swal-planner-modal {

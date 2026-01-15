@@ -1,5 +1,6 @@
 import { Component, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 import { PomodoroService } from '../services/pomodoro.service';
 
 @Component({
@@ -24,6 +25,7 @@ import { PomodoroService } from '../services/pomodoro.service';
         <div class="controls">
           @if (service.state() === 'IDLE') {
           <button class="btn btn-start" (click)="service.start()">▶ Iniciar</button>
+          <button class="btn btn-config" (click)="openConfigModal()">⚙️ Configuración</button>
           } @else if (service.state() === 'PAUSED') {
           <button class="btn btn-resume" (click)="service.start()">▶ Reanudar</button>
           <button class="btn btn-stop" (click)="service.stop()">■ Stop</button>
@@ -33,173 +35,199 @@ import { PomodoroService } from '../services/pomodoro.service';
           }
         </div>
       </div>
-
-      <div class="config-section">
-        <div class="config-header">⚙️ Configuración</div>
-
-        <div class="config-grid">
-          <div class="config-item">
-            <label>Tiempo de foco</label>
-            <input type="number" [(ngModel)]="tempConfig.focusMinutes" min="1" max="60" />
-            <span class="unit">min</span>
-          </div>
-
-          <div class="config-item">
-            <label>Descanso corto</label>
-            <input type="number" [(ngModel)]="tempConfig.shortBreakMinutes" min="1" max="30" />
-            <span class="unit">min</span>
-          </div>
-
-          <div class="config-item">
-            <label>Descanso largo</label>
-            <input type="number" [(ngModel)]="tempConfig.longBreakMinutes" min="1" max="60" />
-            <span class="unit">min</span>
-          </div>
-
-          <div class="config-item">
-            <label>Ciclos antes de descanso largo</label>
-            <input type="number" [(ngModel)]="tempConfig.cyclesBeforeLongBreak" min="1" max="10" />
-            <span class="unit">ciclos</span>
-          </div>
-        </div>
-
-        <button class="btn-save" (click)="saveConfig()">✓ Guardar Configuración</button>
-      </div>
     </div>
   `,
   styles: [
     `
       .container {
-        max-width: 800px;
+        max-width: 900px;
         margin: 0 auto;
         padding: 40px 24px;
       }
 
       .timer-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 24px;
-        padding: 48px 32px;
+        border-radius: 32px;
+        padding: 56px 40px;
         text-align: center;
         margin-bottom: 32px;
-        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .timer-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .timer-section > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      :host-context(.dark) .timer-section {
+        background: linear-gradient(135deg, #5b5fc7 0%, #6b46a8 100%);
+        box-shadow: 0 20px 60px rgba(91, 95, 199, 0.5);
       }
 
       .status-label {
-        font-size: 18px;
-        font-weight: 600;
+        font-size: 20px;
+        font-weight: 700;
         color: rgba(255, 255, 255, 0.95);
-        margin-bottom: 24px;
-        letter-spacing: 0.3px;
+        margin-bottom: 32px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
 
       .timer {
-        font-size: 96px;
-        font-weight: 800;
+        font-size: 120px;
+        font-weight: 900;
         color: white;
-        letter-spacing: -4px;
+        letter-spacing: -6px;
         line-height: 1;
-        margin-bottom: 24px;
+        margin-bottom: 32px;
         font-variant-numeric: tabular-nums;
-        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
       }
 
       .cycles {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         justify-content: center;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
       }
 
       .cycle-dot {
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.3);
         transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
 
       .cycle-dot.active {
         background: white;
-        box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
-        transform: scale(1.1);
+        box-shadow: 0 0 16px rgba(255, 255, 255, 0.8), 0 0 32px rgba(255, 255, 255, 0.4);
+        transform: scale(1.2);
       }
 
       .cycle-text {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.8);
-        margin-bottom: 32px;
-        font-weight: 500;
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 40px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
       }
 
       .controls {
         display: flex;
-        gap: 12px;
+        gap: 16px;
         justify-content: center;
         flex-wrap: wrap;
       }
 
       .btn {
-        padding: 14px 32px;
+        padding: 16px 40px;
         border: none;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 600;
+        border-radius: 16px;
+        font-size: 17px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        letter-spacing: 0.5px;
       }
 
       .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
       }
 
       .btn:active {
-        transform: translateY(0);
+        transform: translateY(-1px);
       }
 
       .btn-start,
       .btn-resume {
         background: white;
         color: #667eea;
+        font-size: 18px;
+        padding: 18px 48px;
+      }
+
+      :host-context(.dark) .btn-start,
+      :host-context(.dark) .btn-resume {
+        background: rgba(255, 255, 255, 0.2);
+        color: #e0e7ff;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
       }
 
       .btn-pause {
-        background: #fbbf24;
+        background: rgba(251, 191, 36, 0.95);
         color: white;
       }
 
       .btn-stop,
       .btn-skip {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.25);
         color: white;
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .btn-config {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        font-size: 16px;
+        padding: 16px 32px;
       }
 
       .config-section {
         background: white;
-        border-radius: 20px;
-        padding: 32px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         border: 1px solid #f3f4f6;
       }
 
       :host-context(.dark) .config-section {
         background: #1e2433 !important;
-        border: 1px solid #2d3748 !important;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid #374151 !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
       }
 
       .config-header {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 700;
         color: #111827;
-        margin-bottom: 28px;
+        margin-bottom: 32px;
         text-align: center;
+        letter-spacing: 0.5px;
       }
 
       :host-context(.dark) .config-header {
-        color: #d1d5db !important;
+        color: #e5e7eb !important;
       }
 
       .config-grid {
@@ -279,9 +307,18 @@ import { PomodoroService } from '../services/pomodoro.service';
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
       }
 
+      :host-context(.dark) .btn-save {
+        background: linear-gradient(135deg, #5b5fc7 0%, #6b46a8 100%);
+        box-shadow: 0 4px 12px rgba(91, 95, 199, 0.4);
+      }
+
       .btn-save:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      :host-context(.dark) .btn-save:hover {
+        box-shadow: 0 6px 20px rgba(91, 95, 199, 0.5);
       }
 
       .btn-save:active {
@@ -335,11 +372,7 @@ import { PomodoroService } from '../services/pomodoro.service';
   ],
 })
 export class PomodoroComponent {
-  tempConfig: any;
-
-  constructor(protected service: PomodoroService) {
-    this.tempConfig = { ...this.service.config() };
-  }
+  constructor(protected service: PomodoroService) {}
 
   stateLabel = computed(() => {
     const st = this.service.state();
@@ -371,7 +404,291 @@ export class PomodoroComponent {
     return ((total - left) / total) * 100;
   });
 
-  saveConfig(): void {
-    this.service.config.set({ ...this.tempConfig });
+  async openConfigModal(): Promise<void> {
+    const isDark = document.documentElement.classList.contains('dark');
+    const currentConfig = this.service.config();
+
+    const { value: formValues } = await Swal.fire({
+      title: '⚙️ Configuración del Timer',
+      html: `
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+          .swal2-html-container {
+            overflow-x: hidden !important;
+            max-width: 100%;
+          }
+
+          /* Quitar flechitas de input number */
+          input[type=number]::-webkit-inner-spin-button,
+          input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+          input[type=number] {
+            -moz-appearance: textfield;
+          }
+
+          @media (max-width: 640px) {
+            .modal-container {
+              padding: 12px !important;
+              max-width: 100% !important;
+              overflow-x: hidden !important;
+            }
+            .config-grid-modal {
+              grid-template-columns: 1fr !important;
+              gap: 20px !important;
+            }
+            .swal2-input {
+              padding: 10px 12px !important;
+              font-size: 14px !important;
+            }
+            .modal-label {
+              font-size: 14px !important;
+            }
+            .config-icon {
+              font-size: 28px !important;
+            }
+          }
+          .config-grid-modal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+          }
+          .config-item-modal {
+            background: ${isDark ? '#252b3b' : '#f9fafb'};
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid ${isDark ? '#374151' : '#e5e7eb'};
+            transition: all 0.3s;
+          }
+          .config-item-modal:hover {
+            border-color: ${isDark ? '#667eea' : '#667eea'};
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px ${
+              isDark ? 'rgba(102, 126, 234, 0.2)' : 'rgba(102, 126, 234, 0.15)'
+            };
+          }
+          .config-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+            display: block;
+          }
+          .config-label-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: ${isDark ? '#9ca3af' : '#6b7280'};
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            display: block;
+          }
+          .input-wrapper {
+            position: relative;
+          }
+          .config-unit {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            font-weight: 600;
+            color: ${isDark ? '#6b7280' : '#9ca3af'};
+            pointer-events: none;
+          }
+        </style>
+        <div class="modal-container" style="padding: 20px; max-width: 100%; margin: 0 auto; overflow-x: hidden;">
+          <div class="config-grid-modal">
+            <div class="config-item-modal">
+              <span class="config-icon">🎯</span>
+              <span class="config-label-text">Tiempo de Foco</span>
+              <div class="input-wrapper">
+                <input
+                  id="focusMinutes"
+                  class="swal2-input"
+                  type="number"
+                  min="1"
+                  max="60"
+                  value="${currentConfig.focusMinutes}"
+                  style="
+                    width: 100%;
+                    margin: 0;
+                    padding: 14px 16px;
+                    font-size: 24px;
+                    font-weight: 700;
+                    border-radius: 12px;
+                    box-sizing: border-box;
+                    text-align: center;
+                    border: 2px solid ${isDark ? '#374151' : '#e5e7eb'};
+                  "
+                >
+                <span class="config-unit">min</span>
+              </div>
+            </div>
+
+            <div class="config-item-modal">
+              <span class="config-icon">☕</span>
+              <span class="config-label-text">Descanso Corto</span>
+              <div class="input-wrapper">
+                <input
+                  id="shortBreakMinutes"
+                  class="swal2-input"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value="${currentConfig.shortBreakMinutes}"
+                  style="
+                    width: 100%;
+                    margin: 0;
+                    padding: 14px 16px;
+                    font-size: 24px;
+                    font-weight: 700;
+                    border-radius: 12px;
+                    box-sizing: border-box;
+                    text-align: center;
+                    border: 2px solid ${isDark ? '#374151' : '#e5e7eb'};
+                  "
+                >
+                <span class="config-unit">min</span>
+              </div>
+            </div>
+
+            <div class="config-item-modal">
+              <span class="config-icon">🌟</span>
+              <span class="config-label-text">Descanso Largo</span>
+              <div class="input-wrapper">
+                <input
+                  id="longBreakMinutes"
+                  class="swal2-input"
+                  type="number"
+                  min="1"
+                  max="60"
+                  value="${currentConfig.longBreakMinutes}"
+                  style="
+                    width: 100%;
+                    margin: 0;
+                    padding: 14px 16px;
+                    font-size: 24px;
+                    font-weight: 700;
+                    border-radius: 12px;
+                    box-sizing: border-box;
+                    text-align: center;
+                    border: 2px solid ${isDark ? '#374151' : '#e5e7eb'};
+                  "
+                >
+                <span class="config-unit">min</span>
+              </div>
+            </div>
+
+            <div class="config-item-modal">
+              <span class="config-icon">🔄</span>
+              <span class="config-label-text">Ciclos</span>
+              <div class="input-wrapper">
+                <input
+                  id="cyclesBeforeLongBreak"
+                  class="swal2-input"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value="${currentConfig.cyclesBeforeLongBreak}"
+                  style="
+                    width: 100%;
+                    margin: 0;
+                    padding: 14px 16px;
+                    font-size: 24px;
+                    font-weight: 700;
+                    border-radius: 12px;
+                    box-sizing: border-box;
+                    text-align: center;
+                    border: 2px solid ${isDark ? '#374151' : '#e5e7eb'};
+                  "
+                >
+                <span class="config-unit">ciclos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+      width: window.innerWidth < 640 ? '95vw' : '680px',
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: '✓ Guardar',
+      cancelButtonText: '✕ Cancelar',
+      confirmButtonColor: '#667eea',
+      cancelButtonColor: '#6b7280',
+      customClass: {
+        popup: 'swal-planner-modal',
+        confirmButton: 'swal-btn-confirm',
+        cancelButton: 'swal-btn-cancel',
+      },
+      didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
+        const inputs = [
+          document.getElementById('focusMinutes') as HTMLInputElement,
+          document.getElementById('shortBreakMinutes') as HTMLInputElement,
+          document.getElementById('longBreakMinutes') as HTMLInputElement,
+          document.getElementById('cyclesBeforeLongBreak') as HTMLInputElement,
+        ];
+
+        const validateForm = () => {
+          const allValid = inputs.every((input) => {
+            const value = parseInt(input.value);
+            const min = parseInt(input.min);
+            const max = parseInt(input.max);
+            return value >= min && value <= max;
+          });
+
+          if (confirmButton) {
+            confirmButton.disabled = !allValid;
+            confirmButton.style.opacity = allValid ? '1' : '0.5';
+            confirmButton.style.cursor = allValid ? 'pointer' : 'not-allowed';
+          }
+        };
+
+        inputs.forEach((input) => input.addEventListener('input', validateForm));
+        validateForm();
+      },
+      preConfirm: () => {
+        const focusMinutes = parseInt(
+          (document.getElementById('focusMinutes') as HTMLInputElement).value
+        );
+        const shortBreakMinutes = parseInt(
+          (document.getElementById('shortBreakMinutes') as HTMLInputElement).value
+        );
+        const longBreakMinutes = parseInt(
+          (document.getElementById('longBreakMinutes') as HTMLInputElement).value
+        );
+        const cyclesBeforeLongBreak = parseInt(
+          (document.getElementById('cyclesBeforeLongBreak') as HTMLInputElement).value
+        );
+
+        if (
+          focusMinutes < 1 ||
+          shortBreakMinutes < 1 ||
+          longBreakMinutes < 1 ||
+          cyclesBeforeLongBreak < 1
+        ) {
+          Swal.showValidationMessage('Por favor completa todos los campos correctamente');
+          return false;
+        }
+
+        return { focusMinutes, shortBreakMinutes, longBreakMinutes, cyclesBeforeLongBreak };
+      },
+    });
+
+    if (formValues) {
+      this.service.config.set(formValues);
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Configuración guardada!',
+        text: 'Los cambios se aplicarán en el próximo ciclo',
+        timer: 2000,
+        showConfirmButton: false,
+        background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
+        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
+      });
+    }
   }
 }

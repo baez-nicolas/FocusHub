@@ -196,9 +196,18 @@ import { PomodoroService } from '../services/pomodoro.service';
         white-space: nowrap;
       }
 
+      :host-context(.dark) .btn-new {
+        background: linear-gradient(135deg, #5b5fc7 0%, #6b46a8 100%);
+        box-shadow: 0 4px 12px rgba(91, 95, 199, 0.4);
+      }
+
       .btn-new:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      :host-context(.dark) .btn-new:hover {
+        box-shadow: 0 6px 20px rgba(91, 95, 199, 0.5);
       }
 
       .form-card {

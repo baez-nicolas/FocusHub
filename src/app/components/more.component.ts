@@ -75,34 +75,6 @@ import { Component } from '@angular/core';
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon stats">
-            <i class="bi bi-bar-chart"></i>
-          </div>
-          <h2>Estadísticas</h2>
-          <p class="description">
-            Visualiza tu productividad con gráficos. Mide tus sesiones de Pomodoro y analiza tu
-            progreso.
-          </p>
-
-          <div class="example">
-            <h3>¿Cómo funciona?</h3>
-            <ul>
-              <li><strong>Pomodoros completados:</strong> Contador total de sesiones</li>
-              <li><strong>Tiempo total:</strong> Horas invertidas en trabajo concentrado</li>
-              <li><strong>Gráficos:</strong> Visualización de tu actividad semanal</li>
-            </ul>
-          </div>
-
-          <div class="use-case">
-            <h3>Ejemplo de uso:</h3>
-            <p>
-              <i class="bi bi-lightbulb"></i> Revisa tus stats cada viernes para ver cuántos
-              pomodoros hiciste. Si hiciste 20 esta semana, intenta hacer 22 la próxima.
-            </p>
-          </div>
-        </div>
-
-        <div class="feature-card">
           <div class="feature-icon gym">
             <i class="bi bi-heart-pulse"></i>
           </div>

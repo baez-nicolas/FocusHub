@@ -486,7 +486,6 @@ export class App {
     { path: '/', label: 'Dashboard', icon: 'house-door', exact: true, divider: false },
     { path: '/pomodoro', label: 'Pomodoro', icon: 'clock-history', exact: false, divider: false },
     { path: '/planner', label: 'Planner', icon: 'calendar-check', exact: false, divider: false },
-    { path: '/stats', label: 'Stats', icon: 'bar-chart', exact: false, divider: false },
     { path: '/gym', label: 'Gym', icon: 'heart-pulse', exact: false, divider: false },
     { path: '/notes', label: 'Notas', icon: 'journal-text', exact: false, divider: false },
     { path: '/calculator', label: 'Calculadora', icon: 'calculator', exact: false, divider: false },
