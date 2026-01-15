@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 import { Exercise, GymService } from '../services/gym.service';
 
 @Component({
@@ -13,42 +14,6 @@ import { Exercise, GymService } from '../services/gym.service';
       </div>
 
       <button class="btn-add" (click)="openRoutineForm()">+ Nueva Rutina</button>
-
-      @if (showRoutineForm()) {
-      <div class="form-card">
-        <div class="form-header">Crear Rutina</div>
-
-        <input
-          type="text"
-          placeholder="Nombre de la rutina"
-          [(ngModel)]="routineForm.name"
-          class="input-name"
-        />
-
-        <div class="exercises-label">Ejercicios</div>
-
-        @for (ex of routineForm.exercises; track $index; let i = $index) {
-        <div class="exercise-row">
-          <input type="text" placeholder="Ejercicio" [(ngModel)]="ex.name" class="ex-name" />
-          <input type="number" placeholder="Sets" [(ngModel)]="ex.sets" class="ex-sets" />
-          <input
-            type="number"
-            placeholder="Descanso (s)"
-            [(ngModel)]="ex.restSeconds"
-            class="ex-rest"
-          />
-          <button class="btn-remove" (click)="removeExercise(i)">✕</button>
-        </div>
-        }
-
-        <button class="btn-add-exercise" (click)="addExercise()">+ Añadir Ejercicio</button>
-
-        <div class="form-actions">
-          <button class="btn-save" (click)="saveRoutine()">✓ Guardar</button>
-          <button class="btn-cancel" (click)="cancelRoutineForm()">✕ Cancelar</button>
-        </div>
-      </div>
-      }
 
       <div class="routines-grid">
         @for (routine of service.routines(); track routine.id) {
@@ -648,7 +613,6 @@ import { Exercise, GymService } from '../services/gym.service';
   ],
 })
 export class GymComponent {
-  showRoutineForm = signal(false);
   routineForm: { name: string; exercises: Exercise[] } = { name: '', exercises: [] };
 
   constructor(protected service: GymService) {}
@@ -658,9 +622,352 @@ export class GymComponent {
     return state ? state.routine.exercises[state.exerciseIndex] : null;
   };
 
-  openRoutineForm(): void {
-    this.showRoutineForm.set(true);
-    this.routineForm = { name: '', exercises: [] };
+  async openRoutineForm(): Promise<void> {
+    const isDark = document.documentElement.classList.contains('dark');
+
+    // Generar HTML dinámico para los ejercicios
+    let exercisesHTML = '';
+    this.routineForm.exercises = []; // Resetear ejercicios
+
+    const { value: formValues } = await Swal.fire({
+      title: '💪 Nueva Rutina',
+      html: `
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+          .swal2-html-container {
+            overflow-x: hidden !important;
+            max-width: 100%;
+          }
+          @media (max-width: 640px) {
+            .modal-container {
+              padding: 12px !important;
+              max-width: 100% !important;
+              overflow-x: hidden !important;
+            }
+            .modal-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+            .swal2-input { padding: 10px 12px !important; font-size: 14px !important; }
+            .modal-label { font-size: 14px !important; }
+          }
+          .exercise-item {
+            background: ${isDark ? '#2d3748' : '#f9fafb'};
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid ${isDark ? '#374151' : '#e5e7eb'};
+            overflow: hidden;
+          }
+          .exercise-field {
+            margin-bottom: 10px;
+          }
+          .exercise-field:last-of-type {
+            margin-bottom: 0;
+          }
+          .field-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: ${isDark ? '#9ca3af' : '#6b7280'};
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .exercise-name-field {
+            margin-bottom: 12px;
+          }
+          .exercise-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 10px;
+          }
+          @media (min-width: 641px) {
+            .field-label {
+              display: none;
+            }
+          }
+          .btn-remove-ex {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            width: 100%;
+          }
+          .btn-remove-ex:hover {
+            background: #dc2626;
+          }
+          .btn-add-ex {
+            background: ${isDark ? '#374151' : '#f3f4f6'};
+            color: ${isDark ? '#d1d5db' : '#6b7280'};
+            border: 2px dashed ${isDark ? '#4b5563' : '#d1d5db'};
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 8px;
+          }
+          .btn-add-ex:hover {
+            background: ${isDark ? '#4b5563' : '#e5e7eb'};
+          }
+          #exercisesContainer {
+            max-height: 320px;
+            overflow-y: auto;
+            overflow-x: hidden;
+          }
+          .desktop-label-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 4px;
+          }
+          .desktop-label-row span {
+            font-size: 12px;
+            font-weight: 700;
+            color: ${isDark ? '#9ca3af' : '#6b7280'};
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .desktop-label-single {
+            font-size: 12px;
+            font-weight: 700;
+            color: ${isDark ? '#9ca3af' : '#6b7280'};
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            display: block;
+          }
+          @media (max-width: 640px) {
+            .desktop-label-row, .desktop-label-single {
+              display: none !important;
+            }
+          }
+        </style>
+        <div class="modal-container" style="padding: 16px; max-width: 100%; margin: 0 auto; overflow-x: hidden;">
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Nombre de la rutina</label>
+            <input
+              id="routineName"
+              class="swal2-input"
+              placeholder="Ej: Piernas y Glúteos"
+              autofocus
+              style="
+                width: 100%;
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 8px;
+                box-sizing: border-box;
+              "
+            >
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label class="modal-label" style="
+              display: block;
+              font-size: 15px;
+              font-weight: 700;
+              color: ${isDark ? '#ffffff' : '#111827'};
+              margin-bottom: 8px;
+              letter-spacing: 0.3px;
+            ">Ejercicios</label>
+            <div id="exercisesContainer"></div>
+            <button type="button" class="btn-add-ex" id="btnAddExercise">+ Añadir Ejercicio</button>
+          </div>
+        </div>
+      `,
+      width: window.innerWidth < 640 ? '95vw' : '580px',
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: '✓ Guardar',
+      cancelButtonText: '✕ Cancelar',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      customClass: {
+        popup: 'swal-planner-modal',
+        confirmButton: 'swal-btn-confirm',
+        cancelButton: 'swal-btn-cancel',
+      },
+      didOpen: () => {
+        const confirmButton = Swal.getConfirmButton();
+        const nameInput = document.getElementById('routineName') as HTMLInputElement;
+        const exercisesContainer = document.getElementById('exercisesContainer') as HTMLElement;
+        const btnAddExercise = document.getElementById('btnAddExercise') as HTMLButtonElement;
+
+        let exercises: Array<{ name: string; sets: number; rest: number }> = [];
+
+        const validateForm = () => {
+          const hasName = nameInput.value.trim() !== '';
+          const hasExercises = exercises.length > 0;
+          const allExercisesFilled = exercises.every(
+            (ex) => ex.name.trim() !== '' && ex.sets > 0 && ex.rest >= 0
+          );
+
+          const isValid = hasName && hasExercises && allExercisesFilled;
+
+          if (confirmButton) {
+            confirmButton.disabled = !isValid;
+            confirmButton.style.opacity = isValid ? '1' : '0.5';
+            confirmButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+          }
+        };
+
+        const renderExercises = () => {
+          exercisesContainer.innerHTML = exercises
+            .map(
+              (ex, index) => `
+            <div class="exercise-item">
+              <div class="exercise-name-field">
+                <span class="desktop-label-single">Ejercicio</span>
+                <label class="field-label">Ejercicio</label>
+                <input
+                  type="text"
+                  class="swal2-input ex-name"
+                  data-index="${index}"
+                  placeholder="Ej: Sentadillas"
+                  value="${ex.name}"
+                  style="margin: 0; padding: 10px 12px; font-size: 14px; width: 100%;"
+                >
+              </div>
+              <div class="desktop-label-row">
+                <span>Series</span>
+                <span>Descanso</span>
+              </div>
+              <div class="exercise-row">
+                <div class="exercise-field">
+                  <label class="field-label">Series</label>
+                  <input
+                    type="number"
+                    class="swal2-input ex-sets"
+                    data-index="${index}"
+                    placeholder="3"
+                    value="${ex.sets}"
+                    min="1"
+                    style="margin: 0; padding: 10px 12px; font-size: 14px; width: 100%;"
+                  >
+                </div>
+                <div class="exercise-field">
+                  <label class="field-label">Descanso (seg)</label>
+                  <input
+                    type="number"
+                    class="swal2-input ex-rest"
+                    data-index="${index}"
+                    placeholder="60"
+                    value="${ex.rest}"
+                    min="0"
+                    style="margin: 0; padding: 10px 12px; font-size: 14px; width: 100%;"
+                  >
+                </div>
+              </div>
+              <button type="button" class="btn-remove-ex" data-index="${index}">✕ Eliminar</button>
+            </div>
+          `
+            )
+            .join('');
+
+          // Agregar event listeners
+          exercisesContainer.querySelectorAll('.ex-name').forEach((input) => {
+            input.addEventListener('input', (e) => {
+              const idx = parseInt((e.target as HTMLInputElement).dataset['index']!);
+              exercises[idx].name = (e.target as HTMLInputElement).value;
+              validateForm();
+            });
+          });
+
+          exercisesContainer.querySelectorAll('.ex-sets').forEach((input) => {
+            input.addEventListener('input', (e) => {
+              const idx = parseInt((e.target as HTMLInputElement).dataset['index']!);
+              exercises[idx].sets = parseInt((e.target as HTMLInputElement).value) || 0;
+              validateForm();
+            });
+          });
+
+          exercisesContainer.querySelectorAll('.ex-rest').forEach((input) => {
+            input.addEventListener('input', (e) => {
+              const idx = parseInt((e.target as HTMLInputElement).dataset['index']!);
+              exercises[idx].rest = parseInt((e.target as HTMLInputElement).value) || 0;
+              validateForm();
+            });
+          });
+
+          exercisesContainer.querySelectorAll('.btn-remove-ex').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+              const idx = parseInt((e.target as HTMLButtonElement).dataset['index']!);
+              exercises.splice(idx, 1);
+              renderExercises();
+              validateForm();
+            });
+          });
+
+          validateForm();
+        };
+
+        btnAddExercise.addEventListener('click', () => {
+          exercises.push({ name: '', sets: 3, rest: 60 });
+          renderExercises();
+        });
+
+        nameInput.addEventListener('input', validateForm);
+
+        // Validar al inicio
+        validateForm();
+      },
+      preConfirm: () => {
+        const name = (document.getElementById('routineName') as HTMLInputElement).value;
+        const exercisesInputs = document.querySelectorAll('.ex-name');
+        const exercises: Exercise[] = [];
+
+        exercisesInputs.forEach((input, index) => {
+          const nameInput = input as HTMLInputElement;
+          const setsInput = document.querySelector(
+            `.ex-sets[data-index="${index}"]`
+          ) as HTMLInputElement;
+          const restInput = document.querySelector(
+            `.ex-rest[data-index="${index}"]`
+          ) as HTMLInputElement;
+
+          exercises.push({
+            name: nameInput.value,
+            sets: parseInt(setsInput.value),
+            restSeconds: parseInt(restInput.value),
+          });
+        });
+
+        if (!name || exercises.length === 0) {
+          Swal.showValidationMessage('Por favor completa todos los campos');
+          return false;
+        }
+
+        return { name, exercises };
+      },
+    });
+
+    if (formValues) {
+      this.service.addRoutine(formValues);
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Rutina creada!',
+        text: 'La rutina se ha agregado correctamente',
+        timer: 2000,
+        showConfirmButton: false,
+        background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
+        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
+      });
+    }
   }
 
   addExercise(): void {
@@ -673,10 +980,5 @@ export class GymComponent {
 
   saveRoutine(): void {
     this.service.addRoutine(this.routineForm);
-    this.cancelRoutineForm();
-  }
-
-  cancelRoutineForm(): void {
-    this.showRoutineForm.set(false);
   }
 }
