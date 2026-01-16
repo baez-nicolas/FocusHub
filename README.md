@@ -128,7 +128,7 @@ Los archivos compilados estarán en `dist/FocusHub/browser/`
 Vista principal con timer de Pomodoro, próximo bloque y estadísticas del día.
 
 
-![Dashboard](./img/dashboard.png)
+<img src="/img/dashboard.png" width="400" alt="Dashboard Section" />
 
 ### Pomodoro
 Configuración personalizable y control total del timer con ciclos automáticos.
