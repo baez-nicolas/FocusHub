@@ -47,6 +47,10 @@ import { PomodoroService } from '../services/pomodoro.service';
             <button class="btn-icon warning" (click)="service.markSkipped(block.id)" title="Omitir">
               ✕
             </button>
+            } @else {
+            <button class="btn-icon reset" (click)="service.resetStatus(block.id)" title="Resetear">
+              ↺
+            </button>
             }
             <button class="btn-icon edit" (click)="editBlock(block)" title="Editar">✎</button>
             <button
@@ -57,12 +61,6 @@ import { PomodoroService } from '../services/pomodoro.service';
               🗑
             </button>
           </div>
-
-          @if (block.status === 'DONE') {
-          <div class="status-badge done">✓ Completado</div>
-          } @else if (block.status === 'SKIPPED') {
-          <div class="status-badge skipped">⊘ Omitido</div>
-          }
         </div>
         } @empty {
         <div class="empty-state">
@@ -282,11 +280,23 @@ import { PomodoroService } from '../services/pomodoro.service';
       .block-card.done {
         background: #f0fdf4;
         border-color: #86efac;
+        border-left: 4px solid #22c55e;
+      }
+
+      :host-context(.dark) .block-card.done {
+        background: #1a2e23 !important;
+        border-color: #15803d !important;
       }
 
       .block-card.skipped {
         background: #fffbeb;
         border-color: #fde047;
+        border-left: 4px solid #eab308;
+      }
+
+      :host-context(.dark) .block-card.skipped {
+        background: #2e2a1a !important;
+        border-color: #a16207 !important;
       }
 
       .block-time {
@@ -393,25 +403,13 @@ import { PomodoroService } from '../services/pomodoro.service';
         background: #fecaca;
       }
 
-      .status-badge {
-        position: absolute;
-        top: -10px;
-        right: 20px;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 700;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      .btn-icon.reset {
+        background: #e0e7ff;
+        color: #4338ca;
       }
 
-      .status-badge.done {
-        background: #22c55e;
-        color: white;
-      }
-
-      .status-badge.skipped {
-        background: #eab308;
-        color: white;
+      .btn-icon.reset:hover {
+        background: #c7d2fe;
       }
 
       .empty-state {

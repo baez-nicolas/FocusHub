@@ -51,4 +51,8 @@ export class PlannerService {
   markSkipped(id: string): void {
     this.updateBlock(id, { status: 'SKIPPED' });
   }
+
+  resetStatus(id: string): void {
+    this.updateBlock(id, { status: 'PLANNED' });
+  }
 }
