@@ -425,7 +425,6 @@ export class PomodoroComponent {
             max-width: 100%;
           }
 
-          /* Quitar flechitas de input number */
           input[type=number]::-webkit-inner-spin-button,
           input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;

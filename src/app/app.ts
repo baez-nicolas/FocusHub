@@ -10,7 +10,7 @@ import { ThemeService } from './services/theme.service';
     <div class="app-container" [class.dark]="themeService.isDark()">
       <nav class="sidebar">
         <div class="brand mb-4">
-          <i class="bi bi-bullseye text-primary fs-2"></i>
+          <img src="/assets/icono.png" alt="FocusHub" class="brand-logo" />
           <h4 class="ms-2 mb-0 fw-bold">FocusHub</h4>
         </div>
 
@@ -41,7 +41,7 @@ import { ThemeService } from './services/theme.service';
         <nav class="mobile-navbar">
           <div class="mobile-header">
             <div class="brand-mobile">
-              <i class="bi bi-bullseye text-primary"></i>
+              <img src="/assets/icono.png" alt="FocusHub" class="brand-logo-mobile" />
               <span class="fw-bold">FocusHub</span>
             </div>
             <div class="mobile-actions">
@@ -137,6 +137,18 @@ import { ThemeService } from './services/theme.service';
 
       .brand h4 {
         color: white;
+      }
+
+      .brand-logo {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+      }
+
+      .brand-logo-mobile {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
       }
 
       .nav-links {
