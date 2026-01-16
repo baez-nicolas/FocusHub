@@ -4,7 +4,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
 
-<img src="/img/logo1.png" width="600" alt="Banner" />
+<img src="/img/logo1.png" width="400" alt="Banner" />
 
 **FocusHub** es una aplicación web minimalista y profesional para potenciar tu productividad diaria.  Combina técnicas de gestión del tiempo, planificación y seguimiento de hábitos en una sola plataforma, 100% en el navegador, sin necesidad de backend. 
 
