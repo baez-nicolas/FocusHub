@@ -133,11 +133,13 @@ Vista principal con timer de Pomodoro, próximo bloque y estadísticas del día.
 ### Pomodoro
 Configuración personalizable y control total del timer con ciclos automáticos.
 
-### Planner
-Time blocking con categorías, estados y gestión completa de bloques diarios.
+
+<img src="/img/pomodoro.png" width="400" alt="Pomodoro Section" />
 
 ### Calculadora
 Calculadora funcional con operaciones básicas y diseño limpio.
+
+<img src="/img/calculadora.png" width="400" alt="Calculadora Section" />
 
 ---
 
