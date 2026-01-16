@@ -20,6 +20,13 @@ interface PomodoroSession {
   durationMinutes: number;
 }
 
+interface PomodoroTimerState {
+  state: PomodoroState;
+  secondsLeft: number;
+  cycleCount: number;
+  lastUpdateTimestamp: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PomodoroService {
   config = signal<PomodoroConfig>({
@@ -31,17 +38,114 @@ export class PomodoroService {
   state = signal<PomodoroState>('IDLE');
   secondsLeft = signal(0);
   cycleCount = signal(0);
+  sessions = signal<PomodoroSession[]>([]);
 
   private intervalId?: number;
-  private sessions: PomodoroSession[] = [];
 
   constructor(private storage: StorageService) {
     this.config.set(this.storage.get('fh_pomodoro_config', this.config()));
-    this.sessions = this.storage.get('fh_pomodoro_sessions', []);
+    this.sessions.set(this.storage.get('fh_pomodoro_sessions', []));
 
     effect(() => {
       this.storage.set('fh_pomodoro_config', this.config());
     });
+
+    this.restoreTimerState();
+
+    effect(() => {
+      this.persistTimerState();
+    });
+  }
+
+  private restoreTimerState(): void {
+    const savedState = this.storage.get<PomodoroTimerState | null>('fh_pomodoro_timer_state', null);
+
+    if (savedState && savedState.state !== 'IDLE') {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - savedState.lastUpdateTimestamp) / 1000);
+
+      let adjustedSecondsLeft = savedState.secondsLeft - elapsedSeconds;
+
+      if (adjustedSecondsLeft <= 0) {
+        this.handleMultiplePhaseCompletions(savedState, Math.abs(adjustedSecondsLeft));
+      } else {
+        this.state.set(savedState.state);
+        this.secondsLeft.set(adjustedSecondsLeft);
+        this.cycleCount.set(savedState.cycleCount);
+
+        if (savedState.state !== 'PAUSED') {
+          this.runTimer();
+        }
+      }
+    }
+  }
+
+  private handleMultiplePhaseCompletions(
+    savedState: PomodoroTimerState,
+    excessSeconds: number
+  ): void {
+    let currentState = savedState.state;
+    let currentCycleCount = savedState.cycleCount;
+    let remainingSeconds = excessSeconds;
+
+    while (remainingSeconds > 0) {
+      let phaseDuration = 0;
+
+      if (currentState === 'RUNNING_FOCUS') {
+        phaseDuration = this.config().focusMinutes * 60;
+        this.recordSession();
+        currentCycleCount++;
+
+        if (currentCycleCount >= this.config().cyclesBeforeLongBreak) {
+          currentState = 'RUNNING_LONG_BREAK';
+        } else {
+          currentState = 'RUNNING_SHORT_BREAK';
+        }
+      } else if (currentState === 'RUNNING_SHORT_BREAK') {
+        phaseDuration = this.config().shortBreakMinutes * 60;
+        currentState = 'RUNNING_FOCUS';
+      } else if (currentState === 'RUNNING_LONG_BREAK') {
+        phaseDuration = this.config().longBreakMinutes * 60;
+        currentCycleCount = 0;
+        currentState = 'RUNNING_FOCUS';
+      }
+
+      if (remainingSeconds >= phaseDuration) {
+        remainingSeconds -= phaseDuration;
+      } else {
+        this.state.set(currentState);
+        this.secondsLeft.set(phaseDuration - remainingSeconds);
+        this.cycleCount.set(currentCycleCount);
+        this.runTimer();
+        return;
+      }
+    }
+
+    this.state.set(currentState);
+    this.cycleCount.set(currentCycleCount);
+    this.startCurrentPhase();
+  }
+
+  private startCurrentPhase(): void {
+    const st = this.state();
+    if (st === 'RUNNING_FOCUS') {
+      this.secondsLeft.set(this.config().focusMinutes * 60);
+    } else if (st === 'RUNNING_SHORT_BREAK') {
+      this.secondsLeft.set(this.config().shortBreakMinutes * 60);
+    } else if (st === 'RUNNING_LONG_BREAK') {
+      this.secondsLeft.set(this.config().longBreakMinutes * 60);
+    }
+    this.runTimer();
+  }
+
+  private persistTimerState(): void {
+    const timerState: PomodoroTimerState = {
+      state: this.state(),
+      secondsLeft: this.secondsLeft(),
+      cycleCount: this.cycleCount(),
+      lastUpdateTimestamp: Date.now(),
+    };
+    this.storage.set('fh_pomodoro_timer_state', timerState);
   }
 
   start(): void {
@@ -71,6 +175,7 @@ export class PomodoroService {
     this.secondsLeft.set(0);
     this.cycleCount.set(0);
     this.clearTimer();
+    this.storage.remove('fh_pomodoro_timer_state');
   }
 
   skip(): void {
@@ -139,11 +244,11 @@ export class PomodoroService {
       date: new Date().toISOString().split('T')[0],
       durationMinutes: this.config().focusMinutes,
     };
-    this.sessions.push(session);
-    this.storage.set('fh_pomodoro_sessions', this.sessions);
+    this.sessions.update((sessions) => [...sessions, session]);
+    this.storage.set('fh_pomodoro_sessions', this.sessions());
   }
 
   getSessions(): PomodoroSession[] {
-    return this.sessions;
+    return this.sessions();
   }
 }

@@ -9,7 +9,7 @@ export class StatsService {
   focusMinutesToday = computed(() => {
     const today = new Date().toISOString().split('T')[0];
     return this.pomodoro
-      .getSessions()
+      .sessions()
       .filter((s) => s.date === today)
       .reduce((sum, s) => sum + s.durationMinutes, 0);
   });
@@ -20,13 +20,13 @@ export class StatsService {
     startOfWeek.setDate(now.getDate() - now.getDay());
     const startStr = startOfWeek.toISOString().split('T')[0];
     return this.pomodoro
-      .getSessions()
+      .sessions()
       .filter((s) => s.date >= startStr)
       .reduce((sum, s) => sum + s.durationMinutes, 0);
   });
 
   streak = computed(() => {
-    const sessions = this.pomodoro.getSessions();
+    const sessions = this.pomodoro.sessions();
     const dateMap = new Map<string, number>();
     sessions.forEach((s) => {
       dateMap.set(s.date, (dateMap.get(s.date) || 0) + s.durationMinutes);
@@ -65,7 +65,7 @@ export class StatsService {
 
   getLastSevenDays(): { date: string; minutes: number }[] {
     const result: { date: string; minutes: number }[] = [];
-    const sessions = this.pomodoro.getSessions();
+    const sessions = this.pomodoro.sessions();
     const dateMap = new Map<string, number>();
     sessions.forEach((s) => {
       dateMap.set(s.date, (dateMap.get(s.date) || 0) + s.durationMinutes);

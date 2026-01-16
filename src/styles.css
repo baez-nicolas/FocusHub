@@ -168,7 +168,6 @@ button:focus {
   outline-offset: 2px;
 }
 
-/* SweetAlert2 Dark Mode */
 .dark .swal2-popup {
   background: #1e2433 !important;
   color: #e5e7eb !important;
