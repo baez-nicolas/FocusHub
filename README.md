@@ -148,6 +148,7 @@ Calculadora funcional con operaciones básicas y diseño limpio.
 **Nicolás Baez**
 
 - GitHub: [@baez-nicolas](https://github.com/baez-nicolas)
+- LinkedIn: [linkedin.com/in/baez-nicolas](https://www.linkedin.com/in/baez-nicolas/)
 - Proyecto: [FocusHub](https://github.com/baez-nicolas/FocusHub)
 
 ---
