@@ -125,6 +125,8 @@ Los archivos compilados estarán en `dist/FocusHub/browser/`
 ## 📱 Capturas de Pantalla
 
 ### Dashboard
+
+
 Vista principal con timer de Pomodoro, próximo bloque y estadísticas del día.
 <img src="/img/dashboard.png" width="400" alt="Dashboard" />
 
