@@ -3,6 +3,7 @@ import { CalculatorComponent } from './components/calculator.component';
 import { DashboardComponent } from './components/dashboard.component';
 import { GymComponent } from './components/gym.component';
 import { MoreComponent } from './components/more.component';
+import { NewsComponent } from './components/news.component';
 import { NotesComponent } from './components/notes.component';
 import { PlannerComponent } from './components/planner.component';
 import { PomodoroComponent } from './components/pomodoro.component';
@@ -15,6 +16,7 @@ export const routes: Routes = [
   { path: 'stats', component: StatsComponent },
   { path: 'gym', component: GymComponent },
   { path: 'notes', component: NotesComponent },
+  { path: 'news', component: NewsComponent },
   { path: 'calculator', component: CalculatorComponent },
   { path: 'more', component: MoreComponent },
 ];
