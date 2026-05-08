@@ -24,7 +24,7 @@ import { LangService } from '../services/lang.service';
           }
           @for (item of history(); track $index) {
             <div class="history-item">
-              <span class="history-expr">{{ item }}</span>
+              <span class="history-expr">{{ formatExpr(item) }}</span>
               <button class="history-del" (click)="deleteHistoryItem($index)">✕</button>
             </div>
           }
@@ -124,7 +124,7 @@ import { LangService } from '../services/lang.service';
 
       .calc-layout {
         display: grid;
-        grid-template-columns: 260px 1fr;
+        grid-template-columns: 1fr 720px;
         gap: 24px;
         align-items: start;
       }
@@ -213,12 +213,12 @@ import { LangService } from '../services/lang.service';
       }
 
       .history-expr {
-        font-size: 13px;
+        font-size: 17px;
         color: #374151;
         font-family: monospace;
         flex: 1;
         word-break: break-all;
-        line-height: 1.4;
+        line-height: 1.5;
       }
 
       :host-context(.dark) .history-expr {
@@ -264,12 +264,12 @@ import { LangService } from '../services/lang.service';
       .display {
         background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
         color: white;
-        padding: 32px 24px;
+        padding: 28px 24px;
         border-radius: 16px;
-        font-size: 48px;
+        font-size: 46px;
         font-weight: 700;
         text-align: right;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         min-height: 80px;
         display: flex;
         align-items: center;
@@ -282,13 +282,13 @@ import { LangService } from '../services/lang.service';
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 12px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
       }
 
       .btn {
-        padding: 24px;
+        padding: 22px;
         border: none;
-        border-radius: 12px;
+        border-radius: 14px;
         font-size: 24px;
         font-weight: 600;
         cursor: pointer;
@@ -338,10 +338,10 @@ import { LangService } from '../services/lang.service';
       }
 
       .btn-sci {
-        padding: 16px 8px;
+        padding: 18px 8px;
         border: none;
         border-radius: 10px;
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
@@ -465,6 +465,13 @@ export class CalculatorComponent {
 
   clearHistory(): void {
     this.history.set([]);
+  }
+
+  formatExpr(expr: string): string {
+    return expr
+      .replace(/([+\-×÷*/%=])/g, ' $1 ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
   }
 
   deleteHistoryItem(index: number): void {

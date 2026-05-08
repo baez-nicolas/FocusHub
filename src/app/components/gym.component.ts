@@ -913,8 +913,8 @@ export class GymComponent {
       title: es ? 'Salud' : 'Health',
       subtitle: es ? 'Contador de pasos diarios' : 'Daily step counter',
       tip: es
-        ? '10,000 pasos al día es la meta ideal para mantener una vida activa y saludable 🚶'
-        : '10,000 steps a day is the ideal goal to maintain an active and healthy lifestyle 🚶',
+        ? '10,000 pasos al día es la meta ideal para mantener una vida activa y saludable'
+        : '10,000 steps a day is the ideal goal to maintain an active and healthy lifestyle',
       todaySteps: es ? 'Pasos de hoy' : "Today's steps",
       stepsPlaceholder: es ? 'Ej.: 8500' : 'e.g. 8500',
       log: es ? 'Guardar' : 'Save',
