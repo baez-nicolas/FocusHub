@@ -14,11 +14,6 @@
 
 ## ✨ Características
 
-### 🍅 Pomodoro
-- Timer configurable con ciclos automáticos
-- Descansos cortos y largos personalizables
-- Modo foco, pausa y control total del flujo
-
 ### 📅 Planner Diario
 - Time blocking para organizar tu día
 - Categorías:   Focus, Break, Gym, Personal
@@ -97,13 +92,6 @@ ng serve
 http://localhost:4200
 ```
 
-5. **Build de producción**
-```bash
-npm run build
-```
-
-Los archivos compilados estarán en `dist/FocusHub/browser/`
-
 ---
 
 ## 🎨 Características Técnicas
@@ -119,27 +107,6 @@ Los archivos compilados estarán en `dist/FocusHub/browser/`
 - **Desktop:** Sidebar fijo lateral
 - **Tablet:** Sidebar adaptativo
 - **Mobile:** Navbar colapsable con hamburger menu
-
----
-
-## 📱 Capturas de Pantalla
-
-### Dashboard
-Vista principal con timer de Pomodoro, próximo bloque y estadísticas del día.
-
-
-<img src="/img/dashboard.png" width="400" alt="Dashboard Section" />
-
-### Pomodoro
-Configuración personalizable y control total del timer con ciclos automáticos.
-
-
-<img src="/img/pomodoro.png" width="400" alt="Pomodoro Section" />
-
-### Calculadora
-Calculadora funcional con operaciones básicas y diseño limpio.
-
-<img src="/img/calculadora.png" width="400" alt="Calculadora Section" />
 
 ---
 
