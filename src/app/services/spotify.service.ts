@@ -155,7 +155,7 @@ export class SpotifyService {
 
   async getUserPlaylists(): Promise<void> {
     try {
-      const data = await this.api<any>('/me/playlists?limit=50');
+      const data = await this.api<any>('/me/playlists?limit=20');
       this.userPlaylists.set(data.items ?? []);
     } catch (e: any) {
       this.error.set(e.message);

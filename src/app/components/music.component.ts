@@ -69,9 +69,6 @@ interface FeaturedPlaylist {
       }
 
       @if (auth.isLoggedIn()) {
-        @if (addToPlaylistTrack()) {
-          <div class="pl-picker-overlay" (click)="addToPlaylistTrack.set(null)"></div>
-        }
         <div class="search-section">
           <div class="search-bar" [class.focused]="searchFocused">
             <i class="bi bi-search search-icon"></i>
@@ -308,36 +305,6 @@ interface FeaturedPlaylist {
                       >
                         <i class="bi bi-box-arrow-up-right"></i>
                       </a>
-                      @if (spotify.userPlaylists().length) {
-                        <div class="pl-picker-wrap">
-                          <button
-                            class="card-btn add-btn"
-                            title="{{ tx().addToPlaylist }}"
-                            (click)="
-                              addToPlaylistTrack.set(
-                                addToPlaylistTrack() === track.id ? null : track.id
-                              )
-                            "
-                          >
-                            <i class="bi bi-plus-lg"></i>
-                          </button>
-                          @if (addToPlaylistTrack() === track.id) {
-                            <div class="pl-picker-dropdown">
-                              <div class="pl-picker-title">{{ tx().addToPlaylist }}</div>
-                              @for (pl of ownedPlaylists(); track pl.id) {
-                                <button class="pl-picker-item" (click)="addToPlaylist(pl.id)">
-                                  @if (pl.images?.[0]?.url) {
-                                    <img [src]="pl.images![0].url" class="pl-picker-img" />
-                                  } @else {
-                                    <i class="bi bi-collection-play-fill pl-picker-icon"></i>
-                                  }
-                                  <span>{{ pl.name }}</span>
-                                </button>
-                              }
-                            </div>
-                          }
-                        </div>
-                      }
                     </div>
                   </div>
                 }
@@ -1149,78 +1116,6 @@ interface FeaturedPlaylist {
         border-color: #c7d2fe;
       }
 
-      .pl-picker-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99;
-      }
-
-      .pl-picker-wrap {
-        position: relative;
-      }
-
-      .pl-picker-dropdown {
-        position: absolute;
-        bottom: calc(100% + 6px);
-        right: 0;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        min-width: 200px;
-        max-width: 260px;
-        z-index: 100;
-        overflow: hidden;
-      }
-
-      .pl-picker-title {
-        font-size: 11px;
-        font-weight: 700;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        padding: 10px 12px 6px;
-      }
-
-      .pl-picker-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        padding: 8px 12px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 13px;
-        color: #1e293b;
-        transition: background 0.15s;
-        text-align: left;
-      }
-
-      .pl-picker-item:hover {
-        background: #f1f5f9;
-      }
-
-      .pl-picker-img {
-        width: 28px;
-        height: 28px;
-        border-radius: 4px;
-        object-fit: cover;
-        flex-shrink: 0;
-      }
-
-      .pl-picker-icon {
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #e2e8f0;
-        border-radius: 4px;
-        color: #64748b;
-        flex-shrink: 0;
-      }
-
       .user-playlists-section {
         margin-bottom: 40px;
       }
@@ -1684,7 +1579,6 @@ export class MusicComponent implements OnInit {
       viewDetail: es ? 'Ver detalle' : 'View detail',
       openInSpotify: es ? 'Abrir en Spotify' : 'Open in Spotify',
       myPlaylists: es ? 'Mis Playlists' : 'My Playlists',
-      addToPlaylist: es ? 'Añadir a playlist' : 'Add to playlist',
       myPlaylistsSub: es ? 'Tus playlists de Spotify' : 'Your Spotify playlists',
       createPlaylist: es ? 'Crear "FocusHub Session"' : 'Create "FocusHub Session"',
       noPlaylists: es ? 'No hay playlists cargadas aún.' : 'No playlists loaded yet.',
@@ -1700,14 +1594,9 @@ export class MusicComponent implements OnInit {
   searchFocused = false;
   activeTab = signal<'tracks' | 'artists'>('tracks');
   notification = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
-  addToPlaylistTrack = signal<string | null>(null);
   hasResults = computed(
     () => this.spotify.tracks().length > 0 || this.spotify.artists().length > 0,
   );
-  ownedPlaylists = computed(() => {
-    const userId = this.spotify.currentUser()?.id;
-    return this.spotify.userPlaylists().filter((pl) => pl.owner.id === userId);
-  });
 
   featuredPlaylists: FeaturedPlaylist[] = [];
 
@@ -1779,26 +1668,6 @@ export class MusicComponent implements OnInit {
   async viewArtist(id: string): Promise<void> {
     await this.spotify.getArtist(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  async addToPlaylist(playlistId: string): Promise<void> {
-    const trackId = this.addToPlaylistTrack();
-    if (!trackId) return;
-    this.addToPlaylistTrack.set(null);
-    const ok = await this.spotify.addTrackToPlaylist(playlistId, trackId);
-    const es = this.langService.lang() === 'es';
-    if (ok) {
-      this.showNotification(
-        'success',
-        es ? '¡Canción añadida a la playlist!' : 'Track added to playlist!',
-      );
-    } else {
-      const err = this.spotify.error();
-      this.showNotification(
-        'error',
-        err ?? (es ? 'Error al añadir la canción.' : 'Error adding track.'),
-      );
-    }
   }
 
   openUrl(url: string): void {
