@@ -90,7 +90,7 @@ interface FeaturedPlaylist {
               @if (spotify.loading()) {
                 <span class="spinner-sm"></span>
               } @else {
-                Search
+                {{ tx().searchBtn }}
               }
             </button>
           </div>
@@ -150,9 +150,11 @@ interface FeaturedPlaylist {
                   </div>
                 }
                 <div class="detail-actions">
-                  <button
+                  <a
                     class="btn-spotify-open"
-                    (click)="openUrl(spotify.selectedTrack()!.external_urls.spotify)"
+                    [href]="spotify.selectedTrack()!.external_urls.spotify"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     <svg
                       width="16"
@@ -166,19 +168,7 @@ interface FeaturedPlaylist {
                       />
                     </svg>
                     {{ tx().openInSpotify }}
-                  </button>
-                  <button
-                    class="btn-save-track"
-                    [class.saved]="isSaved(spotify.selectedTrack()!.id)"
-                    (click)="saveTrack(spotify.selectedTrack()!.id)"
-                  >
-                    <i
-                      [class]="
-                        'bi bi-' + (isSaved(spotify.selectedTrack()!.id) ? 'heart-fill' : 'heart')
-                      "
-                    ></i>
-                    {{ isSaved(spotify.selectedTrack()!.id) ? tx().saved : tx().save }}
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -313,14 +303,6 @@ interface FeaturedPlaylist {
                       >
                         <i class="bi bi-box-arrow-up-right"></i>
                       </a>
-                      <button
-                        class="card-btn heart-btn"
-                        [class.active]="isSaved(track.id)"
-                        title="{{ tx().saveToFavs }}"
-                        (click)="saveTrack(track.id)"
-                      >
-                        <i [class]="'bi bi-' + (isSaved(track.id) ? 'heart-fill' : 'heart')"></i>
-                      </button>
                     </div>
                   </div>
                 }
@@ -957,6 +939,7 @@ interface FeaturedPlaylist {
         font-size: 14px;
         font-weight: 700;
         cursor: pointer;
+        text-decoration: none;
         transition: all 0.2s;
       }
 
@@ -964,28 +947,6 @@ interface FeaturedPlaylist {
         background: #17a84a;
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
-      }
-
-      .btn-save-track {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        background: #f8fafc;
-        color: #475569;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 50px;
-        padding: 10px 20px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .btn-save-track:hover,
-      .btn-save-track.saved {
-        background: #fdf2f8;
-        color: #ec4899;
-        border-color: #fbcfe8;
       }
 
       .results-section {
@@ -1145,13 +1106,6 @@ interface FeaturedPlaylist {
 
       a.open-btn {
         text-decoration: none;
-      }
-
-      .heart-btn:hover,
-      .heart-btn.active {
-        background: #fdf2f8;
-        color: #ec4899;
-        border-color: #fbcfe8;
       }
 
       .user-playlists-section {
@@ -1483,17 +1437,6 @@ interface FeaturedPlaylist {
       :host-context(.dark) .pop-value {
         color: #64748b;
       }
-      :host-context(.dark) .btn-save-track {
-        background: #2d3748;
-        color: #94a3b8;
-        border-color: #374151;
-      }
-      :host-context(.dark) .btn-save-track:hover,
-      :host-context(.dark) .btn-save-track.saved {
-        background: rgba(236, 72, 153, 0.12);
-        color: #f9a8d4;
-        border-color: rgba(236, 72, 153, 0.3);
-      }
       :host-context(.dark) .result-tabs {
         background: #1e2a3a;
       }
@@ -1545,12 +1488,6 @@ interface FeaturedPlaylist {
         background: rgba(22, 163, 74, 0.12);
         color: #86efac;
         border-color: rgba(22, 163, 74, 0.3);
-      }
-      :host-context(.dark) .heart-btn:hover,
-      :host-context(.dark) .heart-btn.active {
-        background: rgba(236, 72, 153, 0.12);
-        color: #f9a8d4;
-        border-color: rgba(236, 72, 153, 0.3);
       }
       :host-context(.dark) .section-title {
         color: #f1f5f9;
@@ -1611,6 +1548,7 @@ export class MusicComponent implements OnInit {
         ? 'Busca canciones, guarda favoritos, crea playlists y mucho más.'
         : 'Search songs, save favorites, create playlists and much more.',
       searchPh: es ? 'Buscar canciones, artistas...' : 'Search songs, artists...',
+      searchBtn: es ? 'Buscar' : 'Search',
       search: es ? 'Buscar' : 'Search',
       backToResults: es ? 'Volver a resultados' : 'Back to results',
       followers: es ? 'seguidores' : 'followers',
@@ -1618,9 +1556,6 @@ export class MusicComponent implements OnInit {
       artists: es ? 'Artistas' : 'Artists',
       viewDetail: es ? 'Ver detalle' : 'View detail',
       openInSpotify: es ? 'Abrir en Spotify' : 'Open in Spotify',
-      saveToFavs: es ? 'Guardar en favoritos' : 'Save to favorites',
-      saved: es ? 'Guardado' : 'Saved',
-      save: es ? 'Guardar' : 'Save',
       myPlaylists: es ? 'Mis Playlists' : 'My Playlists',
       myPlaylistsSub: es ? 'Tus playlists de Spotify' : 'Your Spotify playlists',
       createPlaylist: es ? 'Crear "FocusHub Session"' : 'Create "FocusHub Session"',
@@ -1711,22 +1646,6 @@ export class MusicComponent implements OnInit {
   async viewArtist(id: string): Promise<void> {
     await this.spotify.getArtist(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  async saveTrack(id: string): Promise<void> {
-    await this.spotify.saveTrack(id);
-    if (!this.spotify.error()) {
-      this.showNotification(
-        'success',
-        this.langService.lang() === 'es'
-          ? 'Canción guardada en tu biblioteca 🎵'
-          : 'Track saved to your library 🎵',
-      );
-    }
-  }
-
-  isSaved(id: string): boolean {
-    return this.spotify.savedTrackIds().has(id);
   }
 
   openUrl(url: string): void {
