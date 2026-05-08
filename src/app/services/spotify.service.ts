@@ -188,4 +188,17 @@ export class SpotifyService {
       return null;
     }
   }
+
+  async addTrackToPlaylist(playlistId: string, trackId: string): Promise<boolean> {
+    try {
+      await this.api(`/playlists/${playlistId}/tracks`, {
+        method: 'POST',
+        body: JSON.stringify({ uris: [`spotify:track:${trackId}`] }),
+      });
+      return true;
+    } catch (e: any) {
+      this.error.set(e.message);
+      return false;
+    }
+  }
 }
