@@ -81,6 +81,9 @@ export class SpotifyService {
       this.auth.logout();
       throw new Error('Sesión expirada');
     }
+    if (res.status === 403) {
+      throw new Error('Sin permisos: cerrá sesión y volvé a iniciar sesión para autorizar.');
+    }
     if (res.status === 204) return null as T;
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));

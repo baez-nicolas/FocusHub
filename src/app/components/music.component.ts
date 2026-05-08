@@ -297,7 +297,11 @@ interface FeaturedPlaylist {
                       }
                     </div>
                     <div class="card-actions">
-                      <button class="card-btn detail-btn" title="{{ tx().viewDetail }}">
+                      <button
+                        class="card-btn detail-btn"
+                        title="{{ tx().viewDetail }}"
+                        (click)="viewTrack(track.id)"
+                      >
                         <i class="bi bi-eye"></i>
                       </button>
                       <a
