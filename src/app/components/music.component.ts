@@ -18,7 +18,6 @@ interface FeaturedPlaylist {
   imports: [FormsModule],
   template: `
     <div class="container">
-      
       <div class="page-header">
         <div class="header-left">
           <h1 class="page-title"><i class="bi bi-music-note-beamed"></i>Spotify</h1>
@@ -37,7 +36,6 @@ interface FeaturedPlaylist {
         }
       </div>
 
-      
       @if (notification()) {
         <div [class]="'notification notification-' + notification()!.type">
           <i
@@ -52,7 +50,6 @@ interface FeaturedPlaylist {
         </div>
       }
 
-      
       @if (!auth.isLoggedIn()) {
         <div class="login-section">
           <div class="login-card">
@@ -71,9 +68,7 @@ interface FeaturedPlaylist {
         </div>
       }
 
-      
       @if (auth.isLoggedIn()) {
-        
         <div class="search-section">
           <div class="search-bar" [class.focused]="searchFocused">
             <i class="bi bi-search search-icon"></i>
@@ -101,7 +96,6 @@ interface FeaturedPlaylist {
           </div>
         </div>
 
-        
         @if (spotify.error()) {
           <div class="error-banner">
             <i class="bi bi-exclamation-triangle-fill"></i>
@@ -112,7 +106,6 @@ interface FeaturedPlaylist {
           </div>
         }
 
-        
         @if (spotify.selectedTrack()) {
           <div class="detail-panel">
             <button class="detail-close" (click)="spotify.selectedTrack.set(null)">
@@ -192,7 +185,6 @@ interface FeaturedPlaylist {
           </div>
         }
 
-        
         @if (spotify.selectedArtist()) {
           <div class="detail-panel">
             <button class="detail-close" (click)="spotify.selectedArtist.set(null)">
@@ -263,7 +255,6 @@ interface FeaturedPlaylist {
           </div>
         }
 
-        
         @if (hasResults()) {
           <div class="results-section">
             <div class="result-tabs">
@@ -277,7 +268,6 @@ interface FeaturedPlaylist {
               </button>
             </div>
 
-            
             @if (activeTab() === 'tracks') {
               <div class="cards-grid">
                 @for (track of spotify.tracks(); track track.id) {
@@ -331,7 +321,6 @@ interface FeaturedPlaylist {
               </div>
             }
 
-            
             @if (activeTab() === 'artists') {
               <div class="cards-grid">
                 @for (artist of spotify.artists(); track artist.id) {
@@ -380,7 +369,6 @@ interface FeaturedPlaylist {
           </div>
         }
 
-        
         <div class="user-playlists-section">
           <div class="section-header">
             <div>
@@ -421,7 +409,6 @@ interface FeaturedPlaylist {
         </div>
       }
 
-      
       <section class="featured-section">
         <div class="section-header">
           <div>
@@ -453,14 +440,12 @@ interface FeaturedPlaylist {
   `,
   styles: [
     `
-      
       .container {
         max-width: 1400px;
         margin: 0 auto;
         padding: 40px 32px;
       }
 
-      
       .page-header {
         display: flex;
         align-items: center;
@@ -490,7 +475,6 @@ interface FeaturedPlaylist {
         font-size: 14.5px;
       }
 
-      
       .user-bar {
         display: flex;
         align-items: center;
@@ -530,7 +514,6 @@ interface FeaturedPlaylist {
         color: #ef4444;
       }
 
-      
       .notification {
         display: flex;
         align-items: center;
@@ -566,7 +549,6 @@ interface FeaturedPlaylist {
         color: #dc2626;
       }
 
-      
       .login-section {
         display: flex;
         justify-content: center;
@@ -625,7 +607,6 @@ interface FeaturedPlaylist {
         box-shadow: 0 6px 22px rgba(29, 185, 84, 0.45);
       }
 
-      
       .search-section {
         margin-bottom: 24px;
       }
@@ -730,7 +711,6 @@ interface FeaturedPlaylist {
         }
       }
 
-      
       .error-banner {
         display: flex;
         align-items: center;
@@ -756,7 +736,6 @@ interface FeaturedPlaylist {
         align-items: center;
       }
 
-      
       .detail-panel {
         background: white;
         border: 1px solid #e2e8f0;
@@ -994,7 +973,6 @@ interface FeaturedPlaylist {
         border-color: #fbcfe8;
       }
 
-      
       .results-section {
         margin-bottom: 32px;
       }
@@ -1032,7 +1010,6 @@ interface FeaturedPlaylist {
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.09);
       }
 
-      
       .cards-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1158,7 +1135,6 @@ interface FeaturedPlaylist {
         border-color: #fbcfe8;
       }
 
-      
       .user-playlists-section {
         margin-bottom: 40px;
       }
@@ -1299,7 +1275,6 @@ interface FeaturedPlaylist {
         margin: 0;
       }
 
-      
       .featured-section {
         margin-top: 12px;
       }
@@ -1352,7 +1327,6 @@ interface FeaturedPlaylist {
         border: none;
       }
 
-      
       @media (max-width: 1023px) {
         .cards-grid {
           grid-template-columns: repeat(2, 1fr);
@@ -1392,7 +1366,6 @@ interface FeaturedPlaylist {
         }
       }
 
-      
       :host-context(.dark) .page-title {
         color: #f1f5f9;
       }
@@ -1661,12 +1634,12 @@ export class MusicComponent implements OnInit {
         ),
       },
       {
-        id: '37i9dQZF1DWdPom8yNOT6f',
+        id: '37i9dQZF1DX2ENAPP1Tyed',
         name: 'Beast Mode',
         emoji: '💪',
         desc: 'Energy to train',
         safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
-          'https://open.spotify.com/embed/playlist/37i9dQZF1DWdPom8yNOT6f?utm_source=generator',
+          'https://open.spotify.com/embed/playlist/37i9dQZF1DX2ENAPP1Tyed?utm_source=generator',
         ),
       },
       {
