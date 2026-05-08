@@ -222,9 +222,11 @@ interface FeaturedPlaylist {
                   </div>
                 }
                 <div class="detail-actions">
-                  <button
+                  <a
                     class="btn-spotify-open"
-                    (click)="openUrl(spotify.selectedArtist()!.external_urls.spotify)"
+                    [href]="spotify.selectedArtist()!.external_urls.spotify"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     <svg
                       width="16"
@@ -238,7 +240,7 @@ interface FeaturedPlaylist {
                       />
                     </svg>
                     {{ tx().openInSpotify }}
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
