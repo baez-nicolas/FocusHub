@@ -115,9 +115,9 @@ interface FeaturedPlaylist {
               <i class="bi bi-arrow-left"></i> {{ tx().backToResults }}
             </button>
             <div class="detail-content">
-              @if (spotify.selectedTrack()!.album.images[0]?.url) {
+              @if (spotify.selectedTrack()!.album.images?.[0]?.url) {
                 <img
-                  [src]="spotify.selectedTrack()!.album.images[0].url"
+                  [src]="spotify.selectedTrack()!.album.images![0].url"
                   class="detail-img"
                   alt="album"
                 />
@@ -184,9 +184,9 @@ interface FeaturedPlaylist {
               <i class="bi bi-arrow-left"></i> {{ tx().backToResults }}
             </button>
             <div class="detail-content">
-              @if (spotify.selectedArtist()!.images[0]?.url) {
+              @if (spotify.selectedArtist()!.images?.[0]?.url) {
                 <img
-                  [src]="spotify.selectedArtist()!.images[0].url"
+                  [src]="spotify.selectedArtist()!.images![0].url"
                   class="detail-img artist-thumb"
                   alt="artist"
                 />
@@ -267,9 +267,9 @@ interface FeaturedPlaylist {
               <div class="cards-grid">
                 @for (track of spotify.tracks(); track track.id) {
                   <div class="music-card">
-                    @if (track.album.images[0]?.url) {
+                    @if (track.album.images?.[0]?.url) {
                       <img
-                        [src]="track.album.images[0].url"
+                        [src]="track.album.images![0].url"
                         class="card-img"
                         alt="album"
                         loading="lazy"
@@ -326,8 +326,8 @@ interface FeaturedPlaylist {
                               <div class="pl-picker-title">{{ tx().addToPlaylist }}</div>
                               @for (pl of spotify.userPlaylists(); track pl.id) {
                                 <button class="pl-picker-item" (click)="addToPlaylist(pl.id)">
-                                  @if (pl.images[0]?.url) {
-                                    <img [src]="pl.images[0].url" class="pl-picker-img" />
+                                  @if (pl.images?.[0]?.url) {
+                                    <img [src]="pl.images![0].url" class="pl-picker-img" />
                                   } @else {
                                     <i class="bi bi-collection-play-fill pl-picker-icon"></i>
                                   }
@@ -348,9 +348,9 @@ interface FeaturedPlaylist {
               <div class="cards-grid">
                 @for (artist of spotify.artists(); track artist.id) {
                   <div class="music-card artist-card">
-                    @if (artist.images[0]?.url) {
+                    @if (artist.images?.[0]?.url) {
                       <img
-                        [src]="artist.images[0].url"
+                        [src]="artist.images![0].url"
                         class="card-img artist-img"
                         alt="artist"
                         loading="lazy"
@@ -415,8 +415,8 @@ interface FeaturedPlaylist {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  @if (pl.images[0]?.url) {
-                    <img [src]="pl.images[0].url" class="pl-img" alt="playlist" />
+                  @if (pl.images?.[0]?.url) {
+                    <img [src]="pl.images![0].url" class="pl-img" alt="playlist" />
                   } @else {
                     <div class="pl-img-placeholder">
                       <i class="bi bi-collection-play-fill"></i>
