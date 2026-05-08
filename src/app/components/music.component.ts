@@ -205,17 +205,17 @@ interface FeaturedPlaylist {
               <div class="detail-info">
                 <div class="detail-badge artist-badge">ARTIST</div>
                 <h2 class="detail-name">{{ spotify.selectedArtist()!.name }}</h2>
-                @if (spotify.selectedArtist()!.genres.length) {
+                @if (spotify.selectedArtist()!.genres?.length) {
                   <div class="genres-row">
-                    @for (g of spotify.selectedArtist()!.genres.slice(0, 4); track g) {
+                    @for (g of spotify.selectedArtist()!.genres!.slice(0, 4); track g) {
                       <span class="genre-chip">{{ g }}</span>
                     }
                   </div>
                 }
-                @if (spotify.selectedArtist()!.followers.total) {
+                @if (spotify.selectedArtist()!.followers?.total) {
                   <div class="followers-row">
                     <i class="bi bi-people-fill"></i>
-                    {{ formatNumber(spotify.selectedArtist()!.followers.total) }}
+                    {{ formatNumber(spotify.selectedArtist()!.followers!.total) }}
                     {{ tx().followers }}
                   </div>
                 }
@@ -339,11 +339,11 @@ interface FeaturedPlaylist {
                     }
                     <div class="card-body">
                       <div class="card-name" [title]="artist.name">{{ artist.name }}</div>
-                      @if (artist.genres.length) {
-                        <div class="card-sub">{{ artist.genres.slice(0, 2).join(', ') }}</div>
+                      @if (artist.genres?.length) {
+                        <div class="card-sub">{{ artist.genres!.slice(0, 2).join(', ') }}</div>
                       }
-                      @if (artist.followers.total) {
-                        <div class="card-pop">👥 {{ formatNumber(artist.followers.total) }}</div>
+                      @if (artist.followers?.total) {
+                        <div class="card-pop">👥 {{ formatNumber(artist.followers!.total) }}</div>
                       }
                     </div>
                     <div class="card-actions">
