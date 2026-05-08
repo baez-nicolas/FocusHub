@@ -1,78 +1,146 @@
-﻿import { Component, computed, inject } from '@angular/core';
+﻿import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import Swal from 'sweetalert2';
-import { Exercise, GymService } from '../services/gym.service';
 import { LangService } from '../services/lang.service';
+
+interface DayRecord {
+  date: string;
+  steps: number;
+  activity?: string;
+}
 
 @Component({
   selector: 'app-gym',
   imports: [FormsModule],
   template: `
     <div class="container">
-      @if (!service.sessionState()) {
-        <div class="header">
-          <h1 class="page-title"><i class="bi bi-heart-pulse"></i>{{ tx().title }}</h1>
-          <p class="page-subtitle">{{ tx().subtitle }}</p>
+      <div class="header">
+        <h1 class="page-title"><i class="bi bi-heart-pulse"></i>{{ tx().title }}</h1>
+        <p class="page-subtitle">{{ tx().subtitle }}</p>
+      </div>
+
+      <div class="tip-banner">
+        <span class="tip-icon">💡</span>
+        <span>{{ tx().tip }}</span>
+      </div>
+
+      <div class="main-grid">
+        <div class="input-card">
+          <div class="input-card-title">{{ tx().todaySteps }}</div>
+          <div class="step-input-wrap">
+            <input
+              type="number"
+              class="step-input"
+              [(ngModel)]="stepsInput"
+              [placeholder]="tx().stepsPlaceholder"
+              min="0"
+              max="100000"
+            />
+          </div>
+          <div class="quick-btns">
+            @for (q of quickValues; track q) {
+              <button class="btn-quick" (click)="setQuick(q)">{{ q.toLocaleString() }}</button>
+            }
+          </div>
+          <div class="activity-label">{{ tx().activityType }}</div>
+          <div class="activity-btns">
+            <button
+              class="btn-activity"
+              [class.active]="activityType === 'walk'"
+              (click)="activityType = 'walk'"
+            >
+              {{ tx().walk }}
+            </button>
+            <button
+              class="btn-activity"
+              [class.active]="activityType === 'bike'"
+              (click)="activityType = 'bike'"
+            >
+              {{ tx().bike }}
+            </button>
+            <button
+              class="btn-activity"
+              [class.active]="activityType === 'run'"
+              (click)="activityType = 'run'"
+            >
+              {{ tx().run }}
+            </button>
+          </div>
+          <button class="btn-log btn-log-full" (click)="logSteps()">{{ tx().log }}</button>
         </div>
 
-        <button class="btn-add" (click)="openRoutineForm()">{{ tx().newRoutine }}</button>
+        <div class="stats-grid">
+          <div class="stat-card steps">
+            <div class="stat-icon">👟</div>
+            <div class="stat-value">{{ todayRecord().steps.toLocaleString() }}</div>
+            <div class="stat-label">{{ tx().stepsLabel }}</div>
+          </div>
+          <div class="stat-card dist">
+            <div class="stat-icon">📍</div>
+            <div class="stat-value">{{ distance() }}</div>
+            <div class="stat-label">{{ tx().km }}</div>
+          </div>
+          <div class="stat-card kcal">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">{{ calories() }}</div>
+            <div class="stat-label">{{ tx().kcal }}</div>
+          </div>
+        </div>
+      </div>
 
-        <div class="routines-grid">
-          @for (routine of service.routines(); track routine.id) {
-            <div class="routine-card">
-              <div class="routine-name">{{ routine.name }}</div>
-              <div class="routine-info">{{ routine.exercises.length }} {{ tx().exercises }}</div>
-              <div class="routine-actions">
-                <button class="btn-start" (click)="service.startSession(routine)">
-                  {{ tx().start }}
-                </button>
-                <button class="btn-delete" (click)="service.deleteRoutine(routine.id)">ðŸ—‘</button>
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">{{ tx().progress }}</span>
+          <span class="progress-pct">{{ progressPct() }}%</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" [style.width.%]="progressPct()"></div>
+          <div class="goal-marker" [style.left.%]="100">
+            <span class="goal-marker-label">10K</span>
+          </div>
+        </div>
+        <div class="progress-sub">
+          {{ todayRecord().steps.toLocaleString() }} / 10,000 {{ tx().stepsLabel }}
+        </div>
+      </div>
+
+      <div class="award-section">
+        <div class="award-title">{{ tx().awards }}</div>
+        <div class="awards-row">
+          @for (award of awards; track award.steps) {
+            <div class="award-chip" [class.earned]="todayRecord().steps >= award.steps">
+              <span class="award-medal">{{ award.medal }}</span>
+              <span class="award-name">{{
+                award.steps >= 1000 ? award.steps / 1000 + 'K' : award.steps
+              }}</span>
+            </div>
+          }
+        </div>
+        @if (currentAward()) {
+          <div class="award-banner">
+            <span class="award-banner-medal">{{ currentAward()!.medal }}</span>
+            <div class="award-banner-text">
+              <div class="award-banner-title">{{ currentAward()!.name }}</div>
+              <div class="award-banner-sub">{{ currentAward()!.quote ?? tx().congrats }}</div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="history-section">
+        <div class="history-title">{{ tx().history }}</div>
+        <div class="history-list">
+          @for (r of last7Days(); track r.date) {
+            <div class="history-row">
+              <div class="history-date">{{ formatDate(r.date) }}</div>
+              <div class="history-bar-wrap">
+                <div class="history-bar" [style.width.%]="barWidth(r.steps)"></div>
               </div>
-            </div>
-          } @empty {
-            <div class="empty-state">
-              <div class="empty-icon">ðŸ‹ï¸</div>
-              <div class="empty-title">{{ tx().noRoutines }}</div>
-              <div class="empty-text">{{ tx().createFirstRoutine }}</div>
+              <div class="history-act">{{ activityIcon(r.activity) }}</div>
+              <div class="history-steps">{{ r.steps.toLocaleString() }}</div>
             </div>
           }
         </div>
-      } @else {
-        <div class="session-view">
-          <div class="session-header">
-            <div class="session-title">{{ service.sessionState()!.routine.name }}</div>
-          </div>
-
-          <div class="exercise-card">
-            <div class="exercise-name">{{ currentExercise()?.name }}</div>
-            <div class="exercise-progress">
-              Set {{ service.sessionState()!.setIndex + 1 }} {{ tx().setOf }}
-              {{ currentExercise()?.sets }}
-            </div>
-          </div>
-
-          @if (service.sessionState()!.inRest) {
-            <div class="rest-card">
-              <div class="rest-label">{{ tx().resting }}</div>
-              <div class="rest-timer">{{ service.sessionState()!.restTimeLeft }}s</div>
-            </div>
-          } @else {
-            <button class="btn-rest" (click)="service.startRest()">{{ tx().startRest }}</button>
-          }
-
-          <div class="session-controls">
-            <button class="btn-control" (click)="service.nextSet()">{{ tx().nextSet }}</button>
-            <button class="btn-control" (click)="service.nextExercise()">
-              {{ tx().nextExercise }}
-            </button>
-            <button class="btn-finish" (click)="service.finishSession()">{{ tx().finish }}</button>
-            <button class="btn-cancel-session" (click)="service.cancelSession()">
-              {{ tx().cancel }}
-            </button>
-          </div>
-        </div>
-      }
+      </div>
     </div>
   `,
   styles: [
@@ -84,7 +152,7 @@ import { LangService } from '../services/lang.service';
       }
 
       .header {
-        margin-bottom: 32px;
+        margin-bottom: 8px;
       }
 
       .page-title {
@@ -104,955 +172,744 @@ import { LangService } from '../services/lang.service';
       .page-subtitle {
         color: #64748b;
         font-size: 14px;
-        margin: 0;
+        margin: 0 0 20px;
       }
 
       :host-context(.dark) .page-title {
         color: #f1f5f9;
       }
-
       :host-context(.dark) .page-subtitle {
         color: #94a3b8;
       }
 
-      .btn-add {
-        width: 100%;
-        padding: 14px;
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: white;
-        border: none;
+      .tip-banner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.1) 0%,
+          rgba(139, 92, 246, 0.1) 100%
+        );
+        border: 1px solid rgba(99, 102, 241, 0.25);
         border-radius: 12px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        margin-bottom: 32px;
+        padding: 12px 18px;
+        margin-bottom: 28px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #4338ca;
       }
 
-      :host-context(.dark) .btn-add {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+      :host-context(.dark) .tip-banner {
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.15) 0%,
+          rgba(139, 92, 246, 0.15) 100%
+        );
+        border-color: rgba(99, 102, 241, 0.3);
+        color: #a5b4fc;
       }
 
-      .btn-add:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+      .tip-icon {
+        font-size: 18px;
       }
 
-      :host-context(.dark) .btn-add:hover {
-        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+      .main-grid {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
       }
 
-      .form-card {
+      @media (max-width: 900px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .input-card {
         background: white;
         border-radius: 20px;
         padding: 28px;
-        margin-bottom: 32px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
         border: 1px solid #f3f4f6;
       }
 
-      :host-context(.dark) .form-card {
-        background: #1e2433 !important;
-        border: 1px solid #2d3748 !important;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      :host-context(.dark) .input-card {
+        background: #1e2433;
+        border-color: #2d3748;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
       }
 
-      .form-header {
-        font-size: 20px;
+      .input-card-title {
+        font-size: 15px;
         font-weight: 700;
-        color: #111827;
-        margin-bottom: 20px;
-        text-align: center;
+        color: #374151;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
-      :host-context(.dark) .form-header {
-        color: #d1d5db !important;
+      :host-context(.dark) .input-card-title {
+        color: #9ca3af;
       }
 
-      .input-name {
+      .step-input-wrap {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .step-input {
         width: 100%;
         padding: 14px 16px;
         border: 2px solid #e5e7eb;
         border-radius: 12px;
-        font-size: 16px;
-        font-weight: 600;
+        font-size: 22px;
+        font-weight: 700;
         color: #111827;
-        margin-bottom: 20px;
+        background: white;
         transition: all 0.2s;
+        -moz-appearance: textfield;
       }
 
-      :host-context(.dark) .input-name {
-        background: #252b3b !important;
-        border: 2px solid #2d3748 !important;
-        color: #d1d5db !important;
+      .step-input::-webkit-inner-spin-button,
+      .step-input::-webkit-outer-spin-button {
+        -webkit-appearance: none;
       }
 
-      .input-name:focus {
+      .step-input:focus {
         outline: none;
-        border-color: #ef4444;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
       }
 
-      :host-context(.dark) .input-name:focus {
-        border-color: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+      :host-context(.dark) .step-input {
+        background: #252b3b;
+        border-color: #374151;
+        color: #f1f5f9;
       }
 
-      .exercises-label {
-        font-size: 15px;
-        font-weight: 700;
-        color: #6b7280;
-        margin-bottom: 12px;
+      :host-context(.dark) .step-input:focus {
+        border-color: #818cf8;
+        box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
       }
 
-      :host-context(.dark) .exercises-label {
-        color: #9ca3af !important;
-      }
-
-      .exercise-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr auto;
-        gap: 10px;
-        margin-bottom: 10px;
-      }
-
-      .exercise-row input {
-        padding: 12px;
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #111827;
-        transition: all 0.2s;
-      }
-
-      :host-context(.dark) .exercise-row input {
-        background: #252b3b !important;
-        border: 2px solid #2d3748 !important;
-        color: #d1d5db !important;
-      }
-
-      .exercise-row input:focus {
-        outline: none;
-        border-color: #ef4444;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-      }
-
-      :host-context(.dark) .exercise-row input:focus {
-        border-color: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
-      }
-
-      .btn-remove {
-        width: 40px;
-        background: #fee2e2;
-        color: #991b1b;
-        border: none;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .btn-remove:hover {
-        background: #fecaca;
-      }
-
-      .btn-add-exercise {
-        width: 100%;
-        padding: 12px;
-        background: #f9fafb;
-        color: #6b7280;
-        border: 2px dashed #d1d5db;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        margin: 12px 0 20px 0;
-        transition: all 0.2s;
-      }
-
-      :host-context(.dark) .btn-add-exercise {
-        background: #252b3b !important;
-        border: 2px dashed #2d3748 !important;
-        color: #9ca3af !important;
-      }
-
-      .btn-add-exercise:hover {
-        background: #f3f4f6;
-        border-color: #9ca3af;
-        color: #374151;
-      }
-
-      :host-context(.dark) .btn-add-exercise:hover {
-        background: #2d3748 !important;
-        border-color: #374151 !important;
-        color: #d1d5db !important;
-      }
-
-      .form-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-
-      .btn-save,
-      .btn-cancel {
-        padding: 14px;
+      .btn-log {
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
         border: none;
         border-radius: 12px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .btn-save {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-      }
-
-      .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
-      }
-
-      .btn-cancel {
-        background: #f3f4f6;
-        color: #6b7280;
-      }
-
-      :host-context(.dark) .btn-cancel {
-        background: #252b3b !important;
-        color: #9ca3af !important;
-      }
-
-      .btn-cancel:hover {
-        background: #e5e7eb;
-      }
-
-      :host-context(.dark) .btn-cancel:hover {
-        background: #2d3748 !important;
-      }
-
-      .routines-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-      }
-
-      .routine-card {
-        background: white;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid #f3f4f6;
-        transition: all 0.3s;
-      }
-
-      :host-context(.dark) .routine-card {
-        background: #1e2433 !important;
-        border: 1px solid #2d3748 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-      }
-
-      .routine-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-      }
-
-      :host-context(.dark) .routine-card:hover {
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
-      }
-
-      .routine-name {
-        font-size: 20px;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 8px;
-      }
-
-      :host-context(.dark) .routine-name {
-        color: #e5e7eb !important;
-      }
-
-      .routine-info {
-        font-size: 14px;
-        color: #6b7280;
-        margin-bottom: 16px;
-        font-weight: 600;
-      }
-
-      :host-context(.dark) .routine-info {
-        color: #9ca3af !important;
-      }
-
-      .routine-actions {
-        display: flex;
-        gap: 10px;
-      }
-
-      .btn-start {
-        flex: 1;
-        padding: 12px;
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
         font-size: 15px;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.2s;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        white-space: nowrap;
       }
 
-      .btn-start:hover {
+      .btn-log-full {
+        width: 100%;
+        margin-top: 14px;
+        padding: 14px;
+      }
+
+      .btn-log:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
       }
 
-      .btn-delete {
-        width: 44px;
-        background: #fee2e2;
-        color: #991b1b;
-        border: none;
-        border-radius: 10px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.2s;
+      .quick-btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
       }
 
-      .btn-delete:hover {
-        background: #fecaca;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 80px 20px;
-        background: white;
+      .btn-quick {
+        padding: 7px 14px;
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
         border-radius: 20px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        border: 1px solid #f3f4f6;
-        grid-column: 1 / -1;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
       }
 
-      :host-context(.dark) .empty-state {
-        background: #1e2433 !important;
-        border: 1px solid #2d3748 !important;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important;
+      .btn-quick:hover {
+        background: #e0e7ff;
+        border-color: #6366f1;
+        color: #4338ca;
       }
 
-      .empty-icon {
-        font-size: 64px;
-        opacity: 0.3;
-        margin-bottom: 16px;
-      }
-
-      .empty-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 8px;
-      }
-
-      :host-context(.dark) .empty-title {
-        color: #d1d5db !important;
-      }
-
-      .empty-text {
-        font-size: 14px;
+      :host-context(.dark) .btn-quick {
+        background: #252b3b;
+        border-color: #374151;
         color: #9ca3af;
       }
 
-      :host-context(.dark) .empty-text {
-        color: #6b7280 !important;
+      :host-context(.dark) .btn-quick:hover {
+        background: rgba(99, 102, 241, 0.2);
+        border-color: #6366f1;
+        color: #a5b4fc;
       }
 
-      .session-view {
-        max-width: 600px;
-        margin: 0 auto;
+      .activity-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 14px 0 8px;
       }
 
-      .session-header {
+      .activity-btns {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn-activity {
+        flex: 1;
+        padding: 8px 6px;
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
         text-align: center;
-        margin-bottom: 32px;
       }
 
-      .session-title {
-        font-size: 32px;
-        font-weight: 700;
-        color: #111827;
-        letter-spacing: -0.5px;
+      .btn-activity:hover {
+        background: #e0e7ff;
+        border-color: #6366f1;
+        color: #4338ca;
       }
 
-      :host-context(.dark) .session-title {
-        color: #f3f4f6 !important;
+      .btn-activity.active {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
       }
 
-      .exercise-card {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        border-radius: 20px;
-        padding: 40px 32px;
+      :host-context(.dark) .btn-activity {
+        background: #252b3b;
+        border-color: #374151;
+        color: #9ca3af;
+      }
+
+      :host-context(.dark) .btn-activity:hover {
+        background: rgba(99, 102, 241, 0.2);
+        border-color: #6366f1;
+        color: #a5b4fc;
+      }
+
+      :host-context(.dark) .btn-activity.active {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border-color: transparent;
+        color: white;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .stat-card.kcal {
+        grid-column: 1 / -1;
+      }
+
+      @media (max-width: 500px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f3f4f6;
         text-align: center;
-        margin-bottom: 24px;
-        box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+        transition: transform 0.2s;
       }
 
-      .exercise-name {
+      .stat-card:hover {
+        transform: translateY(-3px);
+      }
+
+      :host-context(.dark) .stat-card {
+        background: #1e2433;
+        border-color: #2d3748;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .stat-icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .stat-value {
         font-size: 28px;
         font-weight: 800;
-        color: white;
-        margin-bottom: 12px;
+        color: #111827;
         letter-spacing: -0.5px;
+        line-height: 1;
+        margin-bottom: 6px;
       }
 
-      .exercise-progress {
-        font-size: 16px;
+      :host-context(.dark) .stat-value {
+        color: #f1f5f9;
+      }
+
+      .stat-label {
+        font-size: 12px;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.9);
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
-      .rest-card {
-        background: #fef3c7;
+      .stat-card.steps .stat-value {
+        color: #6366f1;
+      }
+      .stat-card.kcal .stat-value {
+        color: #ef4444;
+      }
+      .stat-card.dist .stat-value {
+        color: #10b981;
+      }
+      .stat-card.time .stat-value {
+        color: #f59e0b;
+      }
+
+      .progress-section {
+        background: white;
         border-radius: 20px;
-        padding: 32px;
-        text-align: center;
+        padding: 24px 28px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+        border: 1px solid #f3f4f6;
         margin-bottom: 24px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       }
 
-      .rest-label {
-        font-size: 18px;
-        font-weight: 700;
-        color: #92400e;
+      :host-context(.dark) .progress-section {
+        background: #1e2433;
+        border-color: #2d3748;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 12px;
       }
 
-      .rest-timer {
-        font-size: 64px;
-        font-weight: 800;
-        color: #92400e;
-        letter-spacing: -2px;
-      }
-
-      .btn-rest {
-        width: 100%;
-        padding: 16px;
-        background: #fbbf24;
-        color: white;
-        border: none;
-        border-radius: 16px;
-        font-size: 18px;
+      .progress-label {
+        font-size: 14px;
         font-weight: 700;
-        cursor: pointer;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      :host-context(.dark) .progress-label {
+        color: #9ca3af;
+      }
+
+      .progress-pct {
+        font-size: 20px;
+        font-weight: 800;
+        color: #6366f1;
+      }
+
+      .progress-bar-wrap {
+        position: relative;
+        background: #f3f4f6;
+        border-radius: 100px;
+        height: 14px;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+
+      :host-context(.dark) .progress-bar-wrap {
+        background: #252b3b;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+        border-radius: 100px;
+        transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        max-width: 100%;
+      }
+
+      .progress-sub {
+        font-size: 13px;
+        color: #9ca3af;
+        font-weight: 600;
+        text-align: right;
+      }
+
+      .award-section {
+        background: white;
+        border-radius: 20px;
+        padding: 24px 28px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+        border: 1px solid #f3f4f6;
         margin-bottom: 24px;
-        transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
       }
 
-      .btn-rest:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+      :host-context(.dark) .award-section {
+        background: #1e2433;
+        border-color: #2d3748;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
       }
 
-      .session-controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-
-      .btn-control,
-      .btn-finish,
-      .btn-cancel-session {
-        padding: 14px;
-        border: none;
-        border-radius: 12px;
+      .award-title {
         font-size: 15px;
         font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 16px;
       }
 
-      .btn-control {
-        background: white;
-        color: #ef4444;
-        border: 2px solid #ef4444;
+      :host-context(.dark) .award-title {
+        color: #9ca3af;
       }
 
-      :host-context(.dark) .btn-control {
-        background: #252b3b !important;
-        color: #ef4444 !important;
-        border: 2px solid #ef4444 !important;
+      .awards-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 16px;
       }
 
-      .btn-control:hover {
-        background: #ef4444;
-        color: white;
+      .award-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 100px;
+        border: 2px solid #e5e7eb;
+        background: #f9fafb;
+        font-size: 14px;
+        font-weight: 700;
+        color: #9ca3af;
+        transition: all 0.3s;
+        opacity: 0.5;
       }
 
-      .btn-finish {
-        background: #22c55e;
-        color: white;
-        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-      }
-
-      .btn-finish:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
-      }
-
-      .btn-cancel-session {
-        background: #f3f4f6;
+      :host-context(.dark) .award-chip {
+        border-color: #374151;
+        background: #252b3b;
         color: #6b7280;
       }
 
-      .btn-cancel-session:hover {
-        background: #e5e7eb;
+      .award-chip.earned {
+        opacity: 1;
+        border-color: #f59e0b;
+        background: #fef3c7;
+        color: #92400e;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+      }
+
+      :host-context(.dark) .award-chip.earned {
+        background: rgba(245, 158, 11, 0.15);
+        border-color: #f59e0b;
+        color: #fcd34d;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+      }
+
+      .award-medal {
+        font-size: 18px;
+      }
+      .award-name {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .award-banner {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.12) 0%,
+          rgba(251, 191, 36, 0.12) 100%
+        );
+        border: 1.5px solid rgba(245, 158, 11, 0.4);
+        border-radius: 14px;
+        padding: 16px 20px;
+        animation: popIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      @keyframes popIn {
+        from {
+          transform: scale(0.85);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .award-banner-medal {
+        font-size: 40px;
+      }
+
+      .award-banner-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: #92400e;
+      }
+
+      :host-context(.dark) .award-banner-title {
+        color: #fcd34d;
+      }
+
+      .award-banner-sub {
+        font-size: 13px;
+        color: #b45309;
+        font-weight: 600;
+      }
+
+      :host-context(.dark) .award-banner-sub {
+        color: #fbbf24;
+      }
+
+      .history-section {
+        background: white;
+        border-radius: 20px;
+        padding: 24px 28px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+        border: 1px solid #f3f4f6;
+      }
+
+      :host-context(.dark) .history-section {
+        background: #1e2433;
+        border-color: #2d3748;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .history-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 16px;
+      }
+
+      :host-context(.dark) .history-title {
+        color: #9ca3af;
+      }
+
+      .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .history-row {
+        display: grid;
+        grid-template-columns: 90px 1fr 22px 70px;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .history-date {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: capitalize;
+      }
+
+      :host-context(.dark) .history-date {
+        color: #9ca3af;
+      }
+
+      .history-bar-wrap {
+        background: #f3f4f6;
+        border-radius: 100px;
+        height: 8px;
+        overflow: hidden;
+      }
+
+      :host-context(.dark) .history-bar-wrap {
+        background: #252b3b;
+      }
+
+      .history-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+        border-radius: 100px;
+        transition: width 0.5s ease;
+        min-width: 2px;
+      }
+
+      .history-act {
+        font-size: 16px;
+        text-align: center;
+      }
+
+      .history-steps {
+        font-size: 13px;
+        font-weight: 700;
+        color: #374151;
+        text-align: right;
+      }
+
+      :host-context(.dark) .history-steps {
+        color: #d1d5db;
       }
 
       @media (max-width: 768px) {
         .container {
           padding: 24px 16px;
         }
-
-        .title,
-        .session-title {
-          font-size: 28px;
+        .stat-value {
+          font-size: 22px;
         }
-
-        .exercise-row {
-          grid-template-columns: 1fr;
-        }
-
-        .btn-remove {
-          width: 100%;
-        }
-
-        .routines-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .exercise-name {
-          font-size: 24px;
-        }
-
-        .rest-timer {
-          font-size: 56px;
+        .history-row {
+          grid-template-columns: 70px 1fr 22px 55px;
         }
       }
     `,
   ],
 })
 export class GymComponent {
-  private router = inject(Router);
   private langService = inject(LangService);
-  routineForm: { name: string; exercises: Exercise[] } = { name: '', exercises: [] };
 
-  constructor(protected service: GymService) {}
+  stepsInput: number | null = null;
+  activityType = '';
+  readonly quickValues = [2500, 5000, 7500, 10000];
+
+  readonly awards = [
+    { steps: 2500, medal: '🥉', name: 'Bronze' },
+    { steps: 5000, medal: '🥈', name: 'Silver' },
+    { steps: 7500, medal: '🥇', name: 'Gold' },
+    { steps: 10000, medal: '💎', name: 'Diamond' },
+    { steps: 15000, medal: '🏆', name: 'Champion' },
+    { steps: 20000, medal: '💚', name: 'One for All', quote: '¡PLUS ULTRA! ⚡ — Izuku Midoriya' },
+  ];
+
+  private records = signal<DayRecord[]>(JSON.parse(localStorage.getItem('step-records') ?? '[]'));
+
+  constructor() {
+    effect(() => {
+      localStorage.setItem('step-records', JSON.stringify(this.records()));
+    });
+  }
 
   readonly tx = computed(() => {
     const es = this.langService.lang() === 'es';
     return {
       title: es ? 'Salud' : 'Health',
-      subtitle: es ? 'Rutinas y ejercicio' : 'Routines and exercise',
-      newRoutine: es ? '+ Nueva Rutina' : '+ New Routine',
-      exercises: es ? 'ejercicios' : 'exercises',
-      start: es ? 'â–¶ Iniciar' : 'â–¶ Start',
-      noRoutines: es ? 'Sin rutinas guardadas' : 'No saved routines',
-      createFirstRoutine: es
-        ? 'Crea tu primera rutina de entrenamiento'
-        : 'Create your first training routine',
-      setOf: es ? 'de' : 'of',
-      resting: es ? 'â± Descansando' : 'â± Resting',
-      startRest: es ? 'Iniciar Descanso' : 'Start Rest',
-      nextSet: es ? 'Siguiente Serie' : 'Next Set',
-      nextExercise: es ? 'Siguiente Ejercicio' : 'Next Exercise',
-      finish: es ? 'âœ“ Terminar' : 'âœ“ Finish',
-      cancel: es ? 'âœ• Cancelar' : 'âœ• Cancel',
-      swalTitle: es ? 'ðŸ’ª Nueva Rutina' : 'ðŸ’ª New Routine',
-      swalRoutineName: es ? 'Nombre de la rutina' : 'Routine name',
-      swalRoutineNamePh: es ? 'Ej.: Piernas y GlÃºteos' : 'E.g.: Legs & Glutes',
-      swalExercises: es ? 'Ejercicios' : 'Exercises',
-      swalAddEx: es ? '+ Agregar Ejercicio' : '+ Add Exercise',
-      swalExercisePh: es ? 'Ej.: Sentadillas' : 'E.g.: Squats',
-      swalSets: es ? 'Series' : 'Sets',
-      swalRest: es ? 'Descanso (seg)' : 'Rest (sec)',
-      swalRemove: es ? 'âœ• Eliminar' : 'âœ• Remove',
-      swalExLabel: es ? 'Ejercicio' : 'Exercise',
-      swalSave: es ? 'âœ“ Guardar' : 'âœ“ Save',
-      swalCancel: es ? 'âœ• Cancelar' : 'âœ• Cancel',
-      swalFillAll: es ? 'Por favor completa todos los campos' : 'Please fill in all fields',
-      swalCreated: es ? 'Â¡Rutina creada!' : 'Routine created!',
-      swalCreatedText: es
-        ? 'La rutina fue agregada exitosamente'
-        : 'The routine has been added successfully',
+      subtitle: es ? 'Contador de pasos diarios' : 'Daily step counter',
+      tip: es
+        ? '10,000 pasos al día es la meta ideal para mantener una vida activa y saludable 🚶'
+        : '10,000 steps a day is the ideal goal to maintain an active and healthy lifestyle 🚶',
+      todaySteps: es ? 'Pasos de hoy' : "Today's steps",
+      stepsPlaceholder: es ? 'Ej.: 8500' : 'e.g. 8500',
+      log: es ? 'Guardar' : 'Save',
+      stepsLabel: es ? 'Pasos' : 'Steps',
+      kcal: es ? 'Kcal quemadas' : 'Kcal burned',
+      km: es ? 'Kilómetros' : 'Kilometers',
+      progress: es ? 'Progreso hacia 10K' : 'Progress to 10K',
+      awards: es ? 'Logros del día' : "Today's achievements",
+      congrats: es ? '¡Meta alcanzada! Sigue así 💪' : 'Goal reached! Keep it up 💪',
+      history: es ? 'Últimos 7 días' : 'Last 7 days',
+      activityType: es ? 'Tipo de actividad' : 'Activity type',
+      walk: es ? 'Caminata' : 'Walk',
+      bike: es ? 'Bicicleta' : 'Bike',
+      run: es ? 'Correr' : 'Run',
     };
   });
 
-  currentExercise = () => {
-    const state = this.service.sessionState();
-    return state ? state.routine.exercises[state.exerciseIndex] : null;
-  };
+  private today(): string {
+    return new Date().toISOString().split('T')[0];
+  }
 
-  async openRoutineForm(): Promise<void> {
-    const isDark = document.documentElement.classList.contains('dark');
-    const t = this.tx();
+  readonly todayRecord = computed((): DayRecord => {
+    const t = this.today();
+    return this.records().find((r) => r.date === t) ?? { date: t, steps: 0 };
+  });
 
-    let exercisesHTML = '';
-    this.routineForm.exercises = [];
+  readonly calories = computed(() => {
+    const { steps, activity } = this.todayRecord();
+    const rate = activity === 'run' ? 0.07 : activity === 'bike' ? 0.035 : 0.04;
+    return Math.round(steps * rate);
+  });
 
-    const { value: formValues } = await Swal.fire({
-      title: t.swalTitle,
-      html: `
-        <style>
-          * {
-            box-sizing: border-box;
-          }
-          .swal2-html-container {
-            overflow-x: hidden !important;
-            max-width: 100%;
-          }
-          @media (max-width: 640px) {
-            .modal-container {
-              padding: 12px !important;
-              max-width: 100% !important;
-              overflow-x: hidden !important;
-            }
-            .modal-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
-            .swal2-input { padding: 10px 12px !important; font-size: 14px !important; }
-            .modal-label { font-size: 14px !important; }
-          }
-          .exercise-item {
-            background: ${isDark ? '#2d3748' : '#f9fafb'};
-            padding: 14px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            border: 1px solid ${isDark ? '#374151' : '#e5e7eb'};
-            overflow: hidden;
-          }
-          .exercise-field {
-            margin-bottom: 10px;
-          }
-          .exercise-field:last-of-type {
-            margin-bottom: 0;
-          }
-          .field-label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: ${isDark ? '#9ca3af' : '#6b7280'};
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-          .exercise-name-field {
-            margin-bottom: 12px;
-          }
-          .exercise-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 10px;
-          }
-          @media (min-width: 641px) {
-            .field-label {
-              display: none;
-            }
-          }
-          .btn-remove-ex {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            width: 100%;
-          }
-          .btn-remove-ex:hover {
-            background: #dc2626;
-          }
-          .btn-add-ex {
-            background: ${isDark ? '#374151' : '#f3f4f6'};
-            color: ${isDark ? '#d1d5db' : '#6b7280'};
-            border: 2px dashed ${isDark ? '#4b5563' : '#d1d5db'};
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            width: 100%;
-            margin-top: 8px;
-          }
-          .btn-add-ex:hover {
-            background: ${isDark ? '#4b5563' : '#e5e7eb'};
-          }
-          #exercisesContainer {
-            max-height: 320px;
-            overflow-y: auto;
-            overflow-x: hidden;
-          }
-          .desktop-label-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 4px;
-          }
-          .desktop-label-row span {
-            font-size: 12px;
-            font-weight: 700;
-            color: ${isDark ? '#9ca3af' : '#6b7280'};
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-          .desktop-label-single {
-            font-size: 12px;
-            font-weight: 700;
-            color: ${isDark ? '#9ca3af' : '#6b7280'};
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-            display: block;
-          }
-          @media (max-width: 640px) {
-            .desktop-label-row, .desktop-label-single {
-              display: none !important;
-            }
-          }
-        </style>
-        <div class="modal-container" style="padding: 16px; max-width: 100%; margin: 0 auto; overflow-x: hidden;">
-          <div style="margin-bottom: 16px;">
-            <label class="modal-label" style="
-              display: block;
-              font-size: 15px;
-              font-weight: 700;
-              color: ${isDark ? '#ffffff' : '#111827'};
-              margin-bottom: 8px;
-              letter-spacing: 0.3px;
-            ">${t.swalRoutineName}</label>
-            <input
-              id="routineName"
-              class="swal2-input"
-              placeholder="${t.swalRoutineNamePh}"
-              autofocus
-              style="
-                width: 100%;
-                margin: 0;
-                padding: 12px 14px;
-                font-size: 15px;
-                border-radius: 8px;
-                box-sizing: border-box;
-              "
-            >
-          </div>
+  readonly distance = computed(() => {
+    const { steps, activity } = this.todayRecord();
+    const stride = activity === 'run' ? 0.00135 : activity === 'bike' ? 0.003 : 0.00075;
+    return (steps * stride).toFixed(2);
+  });
 
-          <div style="margin-bottom: 16px;">
-            <label class="modal-label" style="
-              display: block;
-              font-size: 15px;
-              font-weight: 700;
-              color: ${isDark ? '#ffffff' : '#111827'};
-              margin-bottom: 8px;
-              letter-spacing: 0.3px;
-            ">${t.swalExercises}</label>
-            <div id="exercisesContainer"></div>
-            <button type="button" class="btn-add-ex" id="btnAddExercise">${t.swalAddEx}</button>
-          </div>
-        </div>
-      `,
-      width: window.innerWidth < 640 ? '95vw' : '580px',
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: t.swalSave,
-      cancelButtonText: t.swalCancel,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      customClass: {
-        popup: 'swal-planner-modal',
-        confirmButton: 'swal-btn-confirm',
-        cancelButton: 'swal-btn-cancel',
-      },
-      didOpen: () => {
-        const confirmButton = Swal.getConfirmButton();
-        const nameInput = document.getElementById('routineName') as HTMLInputElement;
-        const exercisesContainer = document.getElementById('exercisesContainer') as HTMLElement;
-        const btnAddExercise = document.getElementById('btnAddExercise') as HTMLButtonElement;
+  readonly progressPct = computed(() => {
+    return Math.min(100, Math.round((this.todayRecord().steps / 10000) * 100));
+  });
 
-        let exercises: Array<{ name: string; sets: number; rest: number }> = [];
+  readonly currentAward = computed(() => {
+    const steps = this.todayRecord().steps;
+    const earned = [...this.awards].reverse().find((a) => steps >= a.steps);
+    return earned ?? null;
+  });
 
-        const validateForm = () => {
-          const hasName = nameInput.value.trim() !== '';
-          const hasExercises = exercises.length > 0;
-          const allExercisesFilled = exercises.every(
-            (ex) => ex.name.trim() !== '' && ex.sets > 0 && ex.rest >= 0,
-          );
-
-          const isValid = hasName && hasExercises && allExercisesFilled;
-
-          if (confirmButton) {
-            confirmButton.disabled = !isValid;
-            confirmButton.style.opacity = isValid ? '1' : '0.5';
-            confirmButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
-          }
-        };
-
-        const renderExercises = () => {
-          exercisesContainer.innerHTML = exercises
-            .map(
-              (ex, index) => `
-            <div class="exercise-item">
-              <div class="exercise-name-field">
-                <span class="desktop-label-single">${t.swalExLabel}</span>
-                <label class="field-label">${t.swalExLabel}</label>
-                <input
-                  type="text"
-                  class="swal2-input ex-name"
-                  data-index="${index}"
-                  placeholder="${t.swalExercisePh}"
-                  value="${ex.name}"
-                  style="margin: 0; padding: 10px 12px; font-size: 14px; width: 100%;"
-                >
-              </div>
-              <div class="desktop-label-row">
-                <span>${t.swalSets}</span>
-                <span>${t.swalRest}</span>
-              </div>
-              <div class="exercise-row">
-                <div class="exercise-field">
-                  <label class="field-label">${t.swalSets}</label>
-                  <input
-                    type="number"
-                    class="swal2-input ex-sets"
-                    data-index="${index}"
-                    placeholder="3"
-                    value="${ex.sets}"
-                    min="1"
-                    style="margin: 0; padding: 10px 12px; font-size: 14px; width: 100%;"
-                  >
-                </div>
-                <div class="exercise-field">
-                  <label class="field-label">${t.swalRest}</label>
-                  <input
-                    type="number"
-                    class="swal2-input ex-rest"
-                    data-index="${index}"
-                    placeholder="60"
-                    value="${ex.rest}"
-                    min="0"
-                    style="margin: 0; padding: 10px 12px; font-size: 14px; width: 100%;"
-                  >
-                </div>
-              </div>
-              <button type="button" class="btn-remove-ex" data-index="${index}">${t.swalRemove}</button>
-            </div>
-          `,
-            )
-            .join('');
-
-          exercisesContainer.querySelectorAll('.ex-name').forEach((input) => {
-            input.addEventListener('input', (e) => {
-              const idx = parseInt((e.target as HTMLInputElement).dataset['index']!);
-              exercises[idx].name = (e.target as HTMLInputElement).value;
-              validateForm();
-            });
-          });
-
-          exercisesContainer.querySelectorAll('.ex-sets').forEach((input) => {
-            input.addEventListener('input', (e) => {
-              const idx = parseInt((e.target as HTMLInputElement).dataset['index']!);
-              exercises[idx].sets = parseInt((e.target as HTMLInputElement).value) || 0;
-              validateForm();
-            });
-          });
-
-          exercisesContainer.querySelectorAll('.ex-rest').forEach((input) => {
-            input.addEventListener('input', (e) => {
-              const idx = parseInt((e.target as HTMLInputElement).dataset['index']!);
-              exercises[idx].rest = parseInt((e.target as HTMLInputElement).value) || 0;
-              validateForm();
-            });
-          });
-
-          exercisesContainer.querySelectorAll('.btn-remove-ex').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-              const idx = parseInt((e.target as HTMLButtonElement).dataset['index']!);
-              exercises.splice(idx, 1);
-              renderExercises();
-              validateForm();
-            });
-          });
-
-          validateForm();
-        };
-
-        btnAddExercise.addEventListener('click', () => {
-          exercises.push({ name: '', sets: 3, rest: 60 });
-          renderExercises();
-        });
-
-        nameInput.addEventListener('input', validateForm);
-
-        validateForm();
-      },
-      preConfirm: () => {
-        const name = (document.getElementById('routineName') as HTMLInputElement).value;
-        const exercisesInputs = document.querySelectorAll('.ex-name');
-        const exercises: Exercise[] = [];
-
-        exercisesInputs.forEach((input, index) => {
-          const nameInput = input as HTMLInputElement;
-          const setsInput = document.querySelector(
-            `.ex-sets[data-index="${index}"]`,
-          ) as HTMLInputElement;
-          const restInput = document.querySelector(
-            `.ex-rest[data-index="${index}"]`,
-          ) as HTMLInputElement;
-
-          exercises.push({
-            name: nameInput.value,
-            sets: parseInt(setsInput.value),
-            restSeconds: parseInt(restInput.value),
-          });
-        });
-
-        if (!name || exercises.length === 0) {
-          Swal.showValidationMessage(t.swalFillAll);
-          return false;
-        }
-
-        return { name, exercises };
-      },
-    });
-
-    if (formValues) {
-      this.service.addRoutine(formValues);
-
-      await Swal.fire({
-        icon: 'success',
-        title: t.swalCreated,
-        text: t.swalCreatedText,
-        timer: 2000,
-        showConfirmButton: false,
-        background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
-        color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
-      });
+  readonly last7Days = computed(() => {
+    const result: DayRecord[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const found = this.records().find((r) => r.date === dateStr);
+      result.push(found ?? { date: dateStr, steps: 0 });
     }
+    return result;
+  });
+
+  barWidth(steps: number): number {
+    const max = Math.max(...this.last7Days().map((r) => r.steps), 10000);
+    return Math.min(100, Math.round((steps / max) * 100));
   }
 
-  addExercise(): void {
-    this.routineForm.exercises.push({ name: '', sets: 3, restSeconds: 60 });
+  formatDate(dateStr: string): string {
+    const es = this.langService.lang() === 'es';
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString(es ? 'es-ES' : 'en-US', { weekday: 'short', day: 'numeric' });
   }
 
-  removeExercise(index: number): void {
-    this.routineForm.exercises.splice(index, 1);
+  activityIcon(activity?: string): string {
+    if (activity === 'walk') return '🚶';
+    if (activity === 'bike') return '🚴';
+    if (activity === 'run') return '🏃';
+    return '';
   }
 
-  saveRoutine(): void {
-    this.service.addRoutine(this.routineForm);
+  setQuick(val: number): void {
+    this.stepsInput = val;
+  }
+
+  logSteps(): void {
+    if (!this.stepsInput || this.stepsInput < 0) return;
+    const t = this.today();
+    const current = this.records().filter((r) => r.date !== t);
+    this.records.set([
+      ...current,
+      { date: t, steps: this.stepsInput, activity: this.activityType || undefined },
+    ]);
+    this.stepsInput = null;
+    this.activityType = '';
   }
 }

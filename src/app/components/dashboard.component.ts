@@ -116,6 +116,46 @@ interface DashPlaylist {
             }
           </div>
         </section>
+
+        <section class="dash-section">
+          <div class="sec-hdr">
+            <div class="sec-title">
+              <i class="bi bi-heart-pulse"></i>
+              {{ tx().stepsToday }}
+            </div>
+            <button class="see-all" (click)="navigate('/gym')">{{ tx().seeAll }}</button>
+          </div>
+
+          <div class="steps-widget">
+            <div class="steps-stat-row">
+              <div class="steps-stat">
+                <div class="steps-stat-icon">👟</div>
+                <div class="steps-stat-val">{{ todaySteps().toLocaleString() }}</div>
+                <div class="steps-stat-label">{{ tx().stepsLabel }}</div>
+              </div>
+              <div class="steps-stat">
+                <div class="steps-stat-icon">🔥</div>
+                <div class="steps-stat-val">{{ todayKcal() }}</div>
+                <div class="steps-stat-label">{{ tx().kcal }}</div>
+              </div>
+              <div class="steps-stat">
+                <div class="steps-stat-icon">📍</div>
+                <div class="steps-stat-val">{{ todayKm() }}</div>
+                <div class="steps-stat-label">{{ tx().km }}</div>
+              </div>
+            </div>
+            <div class="steps-progress-label">
+              <span>{{ tx().progressLabel }}</span>
+              <span class="steps-pct">{{ todayPct() }}%</span>
+            </div>
+            <div class="steps-bar-wrap">
+              <div class="steps-bar" [style.width.%]="todayPct()"></div>
+            </div>
+            <div class="steps-goal-sub">
+              {{ todaySteps().toLocaleString() }} / 10,000 {{ tx().stepsLabel }}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   `,
@@ -621,6 +661,108 @@ interface DashPlaylist {
         background: linear-gradient(90deg, #1e2a3a 25%, #2d3748 50%, #1e2a3a 75%);
         background-size: 200% 100%;
       }
+
+      .steps-widget {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #f3f4f6;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      :host-context(.dark) .steps-widget {
+        background: #1e2a3a;
+        border-color: #2d3748;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      }
+
+      .steps-stat-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .steps-stat {
+        text-align: center;
+      }
+
+      .steps-stat-icon {
+        font-size: 24px;
+        margin-bottom: 6px;
+      }
+
+      .steps-stat-val {
+        font-size: 22px;
+        font-weight: 800;
+        color: #6366f1;
+        letter-spacing: -0.5px;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+
+      :host-context(.dark) .steps-stat-val {
+        color: #818cf8;
+      }
+
+      .steps-stat-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .steps-progress-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+      }
+
+      :host-context(.dark) .steps-progress-label {
+        color: #9ca3af;
+      }
+
+      .steps-pct {
+        font-size: 15px;
+        font-weight: 800;
+        color: #6366f1;
+      }
+
+      :host-context(.dark) .steps-pct {
+        color: #818cf8;
+      }
+
+      .steps-bar-wrap {
+        background: #f3f4f6;
+        border-radius: 100px;
+        height: 10px;
+        overflow: hidden;
+        margin-bottom: 8px;
+      }
+
+      :host-context(.dark) .steps-bar-wrap {
+        background: #252b3b;
+      }
+
+      .steps-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+        border-radius: 100px;
+        transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        max-width: 100%;
+      }
+
+      .steps-goal-sub {
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: 600;
+        text-align: right;
+      }
     `,
   ],
 })
@@ -643,6 +785,11 @@ export class DashboardComponent {
       seeAll: es ? 'Ver todo' : 'See all',
       noNews: es ? 'Sin noticias disponibles' : 'No news available',
       recommendedPlaylists: es ? 'Playlists Recomendadas' : 'Recommended Playlists',
+      stepsToday: es ? 'Actividad del día' : "Today's Activity",
+      stepsLabel: es ? 'Pasos' : 'Steps',
+      kcal: es ? 'Kcal' : 'Kcal',
+      km: es ? 'Km' : 'Km',
+      progressLabel: es ? 'Progreso hacia 10K pasos' : 'Progress to 10K steps',
       days: es
         ? ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
         : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -706,6 +853,23 @@ export class DashboardComponent {
   ];
 
   latestNews = computed(() => this.newsService.articles().slice(0, 3));
+
+  private stepRecords = computed<{ date: string; steps: number }[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('step-records') ?? '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  todaySteps = computed(() => {
+    const t = new Date().toISOString().split('T')[0];
+    return this.stepRecords().find((r) => r.date === t)?.steps ?? 0;
+  });
+
+  todayKcal = computed(() => Math.round(this.todaySteps() * 0.04));
+  todayKm = computed(() => (this.todaySteps() * 0.00075).toFixed(2));
+  todayPct = computed(() => Math.min(100, Math.round((this.todaySteps() / 10000) * 100)));
 
   currentDateTime = computed(() => {
     const now = new Date();
