@@ -394,7 +394,7 @@ interface FeaturedPlaylist {
                   }
                   <div class="pl-info">
                     <div class="pl-name">{{ pl.name }}</div>
-                    <div class="pl-tracks">{{ pl.tracks.total }} {{ tx().tracks }}</div>
+                    <div class="pl-tracks">{{ pl.tracks?.total ?? 0 }} {{ tx().tracks }}</div>
                   </div>
                   <i class="bi bi-box-arrow-up-right pl-open"></i>
                 </div>
