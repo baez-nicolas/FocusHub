@@ -384,7 +384,12 @@ interface FeaturedPlaylist {
           @if (spotify.userPlaylists().length) {
             <div class="playlists-grid">
               @for (pl of spotify.userPlaylists(); track pl.id) {
-                <div class="pl-card" (click)="openUrl(pl.external_urls.spotify)">
+                <a
+                  class="pl-card"
+                  [href]="pl.external_urls.spotify"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   @if (pl.images[0]?.url) {
                     <img [src]="pl.images[0].url" class="pl-img" alt="playlist" />
                   } @else {
@@ -394,10 +399,12 @@ interface FeaturedPlaylist {
                   }
                   <div class="pl-info">
                     <div class="pl-name">{{ pl.name }}</div>
-                    <div class="pl-tracks">{{ pl.tracks?.total ?? 0 }} {{ tx().tracks }}</div>
+                    @if (pl.tracks?.total) {
+                      <div class="pl-tracks">{{ pl.tracks!.total }} {{ tx().tracks }}</div>
+                    }
                   </div>
                   <i class="bi bi-box-arrow-up-right pl-open"></i>
-                </div>
+                </a>
               }
             </div>
           } @else {
@@ -1199,6 +1206,8 @@ interface FeaturedPlaylist {
         padding: 10px 12px;
         cursor: pointer;
         transition: all 0.18s;
+        text-decoration: none;
+        color: inherit;
       }
 
       .pl-card:hover {
@@ -1720,6 +1729,19 @@ export class MusicComponent implements OnInit {
         this.langService.lang() === 'es'
           ? '¡Playlist "FocusHub Session" creada exitosamente!'
           : 'Playlist "FocusHub Session" created successfully!',
+      );
+    } else {
+      const err = this.spotify.error();
+      const isScope =
+        err?.toLowerCase().includes('scope') || err?.includes('403') || err?.includes('Forbidden');
+      const es = this.langService.lang() === 'es';
+      this.showNotification(
+        'error',
+        isScope
+          ? es
+            ? 'Sin permisos: cerrá sesión y volvé a entrar para autorizar.'
+            : 'Missing permissions: log out and log in again to authorize.'
+          : (err ?? (es ? 'Error al crear la playlist.' : 'Error creating playlist.')),
       );
     }
   }
