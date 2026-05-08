@@ -96,9 +96,12 @@ export class SpotifyService {
     this.selectedTrack.set(null);
     this.selectedArtist.set(null);
     try {
-      const data = await this.api<any>(
-        `/search?q=${encodeURIComponent(query)}&type=track,artist&limit=12`,
-      );
+      const params = new URLSearchParams({
+        q: query,
+        type: 'track,artist',
+        limit: '10',
+      });
+      const data = await this.api<any>(`/search?${params}`);
       this.tracks.set(data.tracks?.items ?? []);
       this.artists.set(data.artists?.items ?? []);
     } catch (e: any) {
@@ -167,10 +170,8 @@ export class SpotifyService {
   }
 
   async createPlaylist(name: string): Promise<SpotifyPlaylist | null> {
-    const user = this.currentUser();
-    if (!user) return null;
     try {
-      const pl = await this.api<SpotifyPlaylist>(`/users/${user.id}/playlists`, {
+      const pl = await this.api<SpotifyPlaylist>(`/me/playlists`, {
         method: 'POST',
         body: JSON.stringify({
           name,
