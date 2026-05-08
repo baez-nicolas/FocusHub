@@ -122,8 +122,6 @@ http://localhost:4200
 
 <div align="center">
 
-**[⬆ Volver arriba](#-focushub)**
-
-Hecho con ❤️ y ☕ para aumentar la productividad
+**[Volver arriba](#-focushub)**
 
 </div>
