@@ -1,9 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-export const SPOTIFY_CLIENT_ID = 'TU_CLIENT_ID_AQUI';
+export const SPOTIFY_CLIENT_ID = 'e27e375c8d17461298d5e926fa20ef85';
 
-const REDIRECT_URI = 'http://localhost:4200/spotify-callback';
+const REDIRECT_URI = 'https://focus-hub-gamma.vercel.app/spotify-callback';
 const AUTH_URL = 'https://accounts.spotify.com/authorize';
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const SCOPES = [
