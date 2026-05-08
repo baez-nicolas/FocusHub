@@ -2,7 +2,7 @@
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { LangService } from '../services/lang.service';
-import { NotesService } from '../services/notes.service';
+import { Note, NotesService } from '../services/notes.service';
 
 @Component({
   selector: 'app-notes',
@@ -16,7 +16,7 @@ import { NotesService } from '../services/notes.service';
 
       <div class="toolbar">
         <div class="search-box">
-          <i class="search-icon">🔍</i>
+          <i class="bi bi-search search-icon"></i>
           <input
             type="text"
             [(ngModel)]="service.searchQuery"
@@ -37,14 +37,18 @@ import { NotesService } from '../services/notes.service';
 
       <div class="notes-grid">
         @for (note of service.filteredNotes(); track note.id) {
-          <div class="note-card">
+          <div class="note-card" (click)="viewNote(note)">
             <div class="note-header">
               <div class="note-category">
                 {{ getCategoryIcon(note.category) }} {{ getCategoryLabel(note.category) }}
               </div>
               <div class="note-actions">
-                <button class="btn-icon" (click)="editNote(note.id)">✏️</button>
-                <button class="btn-icon" (click)="deleteNote(note.id)">🗑️</button>
+                <button class="btn-icon" (click)="$event.stopPropagation(); editNote(note.id)">
+                  ✏️
+                </button>
+                <button class="btn-icon" (click)="$event.stopPropagation(); deleteNote(note.id)">
+                  🗑️
+                </button>
               </div>
             </div>
             <div class="note-title">{{ note.title }}</div>
@@ -114,6 +118,8 @@ import { NotesService } from '../services/notes.service';
         flex: 1;
         min-width: 250px;
         position: relative;
+        border-radius: 24px;
+        overflow: hidden;
       }
 
       .search-icon {
@@ -121,23 +127,27 @@ import { NotesService } from '../services/notes.service';
         left: 16px;
         top: 50%;
         transform: translateY(-50%);
-        font-size: 18px;
-        opacity: 0.5;
+        font-size: 16px;
+        color: #9ca3af;
       }
 
       .search-input {
         width: 100%;
-        padding: 12px 16px 12px 48px;
+        padding: 12px 16px 12px 44px;
         border: 2px solid #e5e7eb;
-        border-radius: 12px;
+        border-radius: 24px;
         font-size: 15px;
         font-weight: 500;
         transition: all 0.2s;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+        background-clip: padding-box;
       }
 
       :host-context(.dark) .search-input {
-        background: #252b3b !important;
-        border: 2px solid #2d3748 !important;
+        background: #2d3448 !important;
+        border: 2px solid #5a6480 !important;
         color: #d1d5db !important;
       }
 
@@ -382,11 +392,14 @@ import { NotesService } from '../services/notes.service';
       .note-card {
         background: white;
         border-radius: 16px;
-        padding: 24px;
+        padding: 20px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         border: 1px solid #f3f4f6;
         transition: all 0.3s;
         cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        min-height: 180px;
       }
 
       :host-context(.dark) .note-card {
@@ -440,11 +453,15 @@ import { NotesService } from '../services/notes.service';
       }
 
       .note-title {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 700;
         color: #111827;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
         line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
 
       :host-context(.dark) .note-title {
@@ -452,10 +469,10 @@ import { NotesService } from '../services/notes.service';
       }
 
       .note-content {
-        font-size: 14px;
+        font-size: 13px;
         color: #6b7280;
         line-height: 1.6;
-        margin-bottom: 16px;
+        flex: 1;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
@@ -467,13 +484,17 @@ import { NotesService } from '../services/notes.service';
       }
 
       .note-date {
-        font-size: 12px;
+        font-size: 11px;
         color: #9ca3af;
         font-weight: 500;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid #f3f4f6;
       }
 
       :host-context(.dark) .note-date {
         color: #6b7280 !important;
+        border-top-color: #2d3748 !important;
       }
 
       .empty-state {
@@ -581,15 +602,15 @@ export class NotesComponent {
         Pending: es ? 'Pendiente' : 'Pending',
         Other: es ? 'Otro' : 'Other',
       } as Record<string, string>,
-      swalNewTitle: es ? '📝 Nueva Nota' : '📝 New Note',
-      swalEditTitle: es ? '✏️ Editar Nota' : '✏️ Edit Note',
+      swalNewTitle: es ? 'Nueva Nota' : 'New Note',
+      swalEditTitle: es ? 'Editar Nota' : 'Edit Note',
       swalLabelTitle: es ? 'Título' : 'Title',
       swalTitlePh: es ? 'Título de la nota' : 'Note title',
       swalLabelContent: es ? 'Contenido' : 'Content',
       swalContentPh: es ? 'Escribe el contenido de tu nota...' : 'Write your note...',
       swalLabelCategory: es ? 'Categoría' : 'Category',
-      swalSave: es ? '✓ Guardar' : '✓ Save',
-      swalCancel: es ? '✕ Cancelar' : '✕ Cancel',
+      swalSave: es ? 'Guardar' : 'Save',
+      swalCancel: es ? 'Cancelar' : 'Cancel',
       swalFillAll: es ? 'Por favor completa todos los campos' : 'Please fill in all fields',
       swalCreated: es ? '¡Nota creada!' : 'Note created!',
       swalCreatedText: es
@@ -601,7 +622,7 @@ export class NotesComponent {
         : 'Changes have been saved successfully',
       swalDeleteTitle: es ? '¿Eliminar nota?' : 'Delete note?',
       swalDeleteText: es ? 'Esta acción no se puede deshacer' : 'This action cannot be undone',
-      swalDeleteBtn: es ? '✓ Eliminar' : '✓ Delete',
+      swalDeleteBtn: es ? 'Eliminar' : 'Delete',
       swalDeleted: es ? '¡Nota eliminada!' : 'Note deleted!',
       justNow: es ? 'Ahora mismo' : 'Just now',
       locale: es ? 'es-ES' : 'en-US',
@@ -693,7 +714,7 @@ export class NotesComponent {
                 font-size: 15px;
                 border-radius: 8px;
                 box-sizing: border-box;
-                resize: vertical;
+                resize: none;
                 line-height: 1.6;
               "
             ></textarea>
@@ -749,8 +770,7 @@ export class NotesComponent {
 
         const validateForm = () => {
           const hasTitle = titleInput.value.trim() !== '';
-          const hasContent = contentInput.value.trim() !== '';
-          const isValid = hasTitle && hasContent;
+          const isValid = hasTitle;
 
           if (confirmButton) {
             confirmButton.disabled = !isValid;
@@ -768,7 +788,7 @@ export class NotesComponent {
         const content = (document.getElementById('noteContent') as HTMLTextAreaElement).value;
         const category = (document.getElementById('noteCategory') as HTMLSelectElement).value;
 
-        if (!title.trim() || !content.trim()) {
+        if (!title.trim()) {
           Swal.showValidationMessage(t.swalFillAll);
           return false;
         }
@@ -933,8 +953,7 @@ export class NotesComponent {
 
         const validateForm = () => {
           const hasTitle = titleInput.value.trim() !== '';
-          const hasContent = contentInput.value.trim() !== '';
-          const isValid = hasTitle && hasContent;
+          const isValid = hasTitle;
 
           if (confirmButton) {
             confirmButton.disabled = !isValid;
@@ -952,7 +971,7 @@ export class NotesComponent {
         const content = (document.getElementById('noteContent') as HTMLTextAreaElement).value;
         const category = (document.getElementById('noteCategory') as HTMLSelectElement).value;
 
-        if (!title.trim() || !content.trim()) {
+        if (!title.trim()) {
           Swal.showValidationMessage(t.swalFillAll);
           return false;
         }
@@ -1021,6 +1040,79 @@ export class NotesComponent {
         color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
       });
     }
+  }
+
+  async viewNote(note: Note): Promise<void> {
+    const t = this.tx();
+    const isDark = document.documentElement.classList.contains('dark');
+    const es = this.langService.lang() === 'es';
+    const categoryIcon = this.getCategoryIcon(note.category);
+    const categoryLabel = this.getCategoryLabel(note.category);
+    const fullDate = this.formatFullDate(note.createdAt);
+    const safeContent = note.content
+      ? note.content
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\n/g, '<br>')
+      : null;
+
+    await Swal.fire({
+      title: note.title,
+      html: `
+        <style>
+          .nm-cat {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: ${isDark ? '#2d3748' : '#eef2ff'};
+            color: ${isDark ? '#a5b4fc' : '#4f46e5'};
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 13px; font-weight: 700; margin-bottom: 16px;
+          }
+          .nm-body {
+            text-align: left; font-size: 15px; line-height: 1.7;
+            color: ${isDark ? '#d1d5db' : '#374151'};
+            max-height: 280px; overflow-y: auto;
+            padding: 14px 16px;
+            background: ${isDark ? '#252b3b' : '#f9fafb'};
+            border-radius: 10px; margin-bottom: 14px;
+            word-break: break-word;
+          }
+          .nm-empty {
+            font-size: 14px; color: ${isDark ? '#6b7280' : '#9ca3af'};
+            font-style: italic; padding: 20px; text-align: center;
+          }
+          .nm-date {
+            font-size: 12px; color: ${isDark ? '#6b7280' : '#9ca3af'};
+            text-align: right;
+          }
+        </style>
+        <div class="nm-cat">${categoryIcon} ${categoryLabel}</div>
+        ${
+          safeContent
+            ? `<div class="nm-body">${safeContent}</div>`
+            : `<div class="nm-empty">${es ? 'Sin contenido' : 'No content'}</div>`
+        }
+        <div class="nm-date">${fullDate}</div>
+      `,
+      showConfirmButton: false,
+      showCloseButton: true,
+      customClass: { popup: 'swal-planner-modal' },
+      background: isDark ? '#1e2433' : '#ffffff',
+      color: isDark ? '#f1f5f9' : '#111827',
+      width: window.innerWidth < 640 ? '95vw' : '560px',
+    });
+  }
+
+  formatFullDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const es = this.langService.lang() === 'es';
+    return date.toLocaleString(es ? 'es-ES' : 'en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   formatDate(dateStr: string): string {

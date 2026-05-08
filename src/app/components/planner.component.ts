@@ -70,7 +70,7 @@ import { Block, PlannerService } from '../services/planner.service';
               </button>
               <button
                 class="btn-icon delete"
-                (click)="service.deleteBlock(block.id)"
+                (click)="confirmDelete(block.id)"
                 title="{{ tx().delete }}"
               >
                 🗑
@@ -546,17 +546,21 @@ export class PlannerComponent {
         ? 'Crea tu primer bloque para organizar tu día'
         : 'Create your first block to organize your day',
       createBlockBtn: es ? '+ Crear Bloque' : '+ Create Block',
-      swalNewTitle: es ? '📅 Nuevo Bloque' : '📅 New Block',
-      swalEditTitle: es ? '✎ Editar Bloque' : '✎ Edit Block',
+      swalNewTitle: es ? 'Nuevo Bloque' : 'New Block',
+      swalEditTitle: es ? 'Editar Bloque' : 'Edit Block',
       swalBlockTitle: es ? 'Título del bloque' : 'Block title',
       swalBlockPh: es ? 'Ej.: Estudiar Angular' : 'E.g.: Study Angular',
       swalStartTime: es ? 'Hora inicio' : 'Start time',
       swalEndTime: es ? 'Hora fin' : 'End time',
       swalCategory: es ? 'Categoría' : 'Category',
-      swalSave: es ? '✓ Guardar' : '✓ Save',
-      swalCancel: es ? '✕ Cancelar' : '✕ Cancel',
+      swalSave: es ? 'Guardar' : 'Save',
+      swalCancel: es ? 'Cancelar' : 'Cancel',
       swalFillAll: es ? 'Por favor completa todos los campos' : 'Please fill in all fields',
       swalBlockCreated: es ? '¡Bloque creado!' : 'Block created!',
+      swalDeleteTitle: es ? '¿Eliminar bloque?' : 'Delete block?',
+      swalDeleteText: es ? 'Esta acción no se puede deshacer' : 'This action cannot be undone',
+      swalDeleteBtn: es ? 'Eliminar' : 'Delete',
+      swalDeleted: es ? '¡Bloque eliminado!' : 'Block deleted!',
       swalBlockAdded: es
         ? 'El bloque fue agregado exitosamente'
         : 'The block has been added successfully',
@@ -758,6 +762,27 @@ export class PlannerComponent {
         background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
         color: document.documentElement.classList.contains('dark') ? '#d1d5db' : '#111827',
       });
+    }
+  }
+
+  async confirmDelete(id: string): Promise<void> {
+    const t = this.tx();
+    const isDark = document.documentElement.classList.contains('dark');
+    const result = await Swal.fire({
+      title: t.swalDeleteTitle,
+      text: t.swalDeleteText,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: t.swalDeleteBtn,
+      cancelButtonText: t.swalCancel,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      customClass: { popup: 'swal-planner-modal' },
+      background: isDark ? '#1e2433' : '#ffffff',
+      color: isDark ? '#f1f5f9' : '#111827',
+    });
+    if (result.isConfirmed) {
+      this.service.deleteBlock(id);
     }
   }
 
