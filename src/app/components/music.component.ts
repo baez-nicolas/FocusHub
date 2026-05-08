@@ -324,7 +324,7 @@ interface FeaturedPlaylist {
                           @if (addToPlaylistTrack() === track.id) {
                             <div class="pl-picker-dropdown">
                               <div class="pl-picker-title">{{ tx().addToPlaylist }}</div>
-                              @for (pl of spotify.userPlaylists(); track pl.id) {
+                              @for (pl of ownedPlaylists(); track pl.id) {
                                 <button class="pl-picker-item" (click)="addToPlaylist(pl.id)">
                                   @if (pl.images?.[0]?.url) {
                                     <img [src]="pl.images![0].url" class="pl-picker-img" />
@@ -1704,6 +1704,10 @@ export class MusicComponent implements OnInit {
   hasResults = computed(
     () => this.spotify.tracks().length > 0 || this.spotify.artists().length > 0,
   );
+  ownedPlaylists = computed(() => {
+    const userId = this.spotify.currentUser()?.id;
+    return this.spotify.userPlaylists().filter((pl) => pl.owner.id === userId);
+  });
 
   featuredPlaylists: FeaturedPlaylist[] = [];
 

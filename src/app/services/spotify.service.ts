@@ -37,7 +37,7 @@ export interface SpotifyPlaylist {
   images: SpotifyImage[] | null;
   external_urls: { spotify: string };
   tracks?: { total: number };
-  owner: { display_name: string };
+  owner: { id: string; display_name: string };
 }
 
 export interface SpotifyUser {
@@ -155,7 +155,7 @@ export class SpotifyService {
 
   async getUserPlaylists(): Promise<void> {
     try {
-      const data = await this.api<any>('/me/playlists?limit=20');
+      const data = await this.api<any>('/me/playlists?limit=50');
       this.userPlaylists.set(data.items ?? []);
     } catch (e: any) {
       this.error.set(e.message);
