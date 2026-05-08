@@ -139,9 +139,8 @@ export class SpotifyService {
 
   async saveTrack(id: string): Promise<void> {
     try {
-      await this.api(`/me/tracks`, {
+      await this.api(`/me/tracks?ids=${encodeURIComponent(id)}`, {
         method: 'PUT',
-        body: JSON.stringify({ ids: [id] }),
       });
       const s = new Set(this.savedTrackIds());
       s.add(id);

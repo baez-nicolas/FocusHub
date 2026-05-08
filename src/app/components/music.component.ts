@@ -300,13 +300,15 @@ interface FeaturedPlaylist {
                       <button class="card-btn detail-btn" title="{{ tx().viewDetail }}">
                         <i class="bi bi-eye"></i>
                       </button>
-                      <button
+                      <a
                         class="card-btn open-btn"
+                        [href]="track.external_urls.spotify"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         title="{{ tx().openInSpotify }}"
-                        (click)="openUrl(track.external_urls.spotify)"
                       >
                         <i class="bi bi-box-arrow-up-right"></i>
-                      </button>
+                      </a>
                       <button
                         class="card-btn heart-btn"
                         [class.active]="isSaved(track.id)"
@@ -354,13 +356,15 @@ interface FeaturedPlaylist {
                       >
                         <i class="bi bi-eye"></i>
                       </button>
-                      <button
+                      <a
                         class="card-btn open-btn"
+                        [href]="artist.external_urls.spotify"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         title="{{ tx().openInSpotify }}"
-                        (click)="openUrl(artist.external_urls.spotify)"
                       >
                         <i class="bi bi-box-arrow-up-right"></i>
-                      </button>
+                      </a>
                     </div>
                   </div>
                 }
@@ -1133,6 +1137,10 @@ interface FeaturedPlaylist {
         background: #f0fdf4;
         color: #16a34a;
         border-color: #bbf7d0;
+      }
+
+      a.open-btn {
+        text-decoration: none;
       }
 
       .heart-btn:hover,
