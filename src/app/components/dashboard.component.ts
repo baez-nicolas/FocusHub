@@ -11,6 +11,12 @@ interface DashPlaylist {
   safeUrl: SafeResourceUrl;
 }
 
+interface PlaylistGroup {
+  name: string;
+  emoji: string;
+  playlists: DashPlaylist[];
+}
+
 @Component({
   selector: 'app-dashboard',
   imports: [],
@@ -97,15 +103,25 @@ interface DashPlaylist {
             <button class="see-all" (click)="navigate('/music')">{{ tx().seeAll }}</button>
           </div>
 
-          <div class="pl-grid">
-            @for (pl of playlists; track pl.id) {
+          <div class="pl-groups">
+            @for (group of playlistGroups; track group.name) {
               <div class="pl-card">
-                <div class="pl-label">
-                  <span class="pl-emoji">{{ pl.emoji }}</span>
-                  {{ pl.name }}
+                <div class="pl-card-hdr">
+                  <span>{{ group.emoji }} {{ group.name }}</span>
+                </div>
+                <div class="pl-tabs">
+                  @for (pl of group.playlists; track pl.id; let i = $index) {
+                    <button
+                      class="pl-tab"
+                      [class.active]="activeIdx[group.name] === i"
+                      (click)="setActive(group.name, i)"
+                    >
+                      {{ pl.name }}
+                    </button>
+                  }
                 </div>
                 <iframe
-                  [src]="pl.safeUrl"
+                  [src]="group.playlists[activeIdx[group.name]].safeUrl"
                   frameborder="0"
                   allowtransparency="true"
                   allow="encrypted-media; autoplay; clipboard-write; fullscreen; picture-in-picture"
@@ -154,6 +170,20 @@ interface DashPlaylist {
             <div class="steps-goal-sub">
               {{ todaySteps().toLocaleString() }} / 10,000 {{ tx().stepsLabel }}
             </div>
+            @if (todayAwards().length) {
+              <div class="steps-awards-row">
+                @for (award of todayAwards(); track award.steps) {
+                  <div class="steps-award">
+                    @if (award.img) {
+                      <img [src]="award.img" [alt]="award.name" class="steps-award-img" />
+                    } @else {
+                      <span class="steps-award-medal">{{ award.medal }}</span>
+                    }
+                    <span class="steps-award-name">{{ award.name }}</span>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </section>
       </div>
@@ -466,7 +496,7 @@ interface DashPlaylist {
         margin: 0;
       }
 
-      .pl-grid {
+      .pl-groups {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 16px;
@@ -475,8 +505,10 @@ interface DashPlaylist {
       .pl-card {
         background: white;
         border: 1px solid #e2e8f0;
-        border-radius: 14px;
+        border-radius: 16px;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
         transition: box-shadow 0.2s ease;
       }
 
@@ -484,19 +516,67 @@ interface DashPlaylist {
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
       }
 
-      .pl-label {
-        padding: 13px 16px 11px;
+      .pl-card-hdr {
+        padding: 14px 16px 12px;
         font-size: 14px;
         font-weight: 700;
         color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 8px;
         border-bottom: 1px solid #f1f5f9;
       }
 
-      .pl-emoji {
-        font-size: 17px;
+      :host-context(.dark) .pl-card-hdr {
+        color: #f1f5f9;
+        border-bottom-color: #2d3748;
+      }
+
+      .pl-tabs {
+        display: flex;
+        gap: 6px;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border-bottom: 1px solid #f1f5f9;
+        flex-wrap: wrap;
+      }
+
+      :host-context(.dark) .pl-tabs {
+        background: #161d2c;
+        border-bottom-color: #2d3748;
+      }
+
+      .pl-tab {
+        padding: 5px 11px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+
+      .pl-tab.active {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: white;
+      }
+
+      .pl-tab:not(.active):hover {
+        border-color: #6366f1;
+        color: #6366f1;
+      }
+
+      :host-context(.dark) .pl-tab {
+        background: #1e2a3a;
+        border-color: #2d3748;
+        color: #9ca3af;
+      }
+
+      :host-context(.dark) .pl-tab.active {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: white;
       }
 
       .pl-iframe {
@@ -504,6 +584,7 @@ interface DashPlaylist {
         height: 300px;
         display: block;
         border: none;
+        flex: 1;
       }
 
       .pomodoro-widget {
@@ -763,6 +844,57 @@ interface DashPlaylist {
         font-weight: 600;
         text-align: right;
       }
+
+      .steps-awards-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .steps-award {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 10px;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.1) 0%,
+          rgba(251, 191, 36, 0.1) 100%
+        );
+        border: 1.5px solid rgba(245, 158, 11, 0.35);
+        border-radius: 20px;
+      }
+
+      .steps-award-img {
+        width: 26px;
+        height: 26px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid rgba(245, 158, 11, 0.5);
+        flex-shrink: 0;
+      }
+
+      .steps-award-medal {
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .steps-award-name {
+        font-size: 11px;
+        font-weight: 700;
+        color: #92400e;
+        white-space: nowrap;
+      }
+
+      :host-context(.dark) .steps-award {
+        background: rgba(245, 158, 11, 0.08);
+        border-color: rgba(245, 158, 11, 0.25);
+      }
+
+      :host-context(.dark) .steps-award-name {
+        color: #fcd34d;
+      }
     `,
   ],
 })
@@ -825,30 +957,102 @@ export class DashboardComponent {
     };
   });
 
-  playlists: DashPlaylist[] = [
+  activeIdx: Record<string, number> = { 'Focus Flow': 0, 'Lo-Fi': 0, 'Beast Mode': 0 };
+
+  setActive(group: string, idx: number): void {
+    this.activeIdx = { ...this.activeIdx, [group]: idx };
+  }
+
+  playlistGroups: PlaylistGroup[] = [
     {
-      id: '37i9dQZF1DWZeKCadgRdKQ',
       name: 'Focus Flow',
       emoji: '🎯',
-      safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
-        'https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgRdKQ?utm_source=generator',
-      ),
+      playlists: [
+        {
+          id: '37i9dQZF1DWZeKCadgRdKQ',
+          name: 'Focus Flow',
+          emoji: '🎯',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DWZeKCadgRdKQ?utm_source=generator',
+          ),
+        },
+        {
+          id: '37i9dQZF1DWXLeA8Omikj7',
+          name: 'Brain Food',
+          emoji: '🧠',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DWXLeA8Omikj7?utm_source=generator',
+          ),
+        },
+        {
+          id: '37i9dQZF1DX3rxVfibe1L0',
+          name: 'Mood Booster',
+          emoji: '🎹',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DX3rxVfibe1L0?utm_source=generator',
+          ),
+        },
+      ],
     },
     {
-      id: '37i9dQZF1DWdPom8yNOT6f',
+      name: 'Lo-Fi',
+      emoji: '🌙',
+      playlists: [
+        {
+          id: '37i9dQZF1DWWQRwui0ExPn',
+          name: 'Lo-Fi Beats',
+          emoji: '🌙',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn?utm_source=generator',
+          ),
+        },
+        {
+          id: '37i9dQZF1DX4sWSpwq3LiO',
+          name: 'Peaceful Piano',
+          emoji: '🎹',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DX4sWSpwq3LiO?utm_source=generator',
+          ),
+        },
+        {
+          id: '37i9dQZF1DWZd79rJ6a7lp',
+          name: 'Sleep',
+          emoji: '🛌',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DWZd79rJ6a7lp?utm_source=generator',
+          ),
+        },
+      ],
+    },
+    {
       name: 'Beast Mode',
       emoji: '💪',
-      safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
-        'https://open.spotify.com/embed/playlist/37i9dQZF1DWdPom8yNOT6f?utm_source=generator',
-      ),
-    },
-    {
-      id: '37i9dQZF1DWWQRwui0ExPn',
-      name: 'Lo-Fi Beats',
-      emoji: '🌙',
-      safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
-        'https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn?utm_source=generator',
-      ),
+      playlists: [
+        {
+          id: '37i9dQZF1DX2ENAPP1Tyed',
+          name: 'Workout',
+          emoji: '💪',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DX2ENAPP1Tyed?utm_source=generator',
+          ),
+        },
+        {
+          id: '37i9dQZF1DWXRqgorJj26U',
+          name: 'Rock Classics',
+          emoji: '🎸',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DWXRqgorJj26U?utm_source=generator',
+          ),
+        },
+        {
+          id: '37i9dQZF1DX76Wlfdnj7AP',
+          name: 'Power Hour',
+          emoji: '⚡',
+          safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
+            'https://open.spotify.com/embed/playlist/37i9dQZF1DX76Wlfdnj7AP?utm_source=generator',
+          ),
+        },
+      ],
     },
   ];
 
@@ -870,6 +1074,23 @@ export class DashboardComponent {
   todayKcal = computed(() => Math.round(this.todaySteps() * 0.04));
   todayKm = computed(() => (this.todaySteps() * 0.00075).toFixed(2));
   todayPct = computed(() => Math.min(100, Math.round((this.todaySteps() / 10000) * 100)));
+
+  todayAwards = computed(() => {
+    const steps = this.todaySteps();
+    const es = this.langService.lang() === 'es';
+    const all: { steps: number; img?: string; medal?: string; name: string }[] = [
+      { steps: 2500, medal: '🥉', name: es ? 'Bronce' : 'Bronze' },
+      { steps: 5000, medal: '🥈', name: es ? 'Plata' : 'Silver' },
+      { steps: 7500, medal: '🥇', name: es ? 'Oro' : 'Gold' },
+      { steps: 10000, img: 'assets/leomessi.png', name: es ? '¡Como Messi!' : 'Like Messi!' },
+      { steps: 15000, img: 'assets/prime.png', name: es ? 'Eres un Prime' : "You're a Prime" },
+      { steps: 20000, img: 'assets/midoriya.webp', name: 'One for All' },
+      { steps: 25000, img: 'assets/kratos.png', name: es ? 'Dios de la Guerra' : 'God of War' },
+      { steps: 30000, img: 'assets/alienx.png', name: 'Alien X' },
+      { steps: 35000, img: 'assets/goku.png', name: es ? 'Super Saiyan' : 'Super Saiyan' },
+    ];
+    return all.filter((a) => steps >= a.steps);
+  });
 
   currentDateTime = computed(() => {
     const now = new Date();

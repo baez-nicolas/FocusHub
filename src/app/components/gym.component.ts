@@ -106,9 +106,13 @@ interface DayRecord {
       <div class="award-section">
         <div class="award-title">{{ tx().awards }}</div>
         <div class="awards-row">
-          @for (award of awards; track award.steps) {
+          @for (award of awards(); track award.steps) {
             <div class="award-chip" [class.earned]="todayRecord().steps >= award.steps">
-              <span class="award-medal">{{ award.medal }}</span>
+              @if (award.img) {
+                <img [src]="award.img" class="award-chip-img" [alt]="award.name" />
+              } @else {
+                <span class="award-medal">{{ award.medal }}</span>
+              }
               <span class="award-name">{{
                 award.steps >= 1000 ? award.steps / 1000 + 'K' : award.steps
               }}</span>
@@ -117,7 +121,15 @@ interface DayRecord {
         </div>
         @if (currentAward()) {
           <div class="award-banner">
-            <span class="award-banner-medal">{{ currentAward()!.medal }}</span>
+            @if (currentAward()!.img) {
+              <img
+                [src]="currentAward()!.img"
+                class="award-banner-img"
+                [alt]="currentAward()!.name"
+              />
+            } @else {
+              <span class="award-banner-medal">{{ currentAward()!.medal }}</span>
+            }
             <div class="award-banner-text">
               <div class="award-banner-title">{{ currentAward()!.name }}</div>
               <div class="award-banner-sub">{{ currentAward()!.quote ?? tx().congrats }}</div>
@@ -632,6 +644,22 @@ interface DayRecord {
       .award-medal {
         font-size: 18px;
       }
+
+      .award-chip-img {
+        width: 24px;
+        height: 24px;
+        object-fit: cover;
+        border-radius: 50%;
+        filter: grayscale(1);
+        opacity: 0.5;
+        transition: all 0.3s;
+      }
+
+      .award-chip.earned .award-chip-img {
+        filter: grayscale(0);
+        opacity: 1;
+      }
+
       .award-name {
         font-size: 13px;
         font-weight: 800;
@@ -665,6 +693,22 @@ interface DayRecord {
 
       .award-banner-medal {
         font-size: 40px;
+      }
+      .award-banner-img {
+        width: 72px;
+        height: 72px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid rgba(245, 158, 11, 0.5);
+        flex-shrink: 0;
+      }
+      .award-banner-img {
+        width: 72px;
+        height: 72px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid rgba(245, 158, 11, 0.5);
+        flex-shrink: 0;
       }
 
       .award-banner-title {
@@ -794,14 +838,66 @@ export class GymComponent {
   activityType = '';
   readonly quickValues = [2500, 5000, 7500, 10000];
 
-  readonly awards = [
-    { steps: 2500, medal: '🥉', name: 'Bronze' },
-    { steps: 5000, medal: '🥈', name: 'Silver' },
-    { steps: 7500, medal: '🥇', name: 'Gold' },
-    { steps: 10000, medal: '💎', name: 'Diamond' },
-    { steps: 15000, medal: '🏆', name: 'Champion' },
-    { steps: 20000, medal: '💚', name: 'One for All', quote: '¡PLUS ULTRA! ⚡ — Izuku Midoriya' },
-  ];
+  readonly awards = computed(() => {
+    const es = this.langService.lang() === 'es';
+    return [
+      { steps: 2500, medal: '🥉', name: es ? 'Bronce' : 'Bronze' },
+      { steps: 5000, medal: '🥈', name: es ? 'Plata' : 'Silver' },
+      { steps: 7500, medal: '🥇', name: es ? 'Oro' : 'Gold' },
+      {
+        steps: 10000,
+        medal: '⚽',
+        name: es ? '¡Como Messi!' : 'Like Messi!',
+        img: 'assets/leomessi.png',
+        quote: es
+          ? 'El mejor del mundo camina 10K. Hoy fuiste uno de ellos. 🐐'
+          : 'The best in the world walks 10K. Today you were one of them. 🐐',
+      },
+      {
+        steps: 15000,
+        medal: '🤖',
+        name: es ? 'Eres un Prime' : "You're a Prime",
+        img: 'assets/prime.png',
+        quote: es
+          ? 'Autobots, a rodar. ⚙️ — Optimus Prime'
+          : 'Autobots, roll out. ⚙️ — Optimus Prime',
+      },
+      {
+        steps: 20000,
+        medal: '💚',
+        name: 'One for All',
+        img: 'assets/midoriya.webp',
+        quote: es ? '¡PLUS ULTRA! ⚡ — Izuku Midoriya' : 'PLUS ULTRA! ⚡ — Izuku Midoriya',
+      },
+      {
+        steps: 25000,
+        medal: '🪓',
+        name: es ? 'Dios de la Guerra' : 'God of War',
+        img: 'assets/kratos.png',
+        quote: es
+          ? 'Sé mejor, muchacho. No repitas mis errores. — Kratos'
+          : 'Be better, boy. Do not repeat my mistakes. — Kratos',
+      },
+      {
+        steps: 30000,
+        medal: '👽',
+        name: 'Alien X',
+        img: 'assets/alienx.png',
+        quote: es
+          ? 'El poder cósmico te pertenece. 🌌 — Alien X'
+          : 'Cosmic power is yours. 🌌 — Alien X',
+      },
+      {
+        steps: 35000,
+        medal: '⭐',
+        name: 'Super Saiyan',
+        img: 'assets/goku.png',
+        quote: es
+          ? 'Siempre hay alguien más fuerte... hasta que eres tú. ⭐ — Goku'
+          : 'There is always someone stronger... until it is you. ⭐ — Goku',
+      },
+    ];
+  });
 
   private records = signal<DayRecord[]>(JSON.parse(localStorage.getItem('step-records') ?? '[]'));
 
@@ -863,7 +959,7 @@ export class GymComponent {
 
   readonly currentAward = computed(() => {
     const steps = this.todayRecord().steps;
-    const earned = [...this.awards].reverse().find((a) => steps >= a.steps);
+    const earned = [...this.awards()].reverse().find((a) => steps >= a.steps);
     return earned ?? null;
   });
 
