@@ -1,9 +1,9 @@
-import { Component, computed, inject } from '@angular/core';
+﻿import { Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { Exercise, GymService } from '../services/gym.service';
-import { PomodoroService } from '../services/pomodoro.service';
+import { LangService } from '../services/lang.service';
 
 @Component({
   selector: 'app-gym',
@@ -11,92 +11,108 @@ import { PomodoroService } from '../services/pomodoro.service';
   template: `
     <div class="container">
       @if (!service.sessionState()) {
-      <div class="header">
-        <div class="title">💪 Gym</div>
-      </div>
-
-      <button class="btn-add" (click)="openRoutineForm()">+ Nueva Rutina</button>
-
-      <div class="routines-grid">
-        @for (routine of service.routines(); track routine.id) {
-        <div class="routine-card">
-          <div class="routine-name">{{ routine.name }}</div>
-          <div class="routine-info">{{ routine.exercises.length }} ejercicios</div>
-          <div class="routine-actions">
-            <button class="btn-start" (click)="service.startSession(routine)">▶ Iniciar</button>
-            <button class="btn-delete" (click)="service.deleteRoutine(routine.id)">🗑</button>
-          </div>
+        <div class="header">
+          <h1 class="page-title"><i class="bi bi-heart-pulse"></i>{{ tx().title }}</h1>
+          <p class="page-subtitle">{{ tx().subtitle }}</p>
         </div>
-        } @empty {
-        <div class="empty-state">
-          <div class="empty-icon">🏋️</div>
-          <div class="empty-title">Sin rutinas guardadas</div>
-          <div class="empty-text">Crea tu primera rutina de entrenamiento</div>
+
+        <button class="btn-add" (click)="openRoutineForm()">{{ tx().newRoutine }}</button>
+
+        <div class="routines-grid">
+          @for (routine of service.routines(); track routine.id) {
+            <div class="routine-card">
+              <div class="routine-name">{{ routine.name }}</div>
+              <div class="routine-info">{{ routine.exercises.length }} {{ tx().exercises }}</div>
+              <div class="routine-actions">
+                <button class="btn-start" (click)="service.startSession(routine)">
+                  {{ tx().start }}
+                </button>
+                <button class="btn-delete" (click)="service.deleteRoutine(routine.id)">ðŸ—‘</button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state">
+              <div class="empty-icon">ðŸ‹ï¸</div>
+              <div class="empty-title">{{ tx().noRoutines }}</div>
+              <div class="empty-text">{{ tx().createFirstRoutine }}</div>
+            </div>
+          }
         </div>
-        }
-      </div>
       } @else {
-      <div class="session-view">
-        <div class="session-header">
-          <div class="session-title">{{ service.sessionState()!.routine.name }}</div>
-        </div>
+        <div class="session-view">
+          <div class="session-header">
+            <div class="session-title">{{ service.sessionState()!.routine.name }}</div>
+          </div>
 
-        <div class="exercise-card">
-          <div class="exercise-name">{{ currentExercise()?.name }}</div>
-          <div class="exercise-progress">
-            Set {{ service.sessionState()!.setIndex + 1 }} de {{ currentExercise()?.sets }}
+          <div class="exercise-card">
+            <div class="exercise-name">{{ currentExercise()?.name }}</div>
+            <div class="exercise-progress">
+              Set {{ service.sessionState()!.setIndex + 1 }} {{ tx().setOf }}
+              {{ currentExercise()?.sets }}
+            </div>
+          </div>
+
+          @if (service.sessionState()!.inRest) {
+            <div class="rest-card">
+              <div class="rest-label">{{ tx().resting }}</div>
+              <div class="rest-timer">{{ service.sessionState()!.restTimeLeft }}s</div>
+            </div>
+          } @else {
+            <button class="btn-rest" (click)="service.startRest()">{{ tx().startRest }}</button>
+          }
+
+          <div class="session-controls">
+            <button class="btn-control" (click)="service.nextSet()">{{ tx().nextSet }}</button>
+            <button class="btn-control" (click)="service.nextExercise()">
+              {{ tx().nextExercise }}
+            </button>
+            <button class="btn-finish" (click)="service.finishSession()">{{ tx().finish }}</button>
+            <button class="btn-cancel-session" (click)="service.cancelSession()">
+              {{ tx().cancel }}
+            </button>
           </div>
         </div>
-
-        @if (service.sessionState()!.inRest) {
-        <div class="rest-card">
-          <div class="rest-label">⏱ Descansando</div>
-          <div class="rest-timer">{{ service.sessionState()!.restTimeLeft }}s</div>
-        </div>
-        } @else {
-        <button class="btn-rest" (click)="service.startRest()">Iniciar Descanso</button>
-        }
-
-        <div class="session-controls">
-          <button class="btn-control" (click)="service.nextSet()">Siguiente Set</button>
-          <button class="btn-control" (click)="service.nextExercise()">Siguiente Ejercicio</button>
-          <button class="btn-finish" (click)="service.finishSession()">✓ Terminar</button>
-          <button class="btn-cancel-session" (click)="service.cancelSession()">✕ Cancelar</button>
-        </div>
-      </div>
-      } @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
-      <div class="pomodoro-widget" (click)="goToPomodoro()">
-        <div class="pomodoro-icon">⏱️</div>
-        <div class="pomodoro-content">
-          <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
-          <div class="pomodoro-time">{{ formatTime() }}</div>
-        </div>
-      </div>
       }
     </div>
   `,
   styles: [
     `
       .container {
-        max-width: 900px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 40px 24px;
+        padding: 40px 32px;
       }
 
       .header {
         margin-bottom: 32px;
-        text-align: center;
       }
 
-      .title {
-        font-size: 32px;
+      .page-title {
+        font-size: 26px;
         font-weight: 700;
-        color: #111827;
-        letter-spacing: -0.5px;
+        color: #1e293b;
+        margin: 0 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
-      :host-context(.dark) .title {
-        color: #f3f4f6 !important;
+      .page-title i {
+        color: #6366f1;
+      }
+
+      .page-subtitle {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0;
+      }
+
+      :host-context(.dark) .page-title {
+        color: #f1f5f9;
+      }
+
+      :host-context(.dark) .page-subtitle {
+        color: #94a3b8;
       }
 
       .btn-add {
@@ -628,111 +644,54 @@ import { PomodoroService } from '../services/pomodoro.service';
           font-size: 56px;
         }
       }
-
-      .pomodoro-widget {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: linear-gradient(
-          135deg,
-          rgba(99, 102, 241, 0.95) 0%,
-          rgba(139, 92, 246, 0.95) 100%
-        );
-        backdrop-filter: blur(16px);
-        padding: 12px 20px;
-        border-radius: 16px;
-        border: 1.5px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
-        z-index: 1000;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        width: 160px;
-      }
-
-      .pomodoro-widget:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
-        border-color: rgba(255, 255, 255, 0.35);
-      }
-
-      .pomodoro-icon {
-        font-size: 24px;
-        line-height: 1;
-        flex-shrink: 0;
-      }
-
-      .pomodoro-content {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        flex: 1;
-        min-width: 0;
-      }
-
-      .pomodoro-label {
-        font-size: 9px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.85);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        line-height: 1;
-      }
-
-      .pomodoro-time {
-        font-size: 20px;
-        font-weight: 800;
-        color: white;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -0.5px;
-        line-height: 1;
-      }
-
-      :host-context(.dark) .pomodoro-widget {
-        background: linear-gradient(
-          135deg,
-          rgba(79, 70, 229, 0.95) 0%,
-          rgba(124, 58, 237, 0.95) 100%
-        );
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-
-      :host-context(.dark) .pomodoro-widget:hover {
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.4);
-      }
     `,
   ],
 })
 export class GymComponent {
-  pomodoroService = inject(PomodoroService);
   private router = inject(Router);
+  private langService = inject(LangService);
   routineForm: { name: string; exercises: Exercise[] } = { name: '', exercises: [] };
 
   constructor(protected service: GymService) {}
 
-  formatTime = computed(() => {
-    const sec = this.pomodoroService.secondsLeft();
-    const mins = Math.floor(sec / 60);
-    const secs = sec % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  readonly tx = computed(() => {
+    const es = this.langService.lang() === 'es';
+    return {
+      title: es ? 'Salud' : 'Health',
+      subtitle: es ? 'Rutinas y ejercicio' : 'Routines and exercise',
+      newRoutine: es ? '+ Nueva Rutina' : '+ New Routine',
+      exercises: es ? 'ejercicios' : 'exercises',
+      start: es ? 'â–¶ Iniciar' : 'â–¶ Start',
+      noRoutines: es ? 'Sin rutinas guardadas' : 'No saved routines',
+      createFirstRoutine: es
+        ? 'Crea tu primera rutina de entrenamiento'
+        : 'Create your first training routine',
+      setOf: es ? 'de' : 'of',
+      resting: es ? 'â± Descansando' : 'â± Resting',
+      startRest: es ? 'Iniciar Descanso' : 'Start Rest',
+      nextSet: es ? 'Siguiente Serie' : 'Next Set',
+      nextExercise: es ? 'Siguiente Ejercicio' : 'Next Exercise',
+      finish: es ? 'âœ“ Terminar' : 'âœ“ Finish',
+      cancel: es ? 'âœ• Cancelar' : 'âœ• Cancel',
+      swalTitle: es ? 'ðŸ’ª Nueva Rutina' : 'ðŸ’ª New Routine',
+      swalRoutineName: es ? 'Nombre de la rutina' : 'Routine name',
+      swalRoutineNamePh: es ? 'Ej.: Piernas y GlÃºteos' : 'E.g.: Legs & Glutes',
+      swalExercises: es ? 'Ejercicios' : 'Exercises',
+      swalAddEx: es ? '+ Agregar Ejercicio' : '+ Add Exercise',
+      swalExercisePh: es ? 'Ej.: Sentadillas' : 'E.g.: Squats',
+      swalSets: es ? 'Series' : 'Sets',
+      swalRest: es ? 'Descanso (seg)' : 'Rest (sec)',
+      swalRemove: es ? 'âœ• Eliminar' : 'âœ• Remove',
+      swalExLabel: es ? 'Ejercicio' : 'Exercise',
+      swalSave: es ? 'âœ“ Guardar' : 'âœ“ Save',
+      swalCancel: es ? 'âœ• Cancelar' : 'âœ• Cancel',
+      swalFillAll: es ? 'Por favor completa todos los campos' : 'Please fill in all fields',
+      swalCreated: es ? 'Â¡Rutina creada!' : 'Routine created!',
+      swalCreatedText: es
+        ? 'La rutina fue agregada exitosamente'
+        : 'The routine has been added successfully',
+    };
   });
-
-  getPhaseLabel(): string {
-    const state = this.pomodoroService.state();
-    if (state === 'RUNNING_FOCUS') {
-      return 'Enfoque';
-    } else if (state === 'RUNNING_SHORT_BREAK' || state === 'RUNNING_LONG_BREAK') {
-      return 'Descanso';
-    }
-    return '';
-  }
-
-  goToPomodoro(): void {
-    this.router.navigate(['/pomodoro']);
-  }
 
   currentExercise = () => {
     const state = this.service.sessionState();
@@ -741,12 +700,13 @@ export class GymComponent {
 
   async openRoutineForm(): Promise<void> {
     const isDark = document.documentElement.classList.contains('dark');
+    const t = this.tx();
 
     let exercisesHTML = '';
     this.routineForm.exercises = [];
 
     const { value: formValues } = await Swal.fire({
-      title: '💪 Nueva Rutina',
+      title: t.swalTitle,
       html: `
         <style>
           * {
@@ -874,11 +834,11 @@ export class GymComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Nombre de la rutina</label>
+            ">${t.swalRoutineName}</label>
             <input
               id="routineName"
               class="swal2-input"
-              placeholder="Ej: Piernas y Glúteos"
+              placeholder="${t.swalRoutineNamePh}"
               autofocus
               style="
                 width: 100%;
@@ -899,17 +859,17 @@ export class GymComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Ejercicios</label>
+            ">${t.swalExercises}</label>
             <div id="exercisesContainer"></div>
-            <button type="button" class="btn-add-ex" id="btnAddExercise">+ Añadir Ejercicio</button>
+            <button type="button" class="btn-add-ex" id="btnAddExercise">${t.swalAddEx}</button>
           </div>
         </div>
       `,
       width: window.innerWidth < 640 ? '95vw' : '580px',
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: '✓ Guardar',
-      cancelButtonText: '✕ Cancelar',
+      confirmButtonText: t.swalSave,
+      cancelButtonText: t.swalCancel,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#6b7280',
       customClass: {
@@ -929,7 +889,7 @@ export class GymComponent {
           const hasName = nameInput.value.trim() !== '';
           const hasExercises = exercises.length > 0;
           const allExercisesFilled = exercises.every(
-            (ex) => ex.name.trim() !== '' && ex.sets > 0 && ex.rest >= 0
+            (ex) => ex.name.trim() !== '' && ex.sets > 0 && ex.rest >= 0,
           );
 
           const isValid = hasName && hasExercises && allExercisesFilled;
@@ -947,24 +907,24 @@ export class GymComponent {
               (ex, index) => `
             <div class="exercise-item">
               <div class="exercise-name-field">
-                <span class="desktop-label-single">Ejercicio</span>
-                <label class="field-label">Ejercicio</label>
+                <span class="desktop-label-single">${t.swalExLabel}</span>
+                <label class="field-label">${t.swalExLabel}</label>
                 <input
                   type="text"
                   class="swal2-input ex-name"
                   data-index="${index}"
-                  placeholder="Ej: Sentadillas"
+                  placeholder="${t.swalExercisePh}"
                   value="${ex.name}"
                   style="margin: 0; padding: 10px 12px; font-size: 14px; width: 100%;"
                 >
               </div>
               <div class="desktop-label-row">
-                <span>Series</span>
-                <span>Descanso</span>
+                <span>${t.swalSets}</span>
+                <span>${t.swalRest}</span>
               </div>
               <div class="exercise-row">
                 <div class="exercise-field">
-                  <label class="field-label">Series</label>
+                  <label class="field-label">${t.swalSets}</label>
                   <input
                     type="number"
                     class="swal2-input ex-sets"
@@ -976,7 +936,7 @@ export class GymComponent {
                   >
                 </div>
                 <div class="exercise-field">
-                  <label class="field-label">Descanso (seg)</label>
+                  <label class="field-label">${t.swalRest}</label>
                   <input
                     type="number"
                     class="swal2-input ex-rest"
@@ -988,9 +948,9 @@ export class GymComponent {
                   >
                 </div>
               </div>
-              <button type="button" class="btn-remove-ex" data-index="${index}">✕ Eliminar</button>
+              <button type="button" class="btn-remove-ex" data-index="${index}">${t.swalRemove}</button>
             </div>
-          `
+          `,
             )
             .join('');
 
@@ -1047,10 +1007,10 @@ export class GymComponent {
         exercisesInputs.forEach((input, index) => {
           const nameInput = input as HTMLInputElement;
           const setsInput = document.querySelector(
-            `.ex-sets[data-index="${index}"]`
+            `.ex-sets[data-index="${index}"]`,
           ) as HTMLInputElement;
           const restInput = document.querySelector(
-            `.ex-rest[data-index="${index}"]`
+            `.ex-rest[data-index="${index}"]`,
           ) as HTMLInputElement;
 
           exercises.push({
@@ -1061,7 +1021,7 @@ export class GymComponent {
         });
 
         if (!name || exercises.length === 0) {
-          Swal.showValidationMessage('Por favor completa todos los campos');
+          Swal.showValidationMessage(t.swalFillAll);
           return false;
         }
 
@@ -1074,8 +1034,8 @@ export class GymComponent {
 
       await Swal.fire({
         icon: 'success',
-        title: '¡Rutina creada!',
-        text: 'La rutina se ha agregado correctamente',
+        title: t.swalCreated,
+        text: t.swalCreatedText,
         timer: 2000,
         showConfirmButton: false,
         background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',

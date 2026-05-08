@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
+import { LangService } from './lang.service';
 
 export interface NewsArticle {
   id: string;
@@ -37,6 +38,7 @@ interface GuardianResult {
 @Injectable({ providedIn: 'root' })
 export class NewsService {
   private http = inject(HttpClient);
+  private lang = inject(LangService);
   private readonly apiKey = '9658f686-0f2b-443e-9840-7eec2e479fc4';
   private readonly baseUrl = 'https://content.guardianapis.com/search';
 
@@ -49,17 +51,20 @@ export class NewsService {
   currentQuery = signal('');
   currentSection = signal('');
 
-  readonly sections = [
-    { value: '', label: 'Todo' },
-    { value: 'world', label: 'Mundo' },
-    { value: 'technology', label: 'Tecnología' },
-    { value: 'science', label: 'Ciencia' },
-    { value: 'sport', label: 'Deporte' },
-    { value: 'business', label: 'Negocios' },
-    { value: 'culture', label: 'Cultura' },
-    { value: 'environment', label: 'Medio Ambiente' },
-    { value: 'health', label: 'Salud' },
-  ];
+  readonly sections = computed(() => {
+    const es = this.lang.lang() === 'es';
+    return [
+      { value: '', label: es ? 'Todo' : 'All' },
+      { value: 'world', label: es ? 'Mundo' : 'World' },
+      { value: 'technology', label: es ? 'Tecnología' : 'Technology' },
+      { value: 'science', label: es ? 'Ciencia' : 'Science' },
+      { value: 'sport', label: es ? 'Deporte' : 'Sport' },
+      { value: 'business', label: es ? 'Negocios' : 'Business' },
+      { value: 'culture', label: es ? 'Cultura' : 'Culture' },
+      { value: 'environment', label: es ? 'Medioambiente' : 'Environment' },
+      { value: 'health', label: es ? 'Salud' : 'Health' },
+    ];
+  });
 
   fetchNews(query: string = '', section: string = '', page: number = 1): void {
     this.loading.set(true);

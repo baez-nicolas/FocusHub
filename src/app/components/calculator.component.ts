@@ -1,6 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { PomodoroService } from '../services/pomodoro.service';
+﻿import { Component, computed, effect, inject, signal } from '@angular/core';
+import { LangService } from '../services/lang.service';
 
 @Component({
   selector: 'app-calculator',
@@ -8,70 +7,81 @@ import { PomodoroService } from '../services/pomodoro.service';
   template: `
     <div class="container">
       <div class="header">
-        <div class="title">🔢 Calculadora</div>
+        <h1 class="page-title"><i class="bi bi-calculator"></i>{{ tx().title }}</h1>
+        <p class="page-subtitle">{{ tx().subtitle }}</p>
       </div>
 
-      <div class="calculator-card">
-        <div class="display">{{ display() || '0' }}</div>
-
-        <div class="buttons">
-          <button class="btn func" (click)="clear()">C</button>
-          <button class="btn func" (click)="deleteLast()">⌫</button>
-          <button class="btn func" (click)="appendOperator('%')">%</button>
-          <button class="btn operator" (click)="appendOperator('÷')">÷</button>
-
-          <button class="btn" (click)="appendNumber('7')">7</button>
-          <button class="btn" (click)="appendNumber('8')">8</button>
-          <button class="btn" (click)="appendNumber('9')">9</button>
-          <button class="btn operator" (click)="appendOperator('×')">×</button>
-
-          <button class="btn" (click)="appendNumber('4')">4</button>
-          <button class="btn" (click)="appendNumber('5')">5</button>
-          <button class="btn" (click)="appendNumber('6')">6</button>
-          <button class="btn operator" (click)="appendOperator('-')">−</button>
-
-          <button class="btn" (click)="appendNumber('1')">1</button>
-          <button class="btn" (click)="appendNumber('2')">2</button>
-          <button class="btn" (click)="appendNumber('3')">3</button>
-          <button class="btn operator" (click)="appendOperator('+')">+</button>
-
-          <button class="btn" (click)="appendNumber('0')">0</button>
-          <button class="btn" (click)="appendNumber('.')">.</button>
-          <button class="btn func" (click)="negate()">±</button>
-          <button class="btn equals" (click)="calculate()">=</button>
+      <div class="calc-layout">
+        <div class="history-panel">
+          <div class="history-header">
+            <span class="history-title">{{ tx().historyTitle }}</span>
+            @if (history().length > 0) {
+              <button class="clear-all-btn" (click)="clearHistory()">{{ tx().clearAll }}</button>
+            }
+          </div>
+          @if (history().length === 0) {
+            <p class="history-empty">{{ tx().historyEmpty }}</p>
+          }
+          @for (item of history(); track $index) {
+            <div class="history-item">
+              <span class="history-expr">{{ item }}</span>
+              <button class="history-del" (click)="deleteHistoryItem($index)">✕</button>
+            </div>
+          }
         </div>
 
-        <div class="scientific">
-          <button class="btn-sci" (click)="applyFunction('sin')">sin</button>
-          <button class="btn-sci" (click)="applyFunction('cos')">cos</button>
-          <button class="btn-sci" (click)="applyFunction('tan')">tan</button>
-          <button class="btn-sci" (click)="applyFunction('log')">log</button>
-          <button class="btn-sci" (click)="applyFunction('ln')">ln</button>
-          <button class="btn-sci" (click)="applyFunction('sqrt')">√</button>
-          <button class="btn-sci" (click)="applyFunction('square')">x²</button>
-          <button class="btn-sci" (click)="applyFunction('pow')">xʸ</button>
-          <button class="btn-sci" (click)="appendNumber('π')">π</button>
-          <button class="btn-sci" (click)="appendNumber('e')">e</button>
+        <div class="calculator-card">
+          <div class="display">{{ display() || '0' }}</div>
+
+          <div class="buttons">
+            <button class="btn func" (click)="clear()">C</button>
+            <button class="btn func" (click)="deleteLast()">⌫</button>
+            <button class="btn func" (click)="appendOperator('%')">%</button>
+            <button class="btn operator" (click)="appendOperator('÷')">÷</button>
+
+            <button class="btn" (click)="appendNumber('7')">7</button>
+            <button class="btn" (click)="appendNumber('8')">8</button>
+            <button class="btn" (click)="appendNumber('9')">9</button>
+            <button class="btn operator" (click)="appendOperator('×')">×</button>
+
+            <button class="btn" (click)="appendNumber('4')">4</button>
+            <button class="btn" (click)="appendNumber('5')">5</button>
+            <button class="btn" (click)="appendNumber('6')">6</button>
+            <button class="btn operator" (click)="appendOperator('-')">−</button>
+
+            <button class="btn" (click)="appendNumber('1')">1</button>
+            <button class="btn" (click)="appendNumber('2')">2</button>
+            <button class="btn" (click)="appendNumber('3')">3</button>
+            <button class="btn operator" (click)="appendOperator('+')">+</button>
+
+            <button class="btn" (click)="appendNumber('0')">0</button>
+            <button class="btn" (click)="appendNumber('.')">.</button>
+            <button class="btn func" (click)="negate()">±</button>
+            <button class="btn equals" (click)="calculate()">=</button>
+          </div>
+
+          <div class="scientific">
+            <button class="btn-sci" (click)="applyFunction('sin')">sin</button>
+            <button class="btn-sci" (click)="applyFunction('cos')">cos</button>
+            <button class="btn-sci" (click)="applyFunction('tan')">tan</button>
+            <button class="btn-sci" (click)="applyFunction('log')">log</button>
+            <button class="btn-sci" (click)="applyFunction('ln')">ln</button>
+            <button class="btn-sci" (click)="applyFunction('sqrt')">√</button>
+            <button class="btn-sci" (click)="applyFunction('square')">x²</button>
+            <button class="btn-sci" (click)="applyFunction('pow')">xʸ</button>
+            <button class="btn-sci" (click)="appendNumber('π')">π</button>
+            <button class="btn-sci" (click)="appendNumber('e')">e</button>
+          </div>
         </div>
       </div>
-
-      @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
-      <div class="pomodoro-widget" (click)="goToPomodoro()">
-        <div class="pomodoro-icon">⏱️</div>
-        <div class="pomodoro-content">
-          <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
-          <div class="pomodoro-time">{{ formatTime() }}</div>
-        </div>
-      </div>
-      }
     </div>
   `,
   styles: [
     `
       .container {
-        max-width: 600px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 40px 24px;
+        padding: 40px 32px;
       }
 
       @media (max-width: 767px) {
@@ -82,18 +92,159 @@ import { PomodoroService } from '../services/pomodoro.service';
 
       .header {
         margin-bottom: 32px;
-        text-align: center;
       }
 
-      .title {
-        font-size: 32px;
+      .page-title {
+        font-size: 26px;
         font-weight: 700;
-        color: #111827;
-        letter-spacing: -0.5px;
+        color: #1e293b;
+        margin: 0 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
-      :host-context(.dark) .title {
-        color: #f3f4f6 !important;
+      .page-title i {
+        color: #6366f1;
+      }
+
+      .page-subtitle {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0;
+      }
+
+      :host-context(.dark) .page-title {
+        color: #f1f5f9;
+      }
+
+      :host-context(.dark) .page-subtitle {
+        color: #94a3b8;
+      }
+
+      .calc-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      @media (max-width: 900px) {
+        .calc-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .history-panel {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f3f4f6;
+        max-height: 620px;
+        overflow-y: auto;
+      }
+
+      :host-context(.dark) .history-panel {
+        background: #1e2433;
+        border-color: #2d3748;
+      }
+
+      .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .history-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      :host-context(.dark) .history-title {
+        color: #f1f5f9;
+      }
+
+      .clear-all-btn {
+        font-size: 12px;
+        color: #6366f1;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: background 0.15s;
+      }
+
+      .clear-all-btn:hover {
+        background: #f3f4f6;
+      }
+
+      :host-context(.dark) .clear-all-btn:hover {
+        background: #252b3b;
+      }
+
+      .history-empty {
+        color: #94a3b8;
+        font-size: 13px;
+        text-align: center;
+        padding: 20px 0;
+        margin: 0;
+      }
+
+      .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 4px;
+        border-bottom: 1px solid #f1f5f9;
+        gap: 8px;
+      }
+
+      .history-item:last-child {
+        border-bottom: none;
+      }
+
+      :host-context(.dark) .history-item {
+        border-color: #2d3748;
+      }
+
+      .history-expr {
+        font-size: 13px;
+        color: #374151;
+        font-family: monospace;
+        flex: 1;
+        word-break: break-all;
+        line-height: 1.4;
+      }
+
+      :host-context(.dark) .history-expr {
+        color: #d1d5db;
+      }
+
+      .history-del {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 11px;
+        padding: 3px 6px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        transition: all 0.15s;
+      }
+
+      .history-del:hover {
+        background: #fee2e2;
+        color: #ef4444;
+      }
+
+      :host-context(.dark) .history-del:hover {
+        background: #7f1d1d;
+        color: #fca5a5;
       }
 
       .calculator-card {
@@ -234,114 +385,31 @@ import { PomodoroService } from '../services/pomodoro.service';
           gap: 8px;
         }
       }
-
-      .pomodoro-widget {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: linear-gradient(
-          135deg,
-          rgba(99, 102, 241, 0.95) 0%,
-          rgba(139, 92, 246, 0.95) 100%
-        );
-        backdrop-filter: blur(16px);
-        padding: 12px 20px;
-        border-radius: 16px;
-        border: 1.5px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
-        z-index: 1000;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        width: 160px;
-      }
-
-      .pomodoro-widget:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
-        border-color: rgba(255, 255, 255, 0.35);
-      }
-
-      .pomodoro-widget:active {
-        transform: translateY(-1px);
-      }
-
-      .pomodoro-icon {
-        font-size: 24px;
-        line-height: 1;
-        flex-shrink: 0;
-      }
-
-      .pomodoro-content {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        flex: 1;
-        min-width: 0;
-      }
-
-      .pomodoro-label {
-        font-size: 9px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.85);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        line-height: 1;
-      }
-
-      .pomodoro-time {
-        font-size: 20px;
-        font-weight: 800;
-        color: white;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -0.5px;
-        line-height: 1;
-      }
-
-      :host-context(.dark) .pomodoro-widget {
-        background: linear-gradient(
-          135deg,
-          rgba(79, 70, 229, 0.95) 0%,
-          rgba(124, 58, 237, 0.95) 100%
-        );
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-
-      :host-context(.dark) .pomodoro-widget:hover {
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.4);
-      }
     `,
   ],
 })
 export class CalculatorComponent {
-  pomodoroService = inject(PomodoroService);
-  private router = inject(Router);
+  private langService = inject(LangService);
   display = signal('');
   private lastResult = '';
+  history = signal<string[]>(JSON.parse(localStorage.getItem('calc-history') ?? '[]'));
 
-  formatTime = computed(() => {
-    const sec = this.pomodoroService.secondsLeft();
-    const mins = Math.floor(sec / 60);
-    const secs = sec % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  constructor() {
+    effect(() => {
+      localStorage.setItem('calc-history', JSON.stringify(this.history()));
+    });
+  }
+
+  readonly tx = computed(() => {
+    const es = this.langService.lang() === 'es';
+    return {
+      title: es ? 'Calculadora' : 'Calculator',
+      subtitle: es ? 'Operaciones básicas y avanzadas' : 'Basic and advanced operations',
+      historyTitle: es ? 'Historial' : 'History',
+      clearAll: es ? 'Borrar todo' : 'Clear all',
+      historyEmpty: es ? 'Sin cálculos aún' : 'No calculations yet',
+    };
   });
-
-  getPhaseLabel(): string {
-    const state = this.pomodoroService.state();
-    if (state === 'RUNNING_FOCUS') {
-      return 'Enfoque';
-    } else if (state === 'RUNNING_SHORT_BREAK' || state === 'RUNNING_LONG_BREAK') {
-      return 'Descanso';
-    }
-    return '';
-  }
-
-  goToPomodoro(): void {
-    this.router.navigate(['/pomodoro']);
-  }
 
   appendNumber(num: string): void {
     const current = this.display();
@@ -383,14 +451,24 @@ export class CalculatorComponent {
 
   calculate(): void {
     try {
-      let expr = this.display().replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+      const expression = this.display();
+      let expr = expression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
       const result = this.evaluateExpression(expr);
       this.lastResult = result.toString();
+      this.history.update((h) => [`${expression} = ${this.lastResult}`, ...h]);
       this.display.set(this.lastResult);
     } catch {
       this.display.set('Error');
       setTimeout(() => this.display.set(''), 1500);
     }
+  }
+
+  clearHistory(): void {
+    this.history.set([]);
+  }
+
+  deleteHistoryItem(index: number): void {
+    this.history.update((h) => h.filter((_, i) => i !== index));
   }
 
   private evaluateExpression(expr: string): number {
@@ -451,7 +529,7 @@ export class CalculatorComponent {
 
   private splitByOperator(
     expr: string,
-    operators: string[]
+    operators: string[],
   ): Array<{ operator: string; value: string }> {
     const parts: Array<{ operator: string; value: string }> = [];
     let currentPart = '';

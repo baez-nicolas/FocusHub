@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { afterNextRender, Component, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { LangService } from './services/lang.service';
 import { NewsService } from './services/news.service';
 import { ThemeService } from './services/theme.service';
 
@@ -17,7 +18,7 @@ import { ThemeService } from './services/theme.service';
           </a>
 
           <div class="topnav-links">
-            @for (item of navItems; track item.path) {
+            @for (item of navItems(); track item.path) {
               <a
                 [routerLink]="item.path"
                 routerLinkActive="active"
@@ -30,6 +31,14 @@ import { ThemeService } from './services/theme.service';
             }
           </div>
 
+          <button
+            class="lang-btn"
+            (click)="langService.toggle()"
+            [title]="langService.lang() === 'en' ? 'Cambiar a Español' : 'Switch to English'"
+          >
+            <i class="bi bi-translate"></i>
+            {{ langService.lang() === 'en' ? 'ES' : 'EN' }}
+          </button>
           <button class="theme-btn" (click)="themeService.toggle()">
             @if (themeService.isDark()) {
               <i class="bi bi-sun-fill"></i>
@@ -40,48 +49,6 @@ import { ThemeService } from './services/theme.service';
         </div>
       </nav>
 
-      <nav class="mobile-navbar">
-        <div class="mobile-header">
-          <div class="brand-mobile">
-            <img src="/assets/icono.png" alt="FocusHub" class="brand-logo-mobile" />
-            <span class="fw-bold">FocusHub</span>
-          </div>
-          <div class="mobile-actions">
-            <button class="theme-toggle-mobile" (click)="themeService.toggle()">
-              @if (themeService.isDark()) {
-                <i class="bi bi-sun-fill"></i>
-              } @else {
-                <i class="bi bi-moon-fill"></i>
-              }
-            </button>
-            <button class="menu-toggle" (click)="toggleMenu()" [class.active]="menuOpen()">
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
-          </div>
-        </div>
-
-        @if (menuOpen()) {
-          <div class="mobile-menu" (click)="closeMenu()">
-            <div class="mobile-menu-content" (click)="$event.stopPropagation()">
-              @for (item of navItems; track item.path) {
-                <a
-                  [routerLink]="item.path"
-                  routerLinkActive="active"
-                  [routerLinkActiveOptions]="{ exact: item.exact }"
-                  class="mobile-link"
-                  (click)="closeMenu()"
-                >
-                  <i [class]="'bi bi-' + item.icon"></i>
-                  <span>{{ item.label }}</span>
-                </a>
-              }
-            </div>
-          </div>
-        }
-      </nav>
-
       <main class="content-area">
         <router-outlet />
       </main>
@@ -89,7 +56,8 @@ import { ThemeService } from './services/theme.service';
       @if (newsService.footerReady()) {
         <footer class="app-footer">
           <p class="footer-credits">
-            Desarrollado con <span class="heart">♥</span> por
+            {{ langService.lang() === 'es' ? 'Desarrollado con' : 'Developed with' }}
+            <span class="heart">♥</span> {{ langService.lang() === 'es' ? 'por' : 'by' }}
             <a
               href="https://github.com/baez-nicolas"
               target="_blank"
@@ -99,13 +67,21 @@ import { ThemeService } from './services/theme.service';
             >
           </p>
           <p class="footer-powered">
-            Powered by
+            {{ langService.lang() === 'es' ? 'Impulsado por' : 'Powered by' }}
             <a
               href="https://open-platform.theguardian.com/"
               target="_blank"
               rel="noopener noreferrer"
               class="guardian-link"
               >The Guardian API</a
+            >
+            &amp;
+            <a
+              href="https://developer.spotify.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="spotify-link"
+              >Spotify</a
             >
           </p>
           <div class="footer-socials">
@@ -131,7 +107,10 @@ import { ThemeService } from './services/theme.service';
               <i class="bi bi-linkedin"></i>
             </a>
           </div>
-          <p class="footer-legal">Fines educativos &copy; 2026</p>
+          <p class="footer-legal">
+            {{ langService.lang() === 'en' ? 'Educational purposes' : 'Fines educativos' }}
+            &copy; 2026
+          </p>
         </footer>
       }
     </div>
@@ -149,10 +128,11 @@ import { ThemeService } from './services/theme.service';
         background: #f1f5f9;
       }
 
-      /* ─── TOP NAVBAR (desktop / tablet) ─── */
+      
 
       .topnav {
-        display: none;
+        display: flex;
+        align-items: center;
         position: fixed;
         top: 0;
         left: 0;
@@ -163,17 +143,6 @@ import { ThemeService } from './services/theme.service';
         border-bottom: 1px solid #e2e8f0;
         box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06);
         z-index: 1000;
-      }
-
-      @media (min-width: 768px) {
-        .topnav {
-          display: flex;
-          align-items: center;
-        }
-
-        .mobile-navbar {
-          display: none;
-        }
       }
 
       .topnav-inner {
@@ -192,7 +161,7 @@ import { ThemeService } from './services/theme.service';
         gap: 10px;
         text-decoration: none;
         flex-shrink: 0;
-        margin-right: 8px;
+        margin-right: 16px;
       }
 
       .brand-logo {
@@ -213,6 +182,7 @@ import { ThemeService } from './services/theme.service';
         align-items: center;
         gap: 2px;
         flex: 1;
+        justify-content: flex-end;
         overflow-x: auto;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -257,7 +227,7 @@ import { ThemeService } from './services/theme.service';
         background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
       }
 
-      @media (min-width: 768px) and (max-width: 1023px) {
+      @media (max-width: 1023px) {
         .link-label {
           display: none;
         }
@@ -268,6 +238,22 @@ import { ThemeService } from './services/theme.service';
 
         .topnav-link i {
           font-size: 18px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .topnav-inner {
+          padding: 0 10px;
+          gap: 4px;
+        }
+
+        .brand-name {
+          display: none;
+        }
+
+        .brand-logo {
+          width: 28px;
+          height: 28px;
         }
       }
 
@@ -294,199 +280,39 @@ import { ThemeService } from './services/theme.service';
         transform: scale(1.05);
       }
 
-      /* ─── MOBILE NAVBAR ─── */
-
-      .mobile-navbar {
-        background: white;
-        border-bottom: 1.5px solid #e5e7eb;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-      }
-
-      .mobile-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 14px 20px;
-        position: relative;
-        z-index: 1001;
-      }
-
-      .mobile-actions {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .brand-logo-mobile {
-        width: 30px;
-        height: 30px;
-        object-fit: contain;
-      }
-
-      .brand-mobile {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 17px;
-        color: #1e293b;
-      }
-
-      .theme-toggle-mobile {
-        background: none;
-        border: none;
+      .lang-btn {
+        flex-shrink: 0;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
         color: #475569;
-        font-size: 21px;
-        cursor: pointer;
-        padding: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-      }
-
-      .theme-toggle-mobile:hover {
-        transform: scale(1.1);
-      }
-
-      .menu-toggle {
-        background: none;
-        border: none;
-        width: 30px;
-        height: 24px;
-        position: relative;
-        cursor: pointer;
-        padding: 0;
-        z-index: 1002;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-
-      .menu-toggle span {
-        display: block;
-        position: absolute;
-        height: 2.5px;
-        width: 100%;
-        background: #475569;
-        border-radius: 3px;
-        opacity: 1;
-        left: 0;
-        transition: all 0.3s ease;
-      }
-
-      .menu-toggle span:nth-child(1) {
-        top: 0;
-      }
-      .menu-toggle span:nth-child(2) {
-        top: 10px;
-      }
-      .menu-toggle span:nth-child(3) {
-        top: 20px;
-      }
-
-      .menu-toggle.active span:nth-child(1) {
-        top: 10px;
-        transform: rotate(135deg);
-      }
-
-      .menu-toggle.active span:nth-child(2) {
-        opacity: 0;
-        left: -60px;
-      }
-
-      .menu-toggle.active span:nth-child(3) {
-        top: 10px;
-        transform: rotate(-135deg);
-      }
-
-      .mobile-menu {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.45);
-        z-index: 999;
-        animation: fadeIn 0.25s ease;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      .mobile-menu-content {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 280px;
-        height: 100vh;
-        background: white;
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
-        display: flex;
-        flex-direction: column;
-        padding: 80px 16px 20px;
-        animation: slideIn 0.28s ease;
-        overflow-y: auto;
-      }
-
-      @keyframes slideIn {
-        from {
-          transform: translateX(-100%);
-        }
-        to {
-          transform: translateX(0);
-        }
-      }
-
-      .mobile-link {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 13px 16px;
-        color: #374151;
-        text-decoration: none;
+        height: 38px;
+        padding: 0 12px;
         border-radius: 10px;
-        font-weight: 500;
-        font-size: 14.5px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 5px;
         transition: all 0.2s ease;
-        margin-bottom: 3px;
+        margin-left: 4px;
+        letter-spacing: 0.5px;
       }
 
-      .mobile-link i {
-        font-size: 19px;
-        width: 22px;
+      .lang-btn:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+        transform: scale(1.05);
       }
 
-      .mobile-link:hover {
-        background: #f3f4f6;
-        color: #6366f1;
-      }
-
-      .mobile-link.active {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-      }
-
-      /* ─── CONTENT AREA ─── */
+      
 
       .content-area {
         flex: 1;
-        overflow-y: auto;
+        margin-top: 64px;
       }
 
-      @media (min-width: 768px) {
-        .content-area {
-          margin-top: 64px;
-        }
-      }
-
-      /* ─── FOOTER ─── */
+      
 
       @keyframes footerFadeIn {
         from {
@@ -571,6 +397,20 @@ import { ThemeService } from './services/theme.service';
         color: #4f46e5;
       }
 
+      .spotify-link {
+        color: #1db954;
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .spotify-link:hover {
+        color: #17a84a;
+      }
+
       .footer-socials {
         display: flex;
         gap: 12px;
@@ -612,7 +452,7 @@ import { ThemeService } from './services/theme.service';
         }
       }
 
-      /* ─── DARK MODE ─── */
+      
 
       .app-container.dark {
         background: #0f1419;
@@ -653,43 +493,6 @@ import { ThemeService } from './services/theme.service';
         color: #e2e8f0;
       }
 
-      .app-container.dark .mobile-navbar {
-        background: #161c2d;
-        border-bottom-color: #2d3748;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      }
-
-      .app-container.dark .brand-mobile {
-        color: #e2e8f0;
-      }
-
-      .app-container.dark .theme-toggle-mobile {
-        color: #94a3b8;
-      }
-
-      .app-container.dark .menu-toggle span {
-        background: #94a3b8;
-      }
-
-      .app-container.dark .mobile-menu-content {
-        background: #161c2d;
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
-      }
-
-      .app-container.dark .mobile-link {
-        color: #cbd5e1;
-      }
-
-      .app-container.dark .mobile-link:hover {
-        background: #1e2a3a;
-        color: #e2e8f0;
-      }
-
-      .app-container.dark .mobile-link.active {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        color: white;
-      }
-
       .app-container.dark .app-footer {
         background: #0f111a;
         border-top-color: #1e2a3a;
@@ -719,6 +522,14 @@ import { ThemeService } from './services/theme.service';
         color: #60a5fa;
       }
 
+      .app-container.dark .spotify-link {
+        color: #1db954;
+      }
+
+      .app-container.dark .spotify-link:hover {
+        color: #4ade80;
+      }
+
       .app-container.dark .social-btn {
         background: #1e2a3a;
         color: #94a3b8;
@@ -740,31 +551,34 @@ import { ThemeService } from './services/theme.service';
 })
 export class App {
   themeService = inject(ThemeService);
+  langService = inject(LangService);
   newsService = inject(NewsService);
-  menuOpen = signal(false);
-
   constructor() {
     afterNextRender(() => {
       this.newsService.fetchNews();
     });
   }
 
-  navItems = [
-    { path: '/', label: 'Dashboard', icon: 'house-door', exact: true },
-    { path: '/pomodoro', label: 'Pomodoro', icon: 'clock-history', exact: false },
-    { path: '/planner', label: 'Planner', icon: 'calendar-check', exact: false },
-    { path: '/gym', label: 'Gym', icon: 'heart-pulse', exact: false },
-    { path: '/notes', label: 'Notas', icon: 'journal-text', exact: false },
-    { path: '/news', label: 'News', icon: 'newspaper', exact: false },
-    { path: '/calculator', label: 'Calculadora', icon: 'calculator', exact: false },
-    { path: '/more', label: 'Más Info', icon: 'info-circle', exact: false },
-  ];
-
-  toggleMenu(): void {
-    this.menuOpen.set(!this.menuOpen());
-  }
-
-  closeMenu(): void {
-    this.menuOpen.set(false);
-  }
+  navItems = computed(() => {
+    const es = this.langService.lang() === 'es';
+    return [
+      { path: '/', label: 'Dashboard', icon: 'house-door', exact: true },
+      { path: '/news', label: es ? 'Noticias' : 'News', icon: 'newspaper', exact: false },
+      {
+        path: '/planner',
+        label: es ? 'Planificador' : 'Planner',
+        icon: 'calendar-check',
+        exact: false,
+      },
+      { path: '/notes', label: es ? 'Notas' : 'Notes', icon: 'journal-text', exact: false },
+      { path: '/gym', label: es ? 'Salud' : 'Health', icon: 'heart-pulse', exact: false },
+      {
+        path: '/calculator',
+        label: es ? 'Calculadora' : 'Calculator',
+        icon: 'calculator',
+        exact: false,
+      },
+      { path: '/music', label: 'Spotify', icon: 'spotify', exact: false },
+    ];
+  });
 }

@@ -1,9 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
+﻿import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { LangService } from '../services/lang.service';
 import { NotesService } from '../services/notes.service';
-import { PomodoroService } from '../services/pomodoro.service';
 
 @Component({
   selector: 'app-notes',
@@ -11,8 +10,8 @@ import { PomodoroService } from '../services/pomodoro.service';
   template: `
     <div class="container">
       <div class="header">
-        <div class="title">📝 Notas</div>
-        <div class="subtitle">Organiza tus ideas y pensamientos</div>
+        <h1 class="page-title"><i class="bi bi-journal-text"></i>{{ tx().title }}</h1>
+        <p class="page-subtitle">{{ tx().subtitle }}</p>
       </div>
 
       <div class="toolbar">
@@ -21,91 +20,86 @@ import { PomodoroService } from '../services/pomodoro.service';
           <input
             type="text"
             [(ngModel)]="service.searchQuery"
-            placeholder="Buscar notas..."
+            [placeholder]="tx().searchPh"
             class="search-input"
           />
         </div>
 
         <select [(ngModel)]="service.selectedCategory" class="category-filter">
-          <option value="all">📁 Todas</option>
+          <option value="all">{{ tx().allCat }}</option>
           @for (cat of service.categories(); track cat) {
-          <option [value]="cat">{{ getCategoryIcon(cat) }} {{ cat }}</option>
+            <option [value]="cat">{{ getCategoryIcon(cat) }} {{ getCategoryLabel(cat) }}</option>
           }
         </select>
 
-        <button class="btn-new" (click)="openForm()">+ Nueva Nota</button>
+        <button class="btn-new" (click)="openForm()">{{ tx().newNote }}</button>
       </div>
 
       <div class="notes-grid">
         @for (note of service.filteredNotes(); track note.id) {
-        <div class="note-card">
-          <div class="note-header">
-            <div class="note-category">
-              {{ getCategoryIcon(note.category) }} {{ note.category }}
+          <div class="note-card">
+            <div class="note-header">
+              <div class="note-category">
+                {{ getCategoryIcon(note.category) }} {{ getCategoryLabel(note.category) }}
+              </div>
+              <div class="note-actions">
+                <button class="btn-icon" (click)="editNote(note.id)">✏️</button>
+                <button class="btn-icon" (click)="deleteNote(note.id)">🗑️</button>
+              </div>
             </div>
-            <div class="note-actions">
-              <button class="btn-icon" (click)="editNote(note.id)">✏️</button>
-              <button class="btn-icon" (click)="deleteNote(note.id)">🗑️</button>
-            </div>
+            <div class="note-title">{{ note.title }}</div>
+            <div class="note-content">{{ note.content }}</div>
+            <div class="note-date">{{ formatDate(note.updatedAt) }}</div>
           </div>
-          <div class="note-title">{{ note.title }}</div>
-          <div class="note-content">{{ note.content }}</div>
-          <div class="note-date">{{ formatDate(note.updatedAt) }}</div>
-        </div>
         } @empty {
-        <div class="empty-state">
-          <div class="empty-icon">📝</div>
-          <div class="empty-title">Sin notas</div>
-          <div class="empty-text">Crea tu primera nota para comenzar</div>
-          <button class="btn-empty" (click)="openForm()">+ Crear Nota</button>
-        </div>
+          <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <div class="empty-title">{{ tx().noNotes }}</div>
+            <div class="empty-text">{{ tx().createFirst }}</div>
+            <button class="btn-empty" (click)="openForm()">{{ tx().createNote }}</button>
+          </div>
         }
       </div>
-
-      @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
-      <div class="pomodoro-widget" (click)="goToPomodoro()">
-        <div class="pomodoro-icon">⏱️</div>
-        <div class="pomodoro-content">
-          <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
-          <div class="pomodoro-time">{{ formatTime() }}</div>
-        </div>
-      </div>
-      }
     </div>
   `,
   styles: [
     `
       .container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 40px 24px;
+        padding: 40px 32px;
       }
 
       .header {
-        text-align: center;
         margin-bottom: 32px;
       }
 
-      .title {
-        font-size: 32px;
+      .page-title {
+        font-size: 26px;
         font-weight: 700;
-        color: #111827;
-        margin-bottom: 8px;
-        letter-spacing: -0.5px;
+        color: #1e293b;
+        margin: 0 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
-      :host-context(.dark) .title {
-        color: #f3f4f6 !important;
+      .page-title i {
+        color: #6366f1;
       }
 
-      .subtitle {
-        font-size: 15px;
-        color: #6b7280;
-        font-weight: 500;
+      .page-subtitle {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0;
       }
 
-      :host-context(.dark) .subtitle {
-        color: #9ca3af !important;
+      :host-context(.dark) .page-title {
+        color: #f1f5f9;
+      }
+
+      :host-context(.dark) .page-subtitle {
+        color: #94a3b8;
       }
 
       .toolbar {
@@ -533,67 +527,6 @@ import { PomodoroService } from '../services/pomodoro.service';
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
       }
 
-      .pomodoro-widget {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: linear-gradient(
-          135deg,
-          rgba(99, 102, 241, 0.95) 0%,
-          rgba(139, 92, 246, 0.95) 100%
-        );
-        backdrop-filter: blur(16px);
-        padding: 12px 20px;
-        border-radius: 16px;
-        border: 1.5px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
-        z-index: 1000;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        width: 160px;
-      }
-
-      .pomodoro-widget:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
-        border-color: rgba(255, 255, 255, 0.35);
-      }
-
-      .pomodoro-icon {
-        font-size: 24px;
-        line-height: 1;
-        flex-shrink: 0;
-      }
-
-      .pomodoro-content {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        flex: 1;
-        min-width: 0;
-      }
-
-      .pomodoro-label {
-        font-size: 9px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.85);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        line-height: 1;
-      }
-
-      .pomodoro-time {
-        font-size: 20px;
-        font-weight: 800;
-        color: white;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -0.5px;
-        line-height: 1;
-      }
-
       @media (max-width: 768px) {
         .container {
           padding: 24px 16px;
@@ -620,27 +553,60 @@ import { PomodoroService } from '../services/pomodoro.service';
           grid-template-columns: 1fr;
         }
       }
-
-      :host-context(.dark) .pomodoro-widget {
-        background: linear-gradient(
-          135deg,
-          rgba(79, 70, 229, 0.95) 0%,
-          rgba(124, 58, 237, 0.95) 100%
-        );
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-
-      :host-context(.dark) .pomodoro-widget:hover {
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.4);
-      }
     `,
   ],
 })
 export class NotesComponent {
   protected service = inject(NotesService);
-  pomodoroService = inject(PomodoroService);
-  private router = inject(Router);
+  private langService = inject(LangService);
+
+  readonly tx = computed(() => {
+    const es = this.langService.lang() === 'es';
+    return {
+      title: es ? 'Notas' : 'Notes',
+      subtitle: es ? 'Organiza tus ideas y pensamientos' : 'Organize your ideas and thoughts',
+      searchPh: es ? 'Buscar notas...' : 'Search notes...',
+      allCat: es ? '📁 Todo' : '📁 All',
+      newNote: es ? '+ Nueva Nota' : '+ New Note',
+      noNotes: es ? 'Sin notas' : 'No notes',
+      createFirst: es
+        ? 'Crea tu primera nota para empezar'
+        : 'Create your first note to get started',
+      createNote: es ? '+ Crear Nota' : '+ Create Note',
+      catLabels: {
+        Personal: 'Personal',
+        Work: es ? 'Trabajo' : 'Work',
+        Study: es ? 'Estudio' : 'Study',
+        Ideas: 'Ideas',
+        Pending: es ? 'Pendiente' : 'Pending',
+        Other: es ? 'Otro' : 'Other',
+      } as Record<string, string>,
+      swalNewTitle: es ? '📝 Nueva Nota' : '📝 New Note',
+      swalEditTitle: es ? '✏️ Editar Nota' : '✏️ Edit Note',
+      swalLabelTitle: es ? 'Título' : 'Title',
+      swalTitlePh: es ? 'Título de la nota' : 'Note title',
+      swalLabelContent: es ? 'Contenido' : 'Content',
+      swalContentPh: es ? 'Escribe el contenido de tu nota...' : 'Write your note...',
+      swalLabelCategory: es ? 'Categoría' : 'Category',
+      swalSave: es ? '✓ Guardar' : '✓ Save',
+      swalCancel: es ? '✕ Cancelar' : '✕ Cancel',
+      swalFillAll: es ? 'Por favor completa todos los campos' : 'Please fill in all fields',
+      swalCreated: es ? '¡Nota creada!' : 'Note created!',
+      swalCreatedText: es
+        ? 'La nota se ha agregado exitosamente'
+        : 'The note has been added successfully',
+      swalUpdated: es ? '¡Nota actualizada!' : 'Note updated!',
+      swalUpdatedText: es
+        ? 'Los cambios se han guardado correctamente'
+        : 'Changes have been saved successfully',
+      swalDeleteTitle: es ? '¿Eliminar nota?' : 'Delete note?',
+      swalDeleteText: es ? 'Esta acción no se puede deshacer' : 'This action cannot be undone',
+      swalDeleteBtn: es ? '✓ Eliminar' : '✓ Delete',
+      swalDeleted: es ? '¡Nota eliminada!' : 'Note deleted!',
+      justNow: es ? 'Ahora mismo' : 'Just now',
+      locale: es ? 'es-ES' : 'en-US',
+    };
+  });
 
   showForm = signal(false);
   editingId = signal<string | null>(null);
@@ -650,32 +616,12 @@ export class NotesComponent {
     category: 'Personal',
   };
 
-  formatTime = computed(() => {
-    const sec = this.pomodoroService.secondsLeft();
-    const mins = Math.floor(sec / 60);
-    const secs = sec % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  });
-
-  getPhaseLabel(): string {
-    const state = this.pomodoroService.state();
-    if (state === 'RUNNING_FOCUS') {
-      return 'Enfoque';
-    } else if (state === 'RUNNING_SHORT_BREAK' || state === 'RUNNING_LONG_BREAK') {
-      return 'Descanso';
-    }
-    return '';
-  }
-
-  goToPomodoro(): void {
-    this.router.navigate(['/pomodoro']);
-  }
-
   async openForm(): Promise<void> {
     const isDark = document.documentElement.classList.contains('dark');
+    const t = this.tx();
 
     const { value: formValues } = await Swal.fire({
-      title: '📝 Nueva Nota',
+      title: t.swalNewTitle,
       html: `
         <style>
           * {
@@ -709,11 +655,11 @@ export class NotesComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Título</label>
+            ">${t.swalLabelTitle}</label>
             <input
               id="noteTitle"
               class="swal2-input"
-              placeholder="Título de la nota"
+              placeholder="${t.swalTitlePh}"
               autofocus
               style="
                 width: 100%;
@@ -734,11 +680,11 @@ export class NotesComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Contenido</label>
+            ">${t.swalLabelContent}</label>
             <textarea
               id="noteContent"
               class="swal2-textarea"
-              placeholder="Escribe el contenido de tu nota..."
+              placeholder="${t.swalContentPh}"
               rows="6"
               style="
                 width: 100%;
@@ -761,7 +707,7 @@ export class NotesComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Categoría</label>
+            ">${t.swalLabelCategory}</label>
             <select
               id="noteCategory"
               class="swal2-select"
@@ -774,12 +720,12 @@ export class NotesComponent {
                 box-sizing: border-box;
               "
             >
-              <option value="Personal">👤 Personal</option>
-              <option value="Trabajo">💼 Trabajo</option>
-              <option value="Estudio">📚 Estudio</option>
-              <option value="Ideas">💡 Ideas</option>
-              <option value="Pendientes">✅ Pendientes</option>
-              <option value="Otros">📌 Otros</option>
+              <option value="Personal">👤 ${t.catLabels['Personal']}</option>
+              <option value="Work">💼 ${t.catLabels['Work']}</option>
+              <option value="Study">📚 ${t.catLabels['Study']}</option>
+              <option value="Ideas">💡 ${t.catLabels['Ideas']}</option>
+              <option value="Pending">✅ ${t.catLabels['Pending']}</option>
+              <option value="Other">📌 ${t.catLabels['Other']}</option>
             </select>
           </div>
         </div>
@@ -787,8 +733,8 @@ export class NotesComponent {
       width: window.innerWidth < 640 ? '95vw' : '580px',
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: '✓ Guardar',
-      cancelButtonText: '✕ Cancelar',
+      confirmButtonText: t.swalSave,
+      cancelButtonText: t.swalCancel,
       confirmButtonColor: '#10b981',
       cancelButtonColor: '#6b7280',
       customClass: {
@@ -823,7 +769,7 @@ export class NotesComponent {
         const category = (document.getElementById('noteCategory') as HTMLSelectElement).value;
 
         if (!title.trim() || !content.trim()) {
-          Swal.showValidationMessage('Por favor completa todos los campos');
+          Swal.showValidationMessage(t.swalFillAll);
           return false;
         }
 
@@ -836,8 +782,8 @@ export class NotesComponent {
 
       await Swal.fire({
         icon: 'success',
-        title: '¡Nota creada!',
-        text: 'La nota se ha agregado correctamente',
+        title: t.swalCreated,
+        text: t.swalCreatedText,
         timer: 2000,
         showConfirmButton: false,
         background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
@@ -851,9 +797,10 @@ export class NotesComponent {
     if (!note) return;
 
     const isDark = document.documentElement.classList.contains('dark');
+    const t = this.tx();
 
     const { value: formValues } = await Swal.fire({
-      title: '✏️ Editar Nota',
+      title: t.swalEditTitle,
       html: `
         <style>
           * {
@@ -887,11 +834,11 @@ export class NotesComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Título</label>
+            ">${t.swalLabelTitle}</label>
             <input
               id="noteTitle"
               class="swal2-input"
-              placeholder="Título de la nota"
+              placeholder="${t.swalTitlePh}"
               value="${note.title}"
               autofocus
               style="
@@ -913,11 +860,11 @@ export class NotesComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Contenido</label>
+            ">${t.swalLabelContent}</label>
             <textarea
               id="noteContent"
               class="swal2-textarea"
-              placeholder="Escribe el contenido de tu nota..."
+              placeholder="${t.swalContentPh}"
               rows="6"
               style="
                 width: 100%;
@@ -940,7 +887,7 @@ export class NotesComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Categoría</label>
+            ">${t.swalLabelCategory}</label>
             <select
               id="noteCategory"
               class="swal2-select"
@@ -955,18 +902,14 @@ export class NotesComponent {
             >
               <option value="Personal" ${
                 note.category === 'Personal' ? 'selected' : ''
-              }>👤 Personal</option>
-              <option value="Trabajo" ${
-                note.category === 'Trabajo' ? 'selected' : ''
-              }>💼 Trabajo</option>
-              <option value="Estudio" ${
-                note.category === 'Estudio' ? 'selected' : ''
-              }>📚 Estudio</option>
-              <option value="Ideas" ${note.category === 'Ideas' ? 'selected' : ''}>💡 Ideas</option>
-              <option value="Pendientes" ${
-                note.category === 'Pendientes' ? 'selected' : ''
-              }>✅ Pendientes</option>
-              <option value="Otros" ${note.category === 'Otros' ? 'selected' : ''}>📌 Otros</option>
+              }>👤 ${t.catLabels['Personal']}</option>
+              <option value="Work" ${note.category === 'Work' ? 'selected' : ''}>💼 ${t.catLabels['Work']}</option>
+              <option value="Study" ${note.category === 'Study' ? 'selected' : ''}>📚 ${t.catLabels['Study']}</option>
+              <option value="Ideas" ${note.category === 'Ideas' ? 'selected' : ''}>💡 ${t.catLabels['Ideas']}</option>
+              <option value="Pending" ${
+                note.category === 'Pending' ? 'selected' : ''
+              }>✅ ${t.catLabels['Pending']}</option>
+              <option value="Other" ${note.category === 'Other' ? 'selected' : ''}>📌 ${t.catLabels['Other']}</option>
             </select>
           </div>
         </div>
@@ -974,8 +917,8 @@ export class NotesComponent {
       width: window.innerWidth < 640 ? '95vw' : '580px',
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: '✓ Guardar',
-      cancelButtonText: '✕ Cancelar',
+      confirmButtonText: t.swalSave,
+      cancelButtonText: t.swalCancel,
       confirmButtonColor: '#10b981',
       cancelButtonColor: '#6b7280',
       customClass: {
@@ -1010,7 +953,7 @@ export class NotesComponent {
         const category = (document.getElementById('noteCategory') as HTMLSelectElement).value;
 
         if (!title.trim() || !content.trim()) {
-          Swal.showValidationMessage('Por favor completa todos los campos');
+          Swal.showValidationMessage(t.swalFillAll);
           return false;
         }
 
@@ -1023,8 +966,8 @@ export class NotesComponent {
 
       await Swal.fire({
         icon: 'success',
-        title: '¡Nota actualizada!',
-        text: 'Los cambios se han guardado correctamente',
+        title: t.swalUpdated,
+        text: t.swalUpdatedText,
         timer: 2000,
         showConfirmButton: false,
         background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
@@ -1052,13 +995,14 @@ export class NotesComponent {
   }
 
   async deleteNote(id: string): Promise<void> {
+    const t = this.tx();
     const result = await Swal.fire({
-      title: '¿Eliminar nota?',
-      text: 'Esta acción no se puede deshacer',
+      title: t.swalDeleteTitle,
+      text: t.swalDeleteText,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: '✓ Eliminar',
-      cancelButtonText: '✕ Cancelar',
+      confirmButtonText: t.swalDeleteBtn,
+      cancelButtonText: t.swalCancel,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#6b7280',
       background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
@@ -1070,7 +1014,7 @@ export class NotesComponent {
 
       await Swal.fire({
         icon: 'success',
-        title: '¡Nota eliminada!',
+        title: t.swalDeleted,
         timer: 1500,
         showConfirmButton: false,
         background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
@@ -1086,24 +1030,28 @@ export class NotesComponent {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
+    const es = this.langService.lang() === 'es';
 
-    if (diffMins < 1) return 'Ahora';
-    if (diffMins < 60) return `Hace ${diffMins}m`;
-    if (diffHours < 24) return `Hace ${diffHours}h`;
-    if (diffDays < 7) return `Hace ${diffDays}d`;
-
-    return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+    if (diffMins < 1) return es ? 'Ahora mismo' : 'Just now';
+    if (diffMins < 60) return es ? `hace ${diffMins}m` : `${diffMins}m ago`;
+    if (diffHours < 24) return es ? `hace ${diffHours}h` : `${diffHours}h ago`;
+    if (diffDays < 7) return es ? `hace ${diffDays}d` : `${diffDays}d ago`;
+    return date.toLocaleDateString(es ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' });
   }
 
   getCategoryIcon(category: string): string {
     const icons: Record<string, string> = {
       Personal: '👤',
-      Trabajo: '💼',
-      Estudio: '📚',
+      Work: '💼',
+      Study: '📚',
       Ideas: '💡',
-      Pendientes: '✅',
-      Otros: '📌',
+      Pending: '✅',
+      Other: '📌',
     };
     return icons[category] || '📌';
+  }
+
+  getCategoryLabel(category: string): string {
+    return this.tx().catLabels[category] ?? category;
   }
 }

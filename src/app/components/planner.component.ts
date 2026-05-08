@@ -2,8 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { LangService } from '../services/lang.service';
 import { Block, PlannerService } from '../services/planner.service';
-import { PomodoroService } from '../services/pomodoro.service';
 
 @Component({
   selector: 'app-planner',
@@ -11,84 +11,89 @@ import { PomodoroService } from '../services/pomodoro.service';
   template: `
     <div class="container">
       <div class="header">
-        <div class="title">📅 Planner</div>
+        <h1 class="page-title"><i class="bi bi-calendar3"></i>{{ tx().title }}</h1>
+        <p class="page-subtitle">{{ tx().subtitle }}</p>
       </div>
 
       <div class="controls">
         <input type="date" [(ngModel)]="selectedDate" class="date-picker" />
-        <button class="btn-add" (click)="openForm()">+ Nuevo Bloque</button>
+        <button class="btn-add" (click)="openForm()">{{ tx().newBlock }}</button>
       </div>
 
       <div class="blocks-list">
         @for (block of todayBlocks(); track block.id) {
-        <div
-          class="block-card"
-          [class.done]="block.status === 'DONE'"
-          [class.skipped]="block.status === 'SKIPPED'"
-        >
-          <div class="block-time">
-            <div class="time">{{ block.startTime }}</div>
-            <div class="separator">—</div>
-            <div class="time">{{ block.endTime }}</div>
-          </div>
+          <div
+            class="block-card"
+            [class.done]="block.status === 'DONE'"
+            [class.skipped]="block.status === 'SKIPPED'"
+          >
+            <div class="block-time">
+              <div class="time">{{ block.startTime }}</div>
+              <div class="separator">—</div>
+              <div class="time">{{ block.endTime }}</div>
+            </div>
 
-          <div class="block-content">
-            <div class="block-title">{{ block.title }}</div>
-            <div class="block-category">
-              {{ getCategoryIcon(block.category) }} {{ block.category }}
+            <div class="block-content">
+              <div class="block-title">{{ block.title }}</div>
+              <div class="block-category">
+                {{ getCategoryIcon(block.category) }} {{ block.category }}
+              </div>
+            </div>
+
+            <div class="block-actions">
+              @if (block.status === 'PLANNED') {
+                <button
+                  class="btn-icon success"
+                  (click)="service.markDone(block.id)"
+                  title="{{ tx().complete }}"
+                >
+                  ✓
+                </button>
+                <button
+                  class="btn-icon warning"
+                  (click)="service.markSkipped(block.id)"
+                  title="{{ tx().skip }}"
+                >
+                  ✕
+                </button>
+              } @else {
+                <button
+                  class="btn-icon reset"
+                  (click)="service.resetStatus(block.id)"
+                  title="{{ tx().reset }}"
+                >
+                  ↺
+                </button>
+              }
+              <button class="btn-icon edit" (click)="editBlock(block)" title="{{ tx().edit }}">
+                &#9998;
+              </button>
+              <button
+                class="btn-icon delete"
+                (click)="service.deleteBlock(block.id)"
+                title="{{ tx().delete }}"
+              >
+                🗑
+              </button>
             </div>
           </div>
-
-          <div class="block-actions">
-            @if (block.status === 'PLANNED') {
-            <button class="btn-icon success" (click)="service.markDone(block.id)" title="Completar">
-              ✓
-            </button>
-            <button class="btn-icon warning" (click)="service.markSkipped(block.id)" title="Omitir">
-              ✕
-            </button>
-            } @else {
-            <button class="btn-icon reset" (click)="service.resetStatus(block.id)" title="Resetear">
-              ↺
-            </button>
-            }
-            <button class="btn-icon edit" (click)="editBlock(block)" title="Editar">✎</button>
-            <button
-              class="btn-icon delete"
-              (click)="service.deleteBlock(block.id)"
-              title="Eliminar"
-            >
-              🗑
-            </button>
-          </div>
-        </div>
         } @empty {
-        <div class="empty-state">
-          <div class="empty-icon">📭</div>
-          <div class="empty-title">Sin bloques para este día</div>
-          <div class="empty-text">Crea tu primer bloque para organizar tu jornada</div>
-          <button class="btn-empty" (click)="openForm()">+ Crear Bloque</button>
-        </div>
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">{{ tx().noBlocks }}</div>
+            <div class="empty-text">{{ tx().createFirstBlock }}</div>
+            <button class="btn-empty" (click)="openForm()">{{ tx().createBlockBtn }}</button>
+          </div>
         }
       </div>
-
-      @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
-      <div class="pomodoro-widget" (click)="goToPomodoro()">
-        <div class="pomodoro-icon">⏱️</div>
-        <div class="pomodoro-content">
-          <div class="pomodoro-label">{{ getPhaseLabel() }}</div>
-          <div class="pomodoro-time">{{ formatTime() }}</div>
-        </div>
-      </div>
-      }
     </div>
   `,
   styles: [
     `
       .container {
-        max-width: 900px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 40px 24px;
+        padding: 40px 32px;
       }
 
       @media (max-width: 767px) {
@@ -99,18 +104,34 @@ import { PomodoroService } from '../services/pomodoro.service';
 
       .header {
         margin-bottom: 32px;
-        text-align: center;
       }
 
-      .title {
-        font-size: 32px;
+      .page-title {
+        font-size: 26px;
         font-weight: 700;
-        color: #111827;
-        letter-spacing: -0.5px;
+        color: #1e293b;
+        margin: 0 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
-      :host-context(.dark) .title {
-        color: #f3f4f6 !important;
+      .page-title i {
+        color: #6366f1;
+      }
+
+      .page-subtitle {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0;
+      }
+
+      :host-context(.dark) .page-title {
+        color: #f1f5f9;
+      }
+
+      :host-context(.dark) .page-subtitle {
+        color: #94a3b8;
       }
 
       .controls {
@@ -499,123 +520,61 @@ import { PomodoroService } from '../services/pomodoro.service';
           justify-content: center;
         }
       }
-
-      .pomodoro-widget {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: linear-gradient(
-          135deg,
-          rgba(99, 102, 241, 0.95) 0%,
-          rgba(139, 92, 246, 0.95) 100%
-        );
-        backdrop-filter: blur(16px);
-        padding: 12px 20px;
-        border-radius: 16px;
-        border: 1.5px solid rgba(255, 255, 255, 0.25);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
-        z-index: 1000;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        width: 160px;
-      }
-
-      .pomodoro-widget:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
-        border-color: rgba(255, 255, 255, 0.35);
-      }
-
-      .pomodoro-widget:active {
-        transform: translateY(-1px);
-      }
-
-      .pomodoro-icon {
-        font-size: 24px;
-        line-height: 1;
-        flex-shrink: 0;
-      }
-
-      .pomodoro-content {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        flex: 1;
-        min-width: 0;
-      }
-
-      .pomodoro-label {
-        font-size: 9px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.85);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        line-height: 1;
-      }
-
-      .pomodoro-time {
-        font-size: 20px;
-        font-weight: 800;
-        color: white;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -0.5px;
-        line-height: 1;
-      }
-
-      :host-context(.dark) .pomodoro-widget {
-        background: linear-gradient(
-          135deg,
-          rgba(79, 70, 229, 0.95) 0%,
-          rgba(124, 58, 237, 0.95) 100%
-        );
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-
-      :host-context(.dark) .pomodoro-widget:hover {
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 12px 40px rgba(79, 70, 229, 0.4);
-      }
     `,
   ],
 })
 export class PlannerComponent {
-  pomodoroService = inject(PomodoroService);
   private router = inject(Router);
+  private langService = inject(LangService);
   selectedDate = signal(new Date().toISOString().split('T')[0]);
 
   constructor(protected service: PlannerService) {}
 
-  formatTime = computed(() => {
-    const sec = this.pomodoroService.secondsLeft();
-    const mins = Math.floor(sec / 60);
-    const secs = sec % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  readonly tx = computed(() => {
+    const es = this.langService.lang() === 'es';
+    return {
+      title: es ? 'Planificador' : 'Planner',
+      subtitle: es ? 'Organiza tu día' : 'Organize your day',
+      newBlock: es ? '+ Nuevo Bloque' : '+ New Block',
+      complete: es ? 'Completar' : 'Complete',
+      skip: es ? 'Omitir' : 'Skip',
+      reset: es ? 'Restablecer' : 'Reset',
+      edit: es ? 'Editar' : 'Edit',
+      delete: es ? 'Eliminar' : 'Delete',
+      noBlocks: es ? 'Sin bloques para este día' : 'No blocks for this day',
+      createFirstBlock: es
+        ? 'Crea tu primer bloque para organizar tu día'
+        : 'Create your first block to organize your day',
+      createBlockBtn: es ? '+ Crear Bloque' : '+ Create Block',
+      swalNewTitle: es ? '📅 Nuevo Bloque' : '📅 New Block',
+      swalEditTitle: es ? '✎ Editar Bloque' : '✎ Edit Block',
+      swalBlockTitle: es ? 'Título del bloque' : 'Block title',
+      swalBlockPh: es ? 'Ej.: Estudiar Angular' : 'E.g.: Study Angular',
+      swalStartTime: es ? 'Hora inicio' : 'Start time',
+      swalEndTime: es ? 'Hora fin' : 'End time',
+      swalCategory: es ? 'Categoría' : 'Category',
+      swalSave: es ? '✓ Guardar' : '✓ Save',
+      swalCancel: es ? '✕ Cancelar' : '✕ Cancel',
+      swalFillAll: es ? 'Por favor completa todos los campos' : 'Please fill in all fields',
+      swalBlockCreated: es ? '¡Bloque creado!' : 'Block created!',
+      swalBlockAdded: es
+        ? 'El bloque fue agregado exitosamente'
+        : 'The block has been added successfully',
+      swalBlockUpdated: es ? '¡Bloque actualizado!' : 'Block updated!',
+      swalChangesSaved: es
+        ? 'Los cambios se guardaron exitosamente'
+        : 'Changes have been saved successfully',
+    };
   });
-
-  getPhaseLabel(): string {
-    const state = this.pomodoroService.state();
-    if (state === 'RUNNING_FOCUS') {
-      return 'Enfoque';
-    } else if (state === 'RUNNING_SHORT_BREAK' || state === 'RUNNING_LONG_BREAK') {
-      return 'Descanso';
-    }
-    return '';
-  }
-
-  goToPomodoro(): void {
-    this.router.navigate(['/pomodoro']);
-  }
 
   todayBlocks = computed(() => this.service.getBlocksForDate(this.selectedDate()));
 
   async openForm(): Promise<void> {
     const isDark = document.documentElement.classList.contains('dark');
+    const t = this.tx();
 
     const { value: formValues } = await Swal.fire({
-      title: '📅 Nuevo Bloque',
+      title: t.swalNewTitle,
       html: `
         <style>
           @media (max-width: 640px) {
@@ -634,11 +593,11 @@ export class PlannerComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Título del bloque</label>
+            ">${t.swalBlockTitle}</label>
             <input
               id="title"
               class="swal2-input"
-              placeholder="Ej: Estudiar Angular"
+              placeholder="${t.swalBlockPh}"
               autofocus
               style="
                 width: 100%;
@@ -660,7 +619,7 @@ export class PlannerComponent {
                 color: ${isDark ? '#ffffff' : '#111827'};
                 margin-bottom: 8px;
                 letter-spacing: 0.3px;
-              ">Hora inicio</label>
+              ">${t.swalStartTime}</label>
               <input
                 id="startTime"
                 type="time"
@@ -683,7 +642,7 @@ export class PlannerComponent {
                 color: ${isDark ? '#ffffff' : '#111827'};
                 margin-bottom: 8px;
                 letter-spacing: 0.3px;
-              ">Hora fin</label>
+              ">${t.swalEndTime}</label>
               <input
                 id="endTime"
                 type="time"
@@ -708,7 +667,7 @@ export class PlannerComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Categoría</label>
+            ">${t.swalCategory}</label>
             <select
               id="category"
               class="swal2-input"
@@ -734,8 +693,8 @@ export class PlannerComponent {
       width: window.innerWidth < 640 ? '95vw' : '560px',
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: '✓ Guardar',
-      cancelButtonText: '✕ Cancelar',
+      confirmButtonText: t.swalSave,
+      cancelButtonText: t.swalCancel,
       confirmButtonColor: '#667eea',
       cancelButtonColor: '#6b7280',
       customClass: {
@@ -775,7 +734,7 @@ export class PlannerComponent {
         const category = (document.getElementById('category') as HTMLSelectElement).value;
 
         if (!title || !startTime || !endTime) {
-          Swal.showValidationMessage('Por favor completa todos los campos');
+          Swal.showValidationMessage(t.swalFillAll);
           return false;
         }
 
@@ -792,8 +751,8 @@ export class PlannerComponent {
 
       await Swal.fire({
         icon: 'success',
-        title: '¡Bloque creado!',
-        text: 'El bloque se ha agregado correctamente',
+        title: t.swalBlockCreated,
+        text: t.swalBlockAdded,
         timer: 2000,
         showConfirmButton: false,
         background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',
@@ -804,9 +763,10 @@ export class PlannerComponent {
 
   async editBlock(block: Block): Promise<void> {
     const isDark = document.documentElement.classList.contains('dark');
+    const t = this.tx();
 
     const { value: formValues } = await Swal.fire({
-      title: '✎ Editar Bloque',
+      title: t.swalEditTitle,
       html: `
         <style>
           @media (max-width: 640px) {
@@ -825,11 +785,11 @@ export class PlannerComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Título del bloque</label>
+            ">${t.swalBlockTitle}</label>
             <input
               id="title"
               class="swal2-input"
-              placeholder="Ej: Estudiar Angular"
+              placeholder="${t.swalBlockPh}"
               value="${block.title}"
               style="
                 width: 100%;
@@ -851,7 +811,7 @@ export class PlannerComponent {
                 color: ${isDark ? '#ffffff' : '#111827'};
                 margin-bottom: 8px;
                 letter-spacing: 0.3px;
-              ">Hora inicio</label>
+              ">${t.swalStartTime}</label>
               <input
                 id="startTime"
                 type="time"
@@ -875,7 +835,7 @@ export class PlannerComponent {
                 color: ${isDark ? '#ffffff' : '#111827'};
                 margin-bottom: 8px;
                 letter-spacing: 0.3px;
-              ">Hora fin</label>
+              ">${t.swalEndTime}</label>
               <input
                 id="endTime"
                 type="time"
@@ -901,7 +861,7 @@ export class PlannerComponent {
               color: ${isDark ? '#ffffff' : '#111827'};
               margin-bottom: 8px;
               letter-spacing: 0.3px;
-            ">Categoría</label>
+            ">${t.swalCategory}</label>
             <select
               id="category"
               class="swal2-input"
@@ -933,8 +893,8 @@ export class PlannerComponent {
       width: window.innerWidth < 640 ? '95vw' : '560px',
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: '✓ Guardar',
-      cancelButtonText: '✕ Cancelar',
+      confirmButtonText: t.swalSave,
+      cancelButtonText: t.swalCancel,
       confirmButtonColor: '#667eea',
       cancelButtonColor: '#6b7280',
       customClass: {
@@ -974,7 +934,7 @@ export class PlannerComponent {
         const category = (document.getElementById('category') as HTMLSelectElement).value;
 
         if (!title || !startTime || !endTime) {
-          Swal.showValidationMessage('Por favor completa todos los campos');
+          Swal.showValidationMessage(t.swalFillAll);
           return false;
         }
 
@@ -987,8 +947,8 @@ export class PlannerComponent {
 
       await Swal.fire({
         icon: 'success',
-        title: '¡Bloque actualizado!',
-        text: 'Los cambios se han guardado correctamente',
+        title: t.swalBlockUpdated,
+        text: t.swalChangesSaved,
         timer: 2000,
         showConfirmButton: false,
         background: document.documentElement.classList.contains('dark') ? '#1e2433' : '#fff',

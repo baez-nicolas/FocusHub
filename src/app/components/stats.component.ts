@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { LangService } from '../services/lang.service';
 import { StatsService } from '../services/stats.service';
 
 @Component({
@@ -7,48 +8,48 @@ import { StatsService } from '../services/stats.service';
   template: `
     <div class="container">
       <div class="header">
-        <div class="title">📊 Estadísticas</div>
-        <div class="subtitle">Tu progreso y rendimiento</div>
+        <div class="title">{{ tx().title }}</div>
+        <div class="subtitle">{{ tx().subtitle }}</div>
       </div>
 
       <div class="cards">
         <div class="card">
           <div class="card-icon">⏱️</div>
           <div class="card-value">{{ service.focusMinutesToday() }}</div>
-          <div class="card-label">minutos hoy</div>
+          <div class="card-label">{{ tx().minutesToday }}</div>
         </div>
 
         <div class="card">
           <div class="card-icon">📅</div>
           <div class="card-value">{{ service.focusMinutesThisWeek() }}</div>
-          <div class="card-label">minutos esta semana</div>
+          <div class="card-label">{{ tx().minutesWeek }}</div>
         </div>
 
         <div class="card">
           <div class="card-icon">🔥</div>
           <div class="card-value">{{ service.streak() }}</div>
-          <div class="card-label">días de racha</div>
+          <div class="card-label">{{ tx().streakDays }}</div>
         </div>
 
         <div class="card">
           <div class="card-icon">✅</div>
           <div class="card-value">{{ service.plannerCompletion() }}%</div>
-          <div class="card-label">completado</div>
+          <div class="card-label">{{ tx().completed }}</div>
         </div>
       </div>
 
       <div class="chart-section">
-        <div class="chart-header">Actividad de los últimos 7 días</div>
+        <div class="chart-header">{{ tx().chartHeader }}</div>
         <div class="chart">
           @for (day of service.getLastSevenDays(); track day.date) {
-          <div class="bar-wrap">
-            <div class="bar" [style.height.%]="getBarHeight(day.minutes)">
-              @if (day.minutes > 0) {
-              <span class="bar-value">{{ day.minutes }}</span>
-              }
+            <div class="bar-wrap">
+              <div class="bar" [style.height.%]="getBarHeight(day.minutes)">
+                @if (day.minutes > 0) {
+                  <span class="bar-value">{{ day.minutes }}</span>
+                }
+              </div>
+              <div class="bar-date">{{ formatDate(day.date) }}</div>
             </div>
-            <div class="bar-date">{{ formatDate(day.date) }}</div>
-          </div>
           }
         </div>
       </div>
@@ -353,7 +354,22 @@ import { StatsService } from '../services/stats.service';
   ],
 })
 export class StatsComponent {
+  private langService = inject(LangService);
+
   constructor(protected service: StatsService) {}
+
+  readonly tx = computed(() => {
+    const es = this.langService.lang() === 'es';
+    return {
+      title: es ? '📊 Estadísticas' : '📊 Statistics',
+      subtitle: es ? 'Tu progreso y rendimiento' : 'Your progress and performance',
+      minutesToday: es ? 'minutos hoy' : 'minutes today',
+      minutesWeek: es ? 'minutos esta semana' : 'minutes this week',
+      streakDays: es ? 'días de racha' : 'streak days',
+      completed: es ? 'completado' : 'completed',
+      chartHeader: es ? 'Actividad de los últimos 7 días' : 'Activity for the last 7 days',
+    };
+  });
 
   formatDate(date: string): string {
     const d = new Date(date);

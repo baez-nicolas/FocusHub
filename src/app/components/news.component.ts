@@ -1,8 +1,7 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+﻿import { Component, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { LangService } from '../services/lang.service';
 import { NewsService } from '../services/news.service';
-import { PomodoroService } from '../services/pomodoro.service';
 
 @Component({
   selector: 'app-news',
@@ -15,9 +14,9 @@ import { PomodoroService } from '../services/pomodoro.service';
           <div>
             <h1 class="page-title">
               <i class="bi bi-newspaper"></i>
-              News
+              {{ tx().title }}
             </h1>
-            <p class="page-subtitle">Últimas noticias de The Guardian</p>
+            <p class="page-subtitle">{{ tx().subtitle }}</p>
           </div>
         </div>
 
@@ -27,7 +26,7 @@ import { PomodoroService } from '../services/pomodoro.service';
             <input
               type="text"
               class="search-input"
-              placeholder="Buscar noticias..."
+              placeholder="{{ tx().searchPh }}"
               [(ngModel)]="searchQuery"
               (keydown.enter)="search()"
             />
@@ -39,7 +38,7 @@ import { PomodoroService } from '../services/pomodoro.service';
           </div>
 
           <div class="section-filters">
-            @for (s of newsService.sections; track s.value) {
+            @for (s of newsService.sections(); track s.value) {
               <button
                 class="filter-chip"
                 [class.active]="selectedSection === s.value"
@@ -55,18 +54,18 @@ import { PomodoroService } from '../services/pomodoro.service';
       @if (newsService.loading()) {
         <div class="loading-state">
           <div class="spinner"></div>
-          <p>Cargando noticias...</p>
+          <p>{{ tx().loading }}</p>
         </div>
       } @else if (newsService.error()) {
         <div class="error-state">
           <i class="bi bi-wifi-off"></i>
           <p>{{ newsService.error() }}</p>
-          <button class="retry-btn" (click)="search()">Reintentar</button>
+          <button class="retry-btn" (click)="search()">{{ tx().retry }}</button>
         </div>
       } @else if (newsService.articles().length === 0) {
         <div class="empty-state">
           <i class="bi bi-newspaper"></i>
-          <p>No se encontraron noticias</p>
+          <p>{{ tx().noNews }}</p>
         </div>
       } @else {
         <div class="articles-grid">
@@ -97,7 +96,7 @@ import { PomodoroService } from '../services/pomodoro.service';
                 }
               </div>
               <div class="card-footer">
-                <span>Leer en The Guardian</span>
+                <span>{{ tx().readOn }}</span>
                 <i class="bi bi-arrow-up-right"></i>
               </div>
             </a>
@@ -111,37 +110,28 @@ import { PomodoroService } from '../services/pomodoro.service';
             (click)="newsService.prevPage()"
           >
             <i class="bi bi-chevron-left"></i>
-            Anterior
+            {{ tx().previous }}
           </button>
           <span class="page-info">
-            Página {{ newsService.currentPage() }} de {{ newsService.totalPages() }}
+            {{ tx().page }} {{ newsService.currentPage() }} {{ tx().of }}
+            {{ newsService.totalPages() }}
           </span>
           <button
             class="page-btn"
             [disabled]="newsService.currentPage() >= newsService.totalPages()"
             (click)="newsService.nextPage()"
           >
-            Siguiente
+            {{ tx().next }}
             <i class="bi bi-chevron-right"></i>
           </button>
         </div>
       }
     </div>
-
-    @if (pomodoroService.state() !== 'IDLE' && pomodoroService.state() !== 'PAUSED') {
-      <div class="pomodoro-widget" (click)="goToPomodoro()">
-        <span class="pomodoro-icon">⏱️</span>
-        <div class="pomodoro-content">
-          <span class="pomodoro-label">{{ getPhaseLabel() }}</span>
-          <span class="pomodoro-time">{{ formatTime() }}</span>
-        </div>
-      </div>
-    }
   `,
   styles: [
     `
       .news-container {
-        padding: 32px;
+        padding: 40px 32px;
         max-width: 1400px;
         margin: 0 auto;
       }
@@ -273,8 +263,6 @@ import { PomodoroService } from '../services/pomodoro.service';
         box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3);
       }
 
-      /* States */
-
       .loading-state,
       .error-state,
       .empty-state {
@@ -329,8 +317,6 @@ import { PomodoroService } from '../services/pomodoro.service';
       .retry-btn:hover {
         opacity: 0.9;
       }
-
-      /* Articles Grid */
 
       .articles-grid {
         display: grid;
@@ -461,8 +447,6 @@ import { PomodoroService } from '../services/pomodoro.service';
         transform: translate(2px, -2px);
       }
 
-      /* Pagination */
-
       .pagination {
         display: flex;
         align-items: center;
@@ -503,8 +487,6 @@ import { PomodoroService } from '../services/pomodoro.service';
         font-weight: 500;
       }
 
-      /* Responsive */
-
       @media (max-width: 768px) {
         .news-container {
           padding: 20px 16px;
@@ -514,8 +496,6 @@ import { PomodoroService } from '../services/pomodoro.service';
           grid-template-columns: 1fr;
         }
       }
-
-      /* Pomodoro widget */
 
       .pomodoro-widget {
         position: fixed;
@@ -581,8 +561,6 @@ import { PomodoroService } from '../services/pomodoro.service';
         letter-spacing: -0.5px;
         line-height: 1;
       }
-
-      /* Dark mode overrides (applied via :host-context) */
 
       :host-context(.dark) .page-title {
         color: #f1f5f9;
@@ -678,17 +656,26 @@ import { PomodoroService } from '../services/pomodoro.service';
 })
 export class NewsComponent implements OnInit {
   newsService = inject(NewsService);
-  pomodoroService = inject(PomodoroService);
-  private router = inject(Router);
+  private langService = inject(LangService);
 
   searchQuery = '';
   selectedSection = '';
 
-  formatTime = computed(() => {
-    const sec = this.pomodoroService.secondsLeft();
-    const mins = Math.floor(sec / 60);
-    const secs = sec % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  readonly tx = computed(() => {
+    const es = this.langService.lang() === 'es';
+    return {
+      subtitle: es ? 'Últimas noticias de The Guardian' : 'Latest news from The Guardian',
+      title: es ? 'Noticias' : 'News',
+      searchPh: es ? 'Buscar noticias...' : 'Search news...',
+      loading: es ? 'Cargando noticias...' : 'Loading news...',
+      retry: es ? 'Reintentar' : 'Retry',
+      noNews: es ? 'Sin noticias encontradas' : 'No news found',
+      readOn: es ? 'Leer en The Guardian' : 'Read on The Guardian',
+      previous: es ? 'Anterior' : 'Previous',
+      next: es ? 'Siguiente' : 'Next',
+      page: es ? 'Página' : 'Page',
+      of: es ? 'de' : 'of',
+    };
   });
 
   ngOnInit(): void {
@@ -713,17 +700,7 @@ export class NewsComponent implements OnInit {
 
   formatDate(iso: string): string {
     const d = new Date(iso);
-    return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
-  }
-
-  getPhaseLabel(): string {
-    const state = this.pomodoroService.state();
-    if (state === 'RUNNING_FOCUS') return 'Enfoque';
-    if (state === 'RUNNING_SHORT_BREAK' || state === 'RUNNING_LONG_BREAK') return 'Descanso';
-    return '';
-  }
-
-  goToPomodoro(): void {
-    this.router.navigate(['/pomodoro']);
+    const locale = this.langService.lang() === 'es' ? 'es-ES' : 'en-US';
+    return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
   }
 }
