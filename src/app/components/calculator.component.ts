@@ -1,4 +1,4 @@
-﻿import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { LangService } from '../services/lang.service';
 
 @Component({

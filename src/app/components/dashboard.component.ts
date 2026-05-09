@@ -1,4 +1,4 @@
-﻿import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { LangService } from '../services/lang.service';

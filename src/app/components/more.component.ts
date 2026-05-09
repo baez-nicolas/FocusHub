@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { LangService } from '../services/lang.service';
 

@@ -278,7 +278,7 @@ import { ThemeService } from './services/theme.service';
         background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
       }
 
-      @media (max-width: 1023px) {
+      @media (max-width: 1024px) {
         .link-label {
           display: none;
         }

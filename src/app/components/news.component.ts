@@ -1,4 +1,4 @@
-﻿import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LangService } from '../services/lang.service';
 import { NewsService } from '../services/news.service';
@@ -176,6 +176,13 @@ import { NewsService } from '../services/news.service';
       .search-wrap {
         position: relative;
         max-width: 480px;
+      }
+
+      @media (max-width: 1024px) {
+        .search-wrap {
+          max-width: 100%;
+          width: 100%;
+        }
       }
 
       .search-icon {
@@ -515,8 +522,13 @@ import { NewsService } from '../services/news.service';
         }
 
         .articles-grid {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(3, 1fr);
           gap: 10px;
+        }
+
+        .search-wrap {
+          max-width: 100%;
+          width: 100%;
         }
 
         .card-image {
@@ -579,6 +591,12 @@ import { NewsService } from '../services/news.service';
 
         .page-info {
           font-size: 13px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .articles-grid {
+          grid-template-columns: repeat(2, 1fr);
         }
       }
 
