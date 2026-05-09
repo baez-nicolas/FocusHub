@@ -1350,6 +1350,24 @@ interface FeaturedPlaylist {
           align-items: center;
         }
 
+        .section-header {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        .section-title {
+          text-align: center;
+        }
+
+        .section-sub {
+          text-align: center;
+        }
+
+        .btn-create-pl i {
+          display: none;
+        }
+
         .cards-grid {
           grid-template-columns: 1fr;
         }
