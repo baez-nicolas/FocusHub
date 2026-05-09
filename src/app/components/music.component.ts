@@ -1369,7 +1369,33 @@ interface FeaturedPlaylist {
         }
 
         .cards-grid {
-          grid-template-columns: 1fr;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+        }
+
+        .cards-grid .card-body {
+          padding: 6px 8px 4px;
+        }
+
+        .cards-grid .card-name {
+          font-size: 11px;
+        }
+
+        .cards-grid .card-sub,
+        .cards-grid .card-album,
+        .cards-grid .card-pop {
+          font-size: 10px;
+        }
+
+        .cards-grid .card-actions {
+          padding: 4px 6px;
+          gap: 4px;
+        }
+
+        .cards-grid .card-btn {
+          width: 26px;
+          height: 26px;
+          font-size: 12px;
         }
 
         .embeds-grid {
