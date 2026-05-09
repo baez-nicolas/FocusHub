@@ -79,15 +79,6 @@ La app soporta **Español e Inglés** de forma nativa. El selector de idioma est
 | **Spotify Web API** | OAuth 2.0 |
 | **The Guardian API**        | REST      |
 
-### Stack técnico
-
-- **Standalone Components** sin NgModule
-- **Signals API** para estado reactivo
-- **`inject()`** y `computed()` en lugar de decoradores clásicos
-- **LocalStorage** para persistencia client-side
-- **CSS puro** con variables y media queries por componente
-- **Deploy:** Vercel (CD automático desde main)
-
 ---
 
 ## 🛠️ Instalación local
