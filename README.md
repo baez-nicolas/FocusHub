@@ -39,6 +39,7 @@
 - Feed de artículos con búsqueda y filtros por sección
 - Paginación con navegación rápida
 - Diseño de tarjetas con imagen, titular y fecha
+- Actualizable en tiempo real
 
 ### 📅 Planner
 
