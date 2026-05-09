@@ -267,7 +267,10 @@ import { NewsService } from '../services/news.service';
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         border-color: transparent;
         color: white;
-        box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3);
+        font-weight: 700;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+        transform: translateY(-1px);
+        letter-spacing: 0.01em;
       }
 
       .loading-state,
@@ -762,7 +765,7 @@ export class NewsComponent implements OnInit {
   private langService = inject(LangService);
 
   searchQuery = '';
-  selectedSection = '';
+  selectedSection = localStorage.getItem('news_section') ?? '';
 
   readonly tx = computed(() => {
     const es = this.langService.lang() === 'es';
@@ -783,7 +786,7 @@ export class NewsComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.newsService.articles().length === 0) {
-      this.newsService.fetchNews();
+      this.newsService.fetchNews('', this.selectedSection, 1);
     }
   }
 
@@ -793,6 +796,7 @@ export class NewsComponent implements OnInit {
 
   selectSection(section: string): void {
     this.selectedSection = section;
+    localStorage.setItem('news_section', section);
     this.newsService.fetchNews(this.searchQuery, section, 1);
   }
 

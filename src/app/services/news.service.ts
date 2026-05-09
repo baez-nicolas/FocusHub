@@ -62,7 +62,7 @@ export class NewsService {
       { value: 'business', label: es ? 'Negocios' : 'Business' },
       { value: 'culture', label: es ? 'Cultura' : 'Culture' },
       { value: 'environment', label: es ? 'Medioambiente' : 'Environment' },
-      { value: 'health', label: es ? 'Salud' : 'Health' },
+      { value: 'football', label: es ? 'Fútbol' : 'Football' },
     ];
   });
 
