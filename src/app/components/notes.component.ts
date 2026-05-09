@@ -32,7 +32,9 @@ import { Note, NotesService } from '../services/notes.service';
           }
         </select>
 
-        <button class="btn-new" (click)="openForm()">{{ tx().newNote }}</button>
+        <button class="btn-new" (click)="openForm()">
+          <span class="btn-plus">+ </span>{{ tx().newNote }}
+        </button>
       </div>
 
       <div class="notes-grid">
@@ -60,7 +62,9 @@ import { Note, NotesService } from '../services/notes.service';
             <div class="empty-icon">📝</div>
             <div class="empty-title">{{ tx().noNotes }}</div>
             <div class="empty-text">{{ tx().createFirst }}</div>
-            <button class="btn-empty" (click)="openForm()">{{ tx().createNote }}</button>
+            <button class="btn-empty" (click)="openForm()">
+              <span class="btn-plus">+ </span>{{ tx().createNote }}
+            </button>
           </div>
         }
       </div>
@@ -553,6 +557,23 @@ import { Note, NotesService } from '../services/notes.service';
           padding: 24px 16px;
         }
 
+        .page-title {
+          text-align: center;
+          justify-content: center;
+        }
+
+        .page-title i {
+          display: none;
+        }
+
+        .page-subtitle {
+          text-align: center;
+        }
+
+        .btn-plus {
+          display: none;
+        }
+
         .toolbar {
           flex-direction: column;
           align-items: stretch;
@@ -588,12 +609,12 @@ export class NotesComponent {
       subtitle: es ? 'Organiza tus ideas y pensamientos' : 'Organize your ideas and thoughts',
       searchPh: es ? 'Buscar notas...' : 'Search notes...',
       allCat: es ? '📁 Todo' : '📁 All',
-      newNote: es ? '+ Nueva Nota' : '+ New Note',
+      newNote: es ? 'Nueva Nota' : 'New Note',
       noNotes: es ? 'Sin notas' : 'No notes',
       createFirst: es
         ? 'Crea tu primera nota para empezar'
         : 'Create your first note to get started',
-      createNote: es ? '+ Crear Nota' : '+ Create Note',
+      createNote: es ? 'Crear Nota' : 'Create Note',
       catLabels: {
         Personal: 'Personal',
         Work: es ? 'Trabajo' : 'Work',
@@ -893,7 +914,7 @@ export class NotesComponent {
                 font-size: 15px;
                 border-radius: 8px;
                 box-sizing: border-box;
-                resize: vertical;
+                resize: none;
                 line-height: 1.6;
               "
             >${note.content}</textarea>
@@ -1106,12 +1127,10 @@ export class NotesComponent {
   formatFullDate(dateStr: string): string {
     const date = new Date(dateStr);
     const es = this.langService.lang() === 'es';
-    return date.toLocaleString(es ? 'es-ES' : 'en-US', {
+    return date.toLocaleDateString(es ? 'es-ES' : 'en-US', {
       day: 'numeric',
-      month: 'long',
+      month: 'short',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     });
   }
 

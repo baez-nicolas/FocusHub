@@ -17,7 +17,9 @@ import { Block, PlannerService } from '../services/planner.service';
 
       <div class="controls">
         <input type="date" [(ngModel)]="selectedDate" class="date-picker" />
-        <button class="btn-add" (click)="openForm()">{{ tx().newBlock }}</button>
+        <button class="btn-add" (click)="openForm()">
+          <span class="btn-plus">+ </span>{{ tx().newBlock }}
+        </button>
       </div>
 
       <div class="blocks-list">
@@ -82,7 +84,9 @@ import { Block, PlannerService } from '../services/planner.service';
             <div class="empty-icon">📭</div>
             <div class="empty-title">{{ tx().noBlocks }}</div>
             <div class="empty-text">{{ tx().createFirstBlock }}</div>
-            <button class="btn-empty" (click)="openForm()">{{ tx().createBlockBtn }}</button>
+            <button class="btn-empty" (click)="openForm()">
+              <span class="btn-plus">+ </span>{{ tx().createBlockBtn }}
+            </button>
           </div>
         }
       </div>
@@ -99,6 +103,35 @@ import { Block, PlannerService } from '../services/planner.service';
       @media (max-width: 767px) {
         .container {
           padding: 24px 16px;
+        }
+
+        .header {
+          text-align: center;
+        }
+
+        .page-title {
+          justify-content: center;
+        }
+
+        .page-title i {
+          display: none;
+        }
+
+        .page-subtitle {
+          text-align: center;
+        }
+
+        .btn-plus {
+          display: none;
+        }
+
+        .block-title,
+        .block-category {
+          text-align: center;
+        }
+
+        .block-category {
+          justify-content: center;
         }
       }
 
@@ -535,7 +568,7 @@ export class PlannerComponent {
     return {
       title: es ? 'Planificador' : 'Planner',
       subtitle: es ? 'Organiza tu día' : 'Organize your day',
-      newBlock: es ? '+ Nuevo Bloque' : '+ New Block',
+      newBlock: es ? 'Nuevo Bloque' : 'New Block',
       complete: es ? 'Completar' : 'Complete',
       skip: es ? 'Omitir' : 'Skip',
       reset: es ? 'Restablecer' : 'Reset',
@@ -545,7 +578,7 @@ export class PlannerComponent {
       createFirstBlock: es
         ? 'Crea tu primer bloque para organizar tu día'
         : 'Create your first block to organize your day',
-      createBlockBtn: es ? '+ Crear Bloque' : '+ Create Block',
+      createBlockBtn: es ? 'Crear Bloque' : 'Create Block',
       swalNewTitle: es ? 'Nuevo Bloque' : 'New Block',
       swalEditTitle: es ? 'Editar Bloque' : 'Edit Block',
       swalBlockTitle: es ? 'Título del bloque' : 'Block title',
