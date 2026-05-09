@@ -821,11 +821,70 @@ interface DayRecord {
         .container {
           padding: 24px 16px;
         }
+
+        .page-title {
+          text-align: center;
+          justify-content: center;
+        }
+
+        .page-title i {
+          display: none;
+        }
+
+        .page-subtitle {
+          text-align: center;
+        }
+
         .stat-value {
           font-size: 22px;
         }
+
         .history-row {
           grid-template-columns: 70px 1fr 22px 55px;
+        }
+
+        .awards-row {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scroll-snap-type: x mandatory;
+          scrollbar-width: none;
+          gap: 8px;
+          padding-bottom: 4px;
+        }
+
+        .awards-row::-webkit-scrollbar {
+          display: none;
+        }
+
+        .award-chip {
+          flex-shrink: 0;
+          scroll-snap-align: start;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 12px 8px;
+          border-radius: 14px;
+          width: 80px;
+          min-width: 80px;
+          max-width: 80px;
+        }
+
+        .award-medal {
+          font-size: 26px;
+        }
+
+        .award-chip-img {
+          width: 36px;
+          height: 36px;
+        }
+
+        .award-name {
+          font-size: 10px;
+          text-align: center;
+          white-space: normal;
+          line-height: 1.2;
         }
       }
     `,

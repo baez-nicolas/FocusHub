@@ -88,6 +88,19 @@ import { LangService } from '../services/lang.service';
         .container {
           padding: 24px 16px;
         }
+
+        .page-title {
+          text-align: center;
+          justify-content: center;
+        }
+
+        .page-title i {
+          display: none;
+        }
+
+        .page-subtitle {
+          text-align: center;
+        }
       }
 
       .header {
@@ -132,6 +145,10 @@ import { LangService } from '../services/lang.service';
       @media (max-width: 900px) {
         .calc-layout {
           grid-template-columns: 1fr;
+        }
+
+        .history-panel {
+          order: 2;
         }
       }
 
