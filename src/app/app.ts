@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { afterNextRender, Component, computed, inject } from '@angular/core';
+import { afterNextRender, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { LangService } from './services/lang.service';
 import { NewsService } from './services/news.service';
@@ -11,6 +11,40 @@ import { ThemeService } from './services/theme.service';
   template: `
     <div class="app-container" [class.dark]="themeService.isDark()">
       <nav class="topnav">
+        <!-- MOBILE HEADER -->
+        <div class="mobile-header">
+          <button
+            class="hamburger-btn"
+            (click)="menuOpen.set(!menuOpen())"
+            [attr.aria-expanded]="menuOpen()"
+          >
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+          </button>
+          <a routerLink="/" class="mobile-brand" (click)="menuOpen.set(false)">
+            <span class="brand-name">FocusHub</span>
+          </a>
+          <div class="mobile-controls">
+            <button
+              class="lang-btn"
+              (click)="langService.toggle()"
+              [title]="langService.lang() === 'en' ? 'Cambiar a Español' : 'Switch to English'"
+            >
+              <i class="bi bi-translate"></i>
+              {{ langService.lang() === 'en' ? 'ES' : 'EN' }}
+            </button>
+            <button class="theme-btn" (click)="themeService.toggle()">
+              @if (themeService.isDark()) {
+                <i class="bi bi-sun-fill"></i>
+              } @else {
+                <i class="bi bi-moon-fill"></i>
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- DESKTOP INNER -->
         <div class="topnav-inner">
           <a routerLink="/" class="topnav-brand">
             <img src="/assets/icono.png" alt="FocusHub" class="brand-logo" />
@@ -48,6 +82,25 @@ import { ThemeService } from './services/theme.service';
           </button>
         </div>
       </nav>
+
+      <!-- MOBILE DRAWER (outside nav for correct stacking) -->
+      @if (menuOpen()) {
+        <div class="mobile-overlay" (click)="menuOpen.set(false)"></div>
+        <div class="mobile-drawer">
+          @for (item of navItems(); track item.path) {
+            <a
+              [routerLink]="item.path"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.exact }"
+              class="drawer-link"
+              (click)="menuOpen.set(false)"
+            >
+              <i [class]="'bi bi-' + item.icon"></i>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        </div>
+      }
 
       <main class="content-area">
         <router-outlet />
@@ -127,8 +180,6 @@ import { ThemeService } from './services/theme.service';
         min-height: 100vh;
         background: #f1f5f9;
       }
-
-      
 
       .topnav {
         display: flex;
@@ -257,6 +308,144 @@ import { ThemeService } from './services/theme.service';
         }
       }
 
+      /* MOBILE HEADER */
+      .mobile-header {
+        display: none;
+      }
+
+      @media (max-width: 767px) {
+        .topnav-inner {
+          display: none;
+        }
+
+        .mobile-header {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          padding: 0 16px;
+          height: 64px;
+          position: relative;
+        }
+
+        .mobile-brand {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+        }
+
+        .mobile-controls {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-left: auto;
+        }
+      }
+
+      .hamburger-btn {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+
+      .hamburger-btn:hover {
+        background: #f1f5f9;
+      }
+
+      .hamburger-bar {
+        display: block;
+        width: 22px;
+        height: 2px;
+        background: #475569;
+        border-radius: 2px;
+        transition: background 0.2s;
+      }
+
+      .mobile-overlay {
+        position: fixed;
+        inset: 64px 0 0 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 998;
+        animation: fadeOverlay 0.2s ease;
+      }
+
+      @keyframes fadeOverlay {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .mobile-drawer {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        bottom: 0;
+        width: 260px;
+        background: white;
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        padding: 16px 12px;
+        gap: 4px;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+        animation: slideDrawer 0.22s ease;
+        overflow-y: auto;
+      }
+
+      @keyframes slideDrawer {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+
+      .drawer-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #475569;
+        font-size: 15px;
+        font-weight: 500;
+        transition: all 0.18s;
+      }
+
+      .drawer-link i {
+        font-size: 20px;
+        width: 24px;
+        text-align: center;
+      }
+
+      .drawer-link:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+      }
+
+      .drawer-link.active {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3);
+      }
+
       .theme-btn {
         flex-shrink: 0;
         background: #f1f5f9;
@@ -305,14 +494,10 @@ import { ThemeService } from './services/theme.service';
         transform: scale(1.05);
       }
 
-      
-
       .content-area {
         flex: 1;
         margin-top: 64px;
       }
-
-      
 
       @keyframes footerFadeIn {
         from {
@@ -452,8 +637,6 @@ import { ThemeService } from './services/theme.service';
         }
       }
 
-      
-
       .app-container.dark {
         background: #0f1419;
       }
@@ -462,6 +645,32 @@ import { ThemeService } from './services/theme.service';
         background: rgba(22, 28, 45, 0.97);
         border-bottom-color: #2d3748;
         box-shadow: 0 1px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .app-container.dark .hamburger-bar {
+        background: #94a3b8;
+      }
+
+      .app-container.dark .hamburger-btn:hover {
+        background: #1e2a3a;
+      }
+
+      .app-container.dark .mobile-drawer {
+        background: #161c2d;
+      }
+
+      .app-container.dark .drawer-link {
+        color: #94a3b8;
+      }
+
+      .app-container.dark .drawer-link:hover {
+        background: #1e2a3a;
+        color: #e2e8f0;
+      }
+
+      .app-container.dark .drawer-link.active {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
       }
 
       .app-container.dark .brand-name {
@@ -553,6 +762,7 @@ export class App {
   themeService = inject(ThemeService);
   langService = inject(LangService);
   newsService = inject(NewsService);
+  menuOpen = signal(false);
   constructor() {
     afterNextRender(() => {
       this.newsService.fetchNews();
@@ -562,7 +772,7 @@ export class App {
   navItems = computed(() => {
     const es = this.langService.lang() === 'es';
     return [
-      { path: '/', label: 'Dashboard', icon: 'house-door', exact: true },
+      { path: '/', label: es ? 'Inicio' : 'Dashboard', icon: 'house-door', exact: true },
       { path: '/news', label: es ? 'Noticias' : 'News', icon: 'newspaper', exact: false },
       {
         path: '/planner',

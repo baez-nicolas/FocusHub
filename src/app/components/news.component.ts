@@ -110,7 +110,7 @@ import { NewsService } from '../services/news.service';
             (click)="newsService.prevPage()"
           >
             <i class="bi bi-chevron-left"></i>
-            {{ tx().previous }}
+            <span>{{ tx().previous }}</span>
           </button>
           <span class="page-info">
             {{ tx().page }} {{ newsService.currentPage() }} {{ tx().of }}
@@ -121,7 +121,7 @@ import { NewsService } from '../services/news.service';
             [disabled]="newsService.currentPage() >= newsService.totalPages()"
             (click)="newsService.nextPage()"
           >
-            {{ tx().next }}
+            <span>{{ tx().next }}</span>
             <i class="bi bi-chevron-right"></i>
           </button>
         </div>
@@ -492,8 +492,93 @@ import { NewsService } from '../services/news.service';
           padding: 20px 16px;
         }
 
+        .header-top {
+          flex-direction: column;
+          gap: 12px;
+          align-items: center;
+        }
+
+        .header-top > div:first-child {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .page-title .bi-newspaper {
+          display: none;
+        }
+
+        .page-title,
+        .page-subtitle {
+          text-align: center;
+        }
+
         .articles-grid {
-          grid-template-columns: 1fr;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+
+        .card-image {
+          height: 120px;
+        }
+
+        .card-body {
+          padding: 8px 10px 6px;
+        }
+
+        .card-meta {
+          display: none;
+        }
+
+        .card-trail {
+          display: none;
+        }
+
+        .card-title {
+          font-size: 12px;
+          font-weight: 700;
+          -webkit-line-clamp: 3;
+          margin-bottom: 0;
+        }
+
+        .card-footer {
+          padding: 8px 10px;
+          font-size: 11px;
+        }
+
+        .section-filters {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          scrollbar-width: none;
+          padding-bottom: 4px;
+        }
+
+        .section-filters::-webkit-scrollbar {
+          display: none;
+        }
+
+        .filter-chip {
+          flex-shrink: 0;
+          font-size: 12px;
+          padding: 5px 12px;
+        }
+
+        .pagination {
+          gap: 12px;
+        }
+
+        .page-btn {
+          padding: 9px 14px;
+          font-size: 13px;
+        }
+
+        .page-btn span {
+          display: none;
+        }
+
+        .page-info {
+          font-size: 13px;
         }
       }
 

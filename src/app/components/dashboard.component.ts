@@ -665,9 +665,87 @@ interface PlaylistGroup {
           font-size: 14.5px;
         }
 
-        .news-grid,
+        .news-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+        }
+
+        .n-img,
+        .n-img-ph {
+          height: 90px;
+        }
+
+        .n-body {
+          padding: 8px 8px 10px;
+        }
+
+        .n-section {
+          display: none;
+        }
+
+        .n-trail {
+          display: none;
+        }
+
+        .n-title {
+          font-size: 11px;
+          -webkit-line-clamp: 3;
+          margin-bottom: 0;
+        }
+
         .pl-grid {
           grid-template-columns: 1fr;
+        }
+
+        .pl-groups {
+          display: flex;
+          flex-direction: row;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          gap: 12px;
+          padding-bottom: 8px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+
+        .pl-groups::-webkit-scrollbar {
+          display: none;
+        }
+
+        .pl-card {
+          flex: 0 0 82%;
+          scroll-snap-align: start;
+          min-width: 0;
+        }
+
+        .pl-card-hdr {
+          padding: 12px 14px;
+          font-size: 13px;
+        }
+
+        .pl-tabs {
+          display: flex;
+          padding: 8px 10px;
+          gap: 6px;
+          overflow-x: auto;
+          flex-wrap: nowrap;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+
+        .pl-tabs::-webkit-scrollbar {
+          display: none;
+        }
+
+        .pl-tab {
+          flex-shrink: 0;
+          font-size: 11px;
+          padding: 4px 10px;
+        }
+
+        .pl-iframe {
+          display: block;
+          height: 152px;
         }
 
         .sections-wrap {
@@ -675,9 +753,93 @@ interface PlaylistGroup {
           gap: 40px;
         }
 
-        .n-img,
-        .n-img-ph {
-          height: 200px;
+        .skel-card {
+          height: 140px;
+        }
+
+        .steps-widget {
+          padding: 16px 0;
+          overflow: hidden;
+        }
+
+        .steps-stat-row {
+          gap: 8px;
+          margin-bottom: 16px;
+          padding: 0 16px;
+        }
+
+        .steps-progress-label {
+          padding: 0 16px;
+        }
+
+        .steps-bar-wrap {
+          height: 8px;
+          margin: 0 16px 8px;
+        }
+
+        .steps-goal-sub {
+          padding: 0 16px;
+        }
+
+        .steps-stat-icon {
+          font-size: 20px;
+          margin-bottom: 4px;
+        }
+
+        .steps-stat-val {
+          font-size: 18px;
+        }
+
+        .steps-stat-label {
+          font-size: 10px;
+        }
+
+        .steps-awards-row {
+          display: flex;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scroll-snap-type: x mandatory;
+          scrollbar-width: none;
+          gap: 10px;
+          padding: 4px 16px 8px;
+          margin-top: 10px;
+        }
+
+        .steps-awards-row::-webkit-scrollbar {
+          display: none;
+        }
+
+        .steps-award {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          scroll-snap-align: start;
+          gap: 6px;
+          padding: 12px 8px;
+          border-radius: 14px;
+          width: 80px;
+          min-width: 80px;
+          max-width: 80px;
+        }
+
+        .steps-award-img {
+          width: 38px;
+          height: 38px;
+        }
+
+        .steps-award-medal {
+          font-size: 28px;
+          line-height: 1;
+        }
+
+        .steps-award-name {
+          font-size: 10px;
+          text-align: center;
+          white-space: normal;
+          line-height: 1.2;
         }
       }
 
