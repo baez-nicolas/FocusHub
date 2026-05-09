@@ -1323,15 +1323,62 @@ interface FeaturedPlaylist {
         .container {
           padding: 20px 16px 32px;
         }
+
         .page-title {
           font-size: 22px;
+          text-align: center;
+          justify-content: center;
         }
+
+        .page-title i {
+          display: none;
+        }
+
+        .page-subtitle {
+          text-align: center;
+        }
+
+        .page-header {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .header-left {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
         .cards-grid {
           grid-template-columns: 1fr;
         }
+
         .embeds-grid {
-          grid-template-columns: 1fr;
+          display: flex;
+          flex-direction: row;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          gap: 12px;
+          padding-bottom: 8px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
         }
+
+        .embeds-grid::-webkit-scrollbar {
+          display: none;
+        }
+
+        .embed-card {
+          flex: 0 0 82%;
+          scroll-snap-align: start;
+          min-width: 0;
+        }
+
+        .spotify-embed {
+          height: 152px;
+        }
+
         .detail-content {
           flex-direction: column;
         }
@@ -1584,7 +1631,7 @@ export class MusicComponent implements OnInit {
       noPlaylists: es ? 'No hay playlists cargadas aún.' : 'No playlists loaded yet.',
       featuredTitle: es ? 'Playlists Recomendadas' : 'Recommended Playlists',
       featuredSub: es
-        ? 'Sin necesidad de cuenta — reprodúcelas directo desde aquí'
+        ? 'Sin cuenta — reproducí directo desde aquí'
         : 'No account needed — play directly from here',
       popularity: es ? 'Popularidad' : 'Popularity',
     };
