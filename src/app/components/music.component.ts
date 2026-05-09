@@ -1338,6 +1338,49 @@ interface FeaturedPlaylist {
           text-align: center;
         }
 
+        .result-tabs {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .detail-content {
+          flex-direction: column;
+          align-items: center;
+          gap: 14px;
+        }
+
+        .detail-img,
+        .detail-img-placeholder {
+          width: 100px;
+          height: 100px;
+          font-size: 28px;
+        }
+
+        .detail-info {
+          min-width: unset;
+          width: 100%;
+          text-align: center;
+        }
+
+        .detail-name {
+          font-size: 18px;
+        }
+
+        .detail-meta,
+        .detail-duration,
+        .followers-row {
+          font-size: 12.5px;
+          justify-content: center;
+        }
+
+        .genres-row {
+          justify-content: center;
+        }
+
+        .detail-actions {
+          justify-content: center;
+        }
+
         .page-header {
           flex-direction: column;
           align-items: center;
