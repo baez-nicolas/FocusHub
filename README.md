@@ -6,6 +6,8 @@
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)
 
+<img src="/img/focushubapp.png" width="600" alt="Banner" />
+
 **FocusHub** es una aplicación web de productividad personal, minimalista y totalmente responsive. Reúne herramientas para organizar tu día, registrar hábitos, leer noticias, entrenar con Spotify y más — todo desde el navegador, sin backend ni cuentas obligatorias.
 
 🌐 **[Ver Demo en Vivo](https://focus-hub-gamma.vercel.app/)**
@@ -77,15 +79,6 @@ La app soporta **Español e Inglés** de forma nativa. El selector de idioma est
 | **Spotify Web API** | OAuth 2.0 |
 | **The Guardian API**        | REST      |
 
-### Stack técnico
-
-- **Standalone Components** sin NgModule
-- **Signals API** para estado reactivo
-- **`inject()`** y `computed()` en lugar de decoradores clásicos
-- **LocalStorage** para persistencia client-side
-- **CSS puro** con variables y media queries por componente
-- **Deploy:** Vercel (CD automático desde main)
-
 ---
 
 ## 🛠️ Instalación local
@@ -120,7 +113,7 @@ export const environment = {
 - **API de música:** [Spotify Web API](https://developer.spotify.com/documentation/web-api) — búsqueda, artistas, playlists y autenticación OAuth 2.0
 - **API de noticias:** [The Guardian API](https://open-platform.theguardian.com) — feed de artículos por sección y búsqueda
 
-<img src="" width="600" alt="Banner" />
+<img src="/img/apis.png" width="600" alt="Banner" />
 
 ---
 
