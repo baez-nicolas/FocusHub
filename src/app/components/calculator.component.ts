@@ -84,7 +84,7 @@ import { LangService } from '../services/lang.service';
         padding: 40px 32px;
       }
 
-      @media (max-width: 767px) {
+      @media (max-width: 820px) {
         .container {
           padding: 24px 16px;
         }

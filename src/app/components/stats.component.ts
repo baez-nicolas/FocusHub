@@ -234,7 +234,7 @@ import { StatsService } from '../services/stats.service';
         color: #9ca3af !important;
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 820px) {
         .cards {
           grid-template-columns: repeat(2, 1fr);
           gap: 16px;

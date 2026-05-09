@@ -817,7 +817,7 @@ interface DayRecord {
         color: #d1d5db;
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 820px) {
         .container {
           padding: 24px 16px;
         }

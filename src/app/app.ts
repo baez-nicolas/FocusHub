@@ -313,7 +313,7 @@ import { ThemeService } from './services/theme.service';
         display: none;
       }
 
-      @media (max-width: 767px) {
+      @media (max-width: 820px) {
         .topnav-inner {
           display: none;
         }

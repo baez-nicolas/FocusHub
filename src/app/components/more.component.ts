@@ -438,7 +438,7 @@ import { LangService } from '../services/lang.service';
         font-weight: 700;
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 820px) {
         .more-container {
           padding: 24px 16px;
         }

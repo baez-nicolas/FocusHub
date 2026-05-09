@@ -487,7 +487,7 @@ import { NewsService } from '../services/news.service';
         font-weight: 500;
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 820px) {
         .news-container {
           padding: 20px 16px;
         }

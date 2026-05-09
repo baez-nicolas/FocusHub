@@ -552,7 +552,7 @@ import { Note, NotesService } from '../services/notes.service';
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 820px) {
         .container {
           padding: 24px 16px;
         }

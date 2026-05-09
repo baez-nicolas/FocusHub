@@ -655,7 +655,7 @@ interface PlaylistGroup {
         }
       }
 
-      @media (max-width: 640px) {
+      @media (max-width: 820px) {
         .hero {
           min-height: 260px;
           padding: 48px 20px;

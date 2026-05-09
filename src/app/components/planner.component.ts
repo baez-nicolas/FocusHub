@@ -100,7 +100,7 @@ import { Block, PlannerService } from '../services/planner.service';
         padding: 40px 32px;
       }
 
-      @media (max-width: 767px) {
+      @media (max-width: 820px) {
         .container {
           padding: 24px 16px;
         }
@@ -526,7 +526,7 @@ import { Block, PlannerService } from '../services/planner.service';
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 820px) {
         .container {
           padding: 24px 16px;
         }

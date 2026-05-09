@@ -1319,7 +1319,7 @@ interface FeaturedPlaylist {
         }
       }
 
-      @media (max-width: 640px) {
+      @media (max-width: 820px) {
         .container {
           padding: 20px 16px 32px;
         }
