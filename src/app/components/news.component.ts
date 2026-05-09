@@ -785,9 +785,7 @@ export class NewsComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    if (this.newsService.articles().length === 0) {
-      this.newsService.fetchNews('', this.selectedSection, 1);
-    }
+    this.newsService.fetchNews('', this.selectedSection, 1);
   }
 
   search(): void {
